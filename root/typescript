@@ -1,0 +1,28 @@
+Script started on Tue 17 Sep 2013 08:21:56 PM EDT
+[4mlinux032[24m:[1m~/cs350-os161/root[0m> cd ~/cs350-os161/root
+[4mlinux032[24m:[1m~/cs350-os161/root[0m> cs350-gdb kernel
+GNU gdb 6.6
+Copyright (C) 2006 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you are
+welcome to change it and/or distribute copies of it under certain conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+This GDB was configured as "--host=x86_64-unknown-linux-gnu --target=mips-harvard-os161"...
+(gdb) dir ../os161-1.99/kern/compile/ASST0
+Source directories searched: /u7/s8lee/cs350-os161/root/../os161-1.99/kern/compile/ASST0:$cdir:$cwd
+(gdb) target remote unix:.sockets/gdb
+unix:.sockets/gdb: Connection refused.
+(gdb) breeak[K[Kk[K[Kak menu
+Breakpoint 1 at 0x800130d0: file ../../startup/menu.c, line 697.
+(gdb) c
+The program is not being run.
+(gdb) where
+No stack.
+(gdb) detach
+(gdb) quit
+[4mlinux032[24m:[1m~/cs350-os161/root[0m> exit
+exit
+@linux032.student[49]% exit
+@linux032.student[50]% exit
+
+Script done on Tue 17 Sep 2013 08:24:14 PM EDT
