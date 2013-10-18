@@ -1,0 +1,37 @@
+sys161: System/161 release 1.99.06, compiled Aug 23 2013 10:23:34
+
+OS/161 base system version 1.99.05
+Copyright (c) 2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009
+   President and Fellows of Harvard College.  All rights reserved.
+
+Put-your-group-name-here's system version 0 (ASST1 #3)
+
+304k physical memory available
+Device probe...
+lamebus0 (system main bus)
+emu0 at lamebus0
+ltrace0 at lamebus0
+ltimer0 at lamebus0
+beep0 at ltimer0
+rtclock0 at ltimer0
+lrandom0 at lamebus0
+random0 at lrandom0
+lhd0 at lamebus0
+lhd1 at lamebus0
+lser0 at lamebus0
+con0 at lser0
+
+cpu0: MIPS r3000
+OS/161 kernel: sy2
+Starting lock test...
+cleanitems: Destroying sems, locks, and cvs
+Lock test done.
+Operation took 0.707051800 seconds
+OS/161 kernel: q
+Shutting down.
+The system is halted.
+sys161: 21579287 cycles (21579287 run, 0 global-idle)
+sys161:   cpu0: 21579287 kern, 0 user, 0 idle)
+sys161: 8009 irqs 0 exns 0r/0w disk 0r/704w console 0r/0w/1m emufs 0r/0w net
+sys161: Elapsed real time: 0.942783 seconds (22.8889 mhz)
+sys161: Elapsed virtual time: 0.863171480 seconds (25 mhz)

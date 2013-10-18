@@ -1,0 +1,2340 @@
+cscope 15 $HOME/cs350-os161/os161-1.99/kern/synchprobs               0000014055
+	@bowls.c
+
+19 
+	~<ty≥s.h
+>
+
+20 
+	~<lib.h
+>
+
+21 
+	~<synch.h
+>
+
+22 
+	~<˛ock.h
+>
+
+23 
+	~<synch¥obs.h
+>
+
+42 vﬁ©ûê*
+	gbowls
+;
+
+46 
+	gnum_bowls
+;
+
+51 vﬁ©ûê
+	gótög_ˇts_cou¡
+;
+
+56 vﬁ©ûê
+	gótög_mi˚_cou¡
+;
+
+63 
+£m≠h‹e
+ *
+	gmuãx
+;
+
+91 
+	$¥öt_°©e
+()
+
+93 
+i
+;
+
+95 
+	`k¥ötf
+(" E©ög C©s: %3d E©ög Mi˚: %3d ",
+ótög_ˇts_cou¡
+,
+
+96 
+ótög_mi˚_cou¡
+);
+
+97 
+i
+=0;i<
+num_bowls
+;i++) {
+
+98 
+	`k¥ötf
+("%c",
+bowls
+[
+i
+]);
+
+101 
+	}
+}
+
+117 
+	$öôülize_bowls
+(
+bowlcou¡
+)
+
+119 
+i
+;
+
+121 i‡(
+bowlcou¡
+ == 0) {
+
+122 
+	`k¥ötf
+("öôülize_bowls: invÆid bow»cou¡ %d\n",
+bowlcou¡
+);
+
+126 
+bowls
+ = 
+	`kmÆloc
+(
+bowlcou¡
+*());
+
+127 i‡(
+bowls
+ =
+NULL
+) {
+
+128 
+	`∑nic
+("öôülize_bowls: u«bÀÅÿÆloˇã s∑˚ f‹ %d bowls\n",
+bowlcou¡
+);
+
+131 
+i
+=0;i<
+bowlcou¡
+;i++) {
+
+132 
+bowls
+[
+i
+] = '-';
+
+134 
+ótög_ˇts_cou¡
+ = 
+ótög_mi˚_cou¡
+ = 0;
+
+135 
+num_bowls
+ = 
+bowlcou¡
+;
+
+138 
+muãx
+ = 
+	`£m_¸óã
+("bowl mutex",1);
+
+139 i‡(
+muãx
+ =
+NULL
+) {
+
+140 
+	`∑nic
+("initialize_bowls: sem_create failed\n");
+
+144 
+	}
+}
+
+160 
+	$˛ónup_bowls
+()
+
+162 i‡(
+muãx
+ !
+NULL
+) {
+
+163 
+	`£m_de°roy
+–
+muãx
+ );
+
+164 
+muãx
+ = 
+NULL
+;
+
+166 i‡(
+bowls
+ !
+NULL
+) {
+
+167 
+	`k‰ì
+–(*Ë
+bowls
+ );
+
+168 
+bowls
+ = 
+NULL
+;
+
+170 
+	}
+}
+
+189 
+	$ˇt_ót
+(
+bow umbî
+, 
+ót_time
+)
+
+193 i‡((
+bow umbî
+ =0Ë|| (()bow umbî > 
+num_bowls
+)) {
+
+194 
+	`∑nic
+("ˇt_ót: invÆid bow»numbî %d\n",
+bow umbî
+);
+
+199 
+	`P
+(
+muãx
+);
+
+203 i‡(
+bowls
+[
+bow umbî
+-1] == 'c') {
+
+205 
+	`∑nic
+("ˇt_ót:áâem±Åÿmakêtwÿˇt†óà‰om bow»%d!\n",
+bow umbî
+);
+
+207 i‡(
+ótög_mi˚_cou¡
+ > 0) {
+
+209 
+	`∑nic
+("cat_eat:áttemptÅo makeá catÉat while miceáreÉating!\n");
+
+211 
+	`KASSERT
+(
+bowls
+[
+bow umbî
+-1]=='-');
+
+212 
+	`KASSERT
+(
+ótög_mi˚_cou¡
+ == 0);
+
+215 
+ótög_ˇts_cou¡
+ += 1;
+
+216 
+bowls
+[
+bow umbî
+-1] = 'c';
+
+219 
+	`k¥ötf
+("ˇt_óà (bow»%3dË°¨t: ",
+bow umbî
+);
+
+220 
+	`¥öt_°©e
+();
+
+221 
+	`k¥ötf
+("\n");
+
+223 
+	`V
+(
+muãx
+);
+
+227 
+	`˛ock¶ìp
+(
+ót_time
+);
+
+231 
+	`P
+(
+muãx
+);
+
+233 
+	`KASSERT
+(
+ótög_ˇts_cou¡
+ > 0);
+
+234 
+	`KASSERT
+(
+bowls
+[
+bow umbî
+-1]=='c');
+
+235 
+ótög_ˇts_cou¡
+ -= 1;
+
+236 
+bowls
+[
+bow umbî
+-1]='-';
+
+239 
+	`k¥ötf
+("ˇt_óà (bow»%3dËföish: ",
+bow umbî
+);
+
+240 
+	`¥öt_°©e
+();
+
+241 
+	`k¥ötf
+("\n");
+
+243 
+	`V
+(
+muãx
+);
+
+246 
+	}
+}
+
+260 
+	$ˇt_¶ìp
+(
+¶ìp_time
+)
+
+263 
+	`˛ock¶ìp
+(
+¶ìp_time
+);
+
+265 
+	}
+}
+
+285 
+	$mou£_ót
+(
+bow umbî
+, 
+ót_time
+)
+
+288 i‡((
+bow umbî
+ =0Ë|| (()bow umbî > 
+num_bowls
+)) {
+
+289 
+	`∑nic
+("mou£_ót: invÆid bow»numbî %d\n",
+bow umbî
+);
+
+294 
+	`P
+(
+muãx
+);
+
+298 i‡(
+bowls
+[
+bow umbî
+-1] == 'm') {
+
+300 
+	`∑nic
+("mou£_ót:áâem±Åÿmakêtwÿmi˚É© from bow»%d!\n",
+bow umbî
+);
+
+302 i‡(
+ótög_ˇts_cou¡
+ > 0) {
+
+304 
+	`∑nic
+("mouse_eat:áttemptÅo makeá mouseÉat while catsáreÉating!\n");
+
+306 
+	`KASSERT
+(
+bowls
+[
+bow umbî
+-1]=='-');
+
+307 
+	`KASSERT
+(
+ótög_ˇts_cou¡
+ == 0);
+
+310 
+ótög_mi˚_cou¡
+ += 1;
+
+311 
+bowls
+[
+bow umbî
+-1] = 'm';
+
+314 
+	`k¥ötf
+("mou£_óà(bow»%3dË°¨t: ",
+bow umbî
+);
+
+315 
+	`¥öt_°©e
+();
+
+316 
+	`k¥ötf
+("\n");
+
+318 
+	`V
+(
+muãx
+);
+
+322 
+	`˛ock¶ìp
+(
+ót_time
+);
+
+326 
+	`P
+(
+muãx
+);
+
+328 
+	`KASSERT
+(
+ótög_mi˚_cou¡
+ > 0);
+
+329 
+ótög_mi˚_cou¡
+ -= 1;
+
+330 
+	`KASSERT
+(
+bowls
+[
+bow umbî
+-1]=='m');
+
+331 
+bowls
+[
+bow umbî
+-1]='-';
+
+334 
+	`k¥ötf
+("mou£_óà(bow»%3dËföish: ",
+bow umbî
+);
+
+335 
+	`¥öt_°©e
+();
+
+336 
+	`k¥ötf
+("\n");
+
+338 
+	`V
+(
+muãx
+);
+
+340 
+	}
+}
+
+354 
+	$mou£_¶ìp
+(
+¶ìp_time
+)
+
+357 
+	`˛ock¶ìp
+(
+¶ìp_time
+);
+
+359 
+	}
+}
+
+	@catmouse.c
+
+20 
+	~<ty≥s.h
+>
+
+21 
+	~<lib.h
+>
+
+22 
+	~<ã°.h
+>
+
+23 
+	~<thªad.h
+>
+
+24 
+	~<synch.h
+>
+
+25 
+	~<synch¥obs.h
+>
+
+26 
+	~"›t-A1.h
+"
+
+45 
+öôülize_bowls
+(
+bowlcou¡
+);
+
+47 
+˛ónup_bowls
+( );
+
+48 
+ˇt_ót
+(
+bow umbî
+, 
+ót_time
+ );
+
+49 
+mou£_ót
+(
+bow umbî
+, 
+ót_time
+);
+
+50 
+ˇt_¶ìp
+(
+¶ìp_time
+);
+
+51 
+mou£_¶ìp
+(
+¶ìp_time
+);
+
+68 
+	gNumBowls
+;
+
+69 
+	gNumC©s
+;
+
+70 
+	gNumMi˚
+;
+
+71 
+	gNumLo›s
+;
+
+77 
+	gC©E©Time
+ = 1;
+
+78 
+	gC©SÀïTime
+ = 5;
+
+79 
+	gMou£E©Time
+ = 3;
+
+80 
+	gMou£SÀïTime
+ = 3;
+
+87 
+£m≠h‹e
+ *
+	gC©Mou£Waô
+;
+
+116 #i‡
+OPT_A1
+
+
+117 vﬁ©ûê* 
+	gbowl
+;
+
+123 vﬁ©ûê
+	gótög_ˇts
+ = 0;
+
+124 vﬁ©ûê
+	gótög_mi˚
+ = 0;
+
+125 
+lock
+ **
+	glock
+;
+
+131 
+	$ˇt_simuœti⁄
+(* 
+unu£dpoöãr
+,
+
+132 
+ˇäumbî
+)
+
+134 #i‡
+OPT_A1
+
+
+135 
+i
+;
+
+137 (Ë
+unu£dpoöãr
+;
+
+138 (Ë
+ˇäumbî
+;
+
+139 
+i
+=0;i<
+NumLo›s
+;i++) {
+
+140 if(
+ótög_mi˚
+ > 0 || 
+ótög_ˇts
+ =
+NumBowls
+){
+
+141 
+	`ˇt_¶ìp
+(
+C©SÀïTime
+);
+
+142 
+i
+--;
+
+145 
+ótög_ˇts
+++;
+
+146 
+i
+=0;i<
+NumBowls
+;i++){
+
+147 if(
+bowl
+[
+i
+] == '-'){
+
+148 
+	`lock_acquúe
+(
+lock
+[
+i
+]);
+
+149 
+bowl
+[
+i
+] = 'c';
+
+150 
+	`ˇt_ót
+(
+i
++1, 
+C©E©Time
+);
+
+151 
+	`lock_ªÀa£
+(
+lock
+[
+i
+]);
+
+155 
+ótög_ˇts
+--;
+
+160 
+i
+;
+
+161 
+bowl
+;
+
+164 (Ë
+unu£dpoöãr
+;
+
+165 (Ë
+ˇäumbî
+;
+
+171 
+i
+=0;i<
+NumLo›s
+;i++) {
+
+176 
+	`ˇt_¶ìp
+(
+C©SÀïTime
+);
+
+188 
+bowl
+ = (()
+	`øndom
+(Ë% 
+NumBowls
+) + 1;
+
+189 
+	`ˇt_ót
+(
+bowl
+, 
+C©E©Time
+);
+
+194 
+	`V
+(
+C©Mou£Waô
+);
+
+195 
+	}
+}
+
+218 
+	$mou£_simuœti⁄
+(* 
+unu£dpoöãr
+,
+
+219 
+mou£numbî
+)
+
+221 #i‡
+OPT_A1
+
+
+222 
+i
+;
+
+224 (Ë
+unu£dpoöãr
+;
+
+225 (Ë
+mou£numbî
+;
+
+227 
+i
+=0;i<
+NumLo›s
+;i++) {
+
+228 if(
+ótög_ˇts
+ > 0 || 
+NumBowls
+ - 
+ótög_mi˚
+ == 0){
+
+229 
+	`mou£_¶ìp
+(
+C©SÀïTime
+);
+
+230 
+i
+--;
+
+233 
+ótög_mi˚
+++;
+
+234 
+i
+=0;i<
+NumBowls
+;i++){
+
+235 if(
+bowl
+[
+i
+] == '-'){
+
+236 
+	`lock_acquúe
+(
+lock
+[
+i
+]);
+
+237 
+bowl
+[
+i
+] = 'm';
+
+238 
+	`mou£_ót
+(
+i
++1, 
+Mou£E©Time
+);
+
+239 
+	`lock_ªÀa£
+(
+lock
+[
+i
+]);
+
+243 
+ótög_mi˚
+--;
+
+247 
+i
+;
+
+248 
+bowl
+;
+
+251 (Ë
+unu£dpoöãr
+;
+
+252 (Ë
+mou£numbî
+;
+
+258 
+i
+=0;i<
+NumLo›s
+;i++) {
+
+263 
+	`mou£_¶ìp
+(
+Mou£SÀïTime
+);
+
+275 
+bowl
+ = (()
+	`øndom
+(Ë% 
+NumBowls
+) + 1;
+
+276 
+	`mou£_ót
+(
+bowl
+, 
+Mou£E©Time
+);
+
+281 
+	`V
+(
+C©Mou£Waô
+);
+
+282 
+	}
+}
+
+317 
+	$ˇtmou£
+(
+«rgs
+,
+
+318 ** 
+¨gs
+)
+
+320 
+ödex
+, 
+îr‹
+;
+
+321 
+i
+;
+
+322 #i‡
+OPT_A1
+
+
+323 
+i
+=0; i<
+NumBowls
+; i++){
+
+324 
+lock
+[
+i
+] = 
+	`lock_¸óã
+("lock");
+
+327 
+i
+=0; i<
+NumBowls
+; i++){
+
+328 
+bowl
+[
+i
+] = '-';
+
+333 i‡((
+«rgs
+ != 9) && (nargs != 5)) {
+
+334 
+	`k¥ötf
+("Usage: <command> NUM_BOWLS NUM_CATS NUM_MICE NUM_LOOPS\n");
+
+335 
+	`k¥ötf
+("or\n");
+
+336 
+	`k¥ötf
+("Usage: <command> NUM_BOWLS NUM_CATS NUM_MICE NUM_LOOPS ");
+
+337 
+	`k¥ötf
+("CAT_EATING_TIME CAT_SLEEPING_TIME MOUSE_EATING_TIME MOUSE_SLEEPING_TIME\n");
+
+342 
+NumBowls
+ = 
+	`©oi
+(
+¨gs
+[1]);
+
+343 i‡(
+NumBowls
+ <= 0) {
+
+344 
+	`k¥ötf
+("ˇtmou£: invÆidÇumbî o‡bowls: %d\n",
+NumBowls
+);
+
+347 
+NumC©s
+ = 
+	`©oi
+(
+¨gs
+[2]);
+
+348 i‡(
+NumC©s
+ < 0) {
+
+349 
+	`k¥ötf
+("ˇtmou£: invÆidÇumbî o‡ˇts: %d\n",
+NumC©s
+);
+
+352 
+NumMi˚
+ = 
+	`©oi
+(
+¨gs
+[3]);
+
+353 i‡(
+NumMi˚
+ < 0) {
+
+354 
+	`k¥ötf
+("ˇtmou£: invÆidÇumbî o‡mi˚: %d\n",
+NumMi˚
+);
+
+357 
+NumLo›s
+ = 
+	`©oi
+(
+¨gs
+[4]);
+
+358 i‡(
+NumLo›s
+ <= 0) {
+
+359 
+	`k¥ötf
+("ˇtmou£: invÆidÇumbî o‡lo›s: %d\n",
+NumLo›s
+);
+
+363 i‡(
+«rgs
+ == 9) {
+
+364 
+C©E©Time
+ = 
+	`©oi
+(
+¨gs
+[5]);
+
+365 i‡(
+NumLo›s
+ <= 0) {
+
+366 
+	`k¥ötf
+("ˇtmou£: invÆid c©É©ögÅime: %d\n",
+C©E©Time
+);
+
+370 
+C©SÀïTime
+ = 
+	`©oi
+(
+¨gs
+[6]);
+
+371 i‡(
+NumLo›s
+ <= 0) {
+
+372 
+	`k¥ötf
+("ˇtmou£: invÆid c© sÀïögÅime: %d\n",
+C©SÀïTime
+);
+
+376 
+Mou£E©Time
+ = 
+	`©oi
+(
+¨gs
+[7]);
+
+377 i‡(
+NumLo›s
+ <= 0) {
+
+378 
+	`k¥ötf
+("ˇtmou£: invÆid mou£É©ögÅime: %d\n",
+Mou£E©Time
+);
+
+382 
+Mou£SÀïTime
+ = 
+	`©oi
+(
+¨gs
+[8]);
+
+383 i‡(
+NumLo›s
+ <= 0) {
+
+384 
+	`k¥ötf
+("ˇtmou£: invÆid mou£ sÀïögÅime: %d\n",
+Mou£SÀïTime
+);
+
+389 
+	`k¥ötf
+("Using %d bowls, %d cats,ánd %d mice. Looping %dÅimes.\n",
+
+390 
+NumBowls
+,
+NumC©s
+,
+NumMi˚
+,
+NumLo›s
+);
+
+391 
+	`k¥ötf
+("Usög c©É©ögÅimê%d, c© sÀïögÅimê%d\n", 
+C©E©Time
+, 
+C©SÀïTime
+);
+
+392 
+	`k¥ötf
+("Usög mou£É©ögÅimê%d, mou£ sÀïögÅimê%d\n", 
+Mou£E©Time
+, 
+Mou£SÀïTime
+);
+
+396 
+C©Mou£Waô
+ = 
+	`£m_¸óã
+("CatMouseWait",0);
+
+397 i‡(
+C©Mou£Waô
+ =
+NULL
+) {
+
+398 
+	`∑nic
+("catmouse: couldÇot create semaphore\n");
+
+404 i‡(
+	`öôülize_bowls
+(
+NumBowls
+)) {
+
+405 
+	`∑nic
+("catmouse:Érror initializing bowls.\n");
+
+411 
+ödex
+ = 0; index < 
+NumC©s
+; index++) {
+
+412 
+îr‹
+ = 
+	`thªad_f‹k
+("ˇt_simuœti⁄Åhªad", 
+NULL
+, 
+ˇt_simuœti⁄
+, NULL, 
+ödex
+);
+
+413 i‡(
+îr‹
+) {
+
+414 
+	`∑nic
+("ˇt_simuœti⁄:Åhªad_f‹k faûed: %s\n", 
+	`°ªº‹
+(
+îr‹
+));
+
+421 
+ödex
+ = 0; index < 
+NumMi˚
+; index++) {
+
+422 
+îr‹
+ = 
+	`thªad_f‹k
+("mou£_simuœti⁄Åhªad", 
+NULL
+, 
+mou£_simuœti⁄
+, NULL, 
+ödex
+);
+
+423 i‡(
+îr‹
+) {
+
+424 
+	`∑nic
+("mou£_simuœti⁄:Åhªad_f‹k faûed: %s\n",
+	`°ªº‹
+(
+îr‹
+));
+
+430 
+i
+=0;i<(
+NumC©s
++
+NumMi˚
+);i++) {
+
+431 
+	`P
+(
+C©Mou£Waô
+);
+
+435 
+	`£m_de°roy
+(
+C©Mou£Waô
+);
+
+438 
+	`˛ónup_bowls
+();
+
+441 
+	}
+}
+
+	@catmousecrap.c
+
+20 
+	~<ty≥s.h
+>
+
+21 
+	~<lib.h
+>
+
+22 
+	~<ã°.h
+>
+
+23 
+	~<thªad.h
+>
+
+24 
+	~<synch.h
+>
+
+25 
+	~<synch¥obs.h
+>
+
+26 #i‡
+OPT_A1
+
+
+27 
+	~"›t-A1.h
+"
+
+28 
+	~"synch¥obs.h
+"
+
+29 
+	~"bowls.c
+"
+
+49 
+öôülize_bowls
+(
+bowlcou¡
+);
+
+51 
+˛ónup_bowls
+( );
+
+52 
+ˇt_ót
+(
+bow umbî
+, 
+ót_time
+ );
+
+53 
+mou£_ót
+(
+bow umbî
+, 
+ót_time
+);
+
+54 
+ˇt_¶ìp
+(
+¶ìp_time
+);
+
+55 
+mou£_¶ìp
+(
+¶ìp_time
+);
+
+72 
+	gNumBowls
+;
+
+73 
+	gNumC©s
+;
+
+74 
+	gNumMi˚
+;
+
+75 
+	gNumLo›s
+;
+
+76 #i‡
+OPT_A1
+
+
+77 vﬁ©ûê*
+lock
+ 
+	gcmlock
+ = 
+lock_¸óã
+("lock");
+
+84 
+	gC©E©Time
+ = 1;
+
+85 
+	gC©SÀïTime
+ = 5;
+
+86 
+	gMou£E©Time
+ = 3;
+
+87 
+	gMou£SÀïTime
+ = 3;
+
+94 
+£m≠h‹e
+ *
+	gC©Mou£Waô
+;
+
+123 
+	$ˇt_simuœti⁄
+(* 
+unu£dpoöãr
+,
+
+124 
+ˇäumbî
+)
+
+126 
+i
+;
+
+127 
+bowl
+;
+
+130 (Ë
+unu£dpoöãr
+;
+
+131 (Ë
+ˇäumbî
+;
+
+136 
+i
+=0;i<
+NumLo›s
+;i++) {
+
+148 
+bowl
+ = (()
+	`øndom
+(Ë% 
+NumBowls
+) + 1;
+
+149 
+	`ˇt_ót
+(
+bowl
+,1);
+
+153 
+	`V
+(
+C©Mou£Waô
+);
+
+154 
+	}
+}
+
+190 
+	gi
+;
+
+191 
+	gbowl
+;
+
+195 (Ë
+	gunu£dpoöãr
+;
+
+196 (Ë
+	gˇäumbî
+;
+
+201 
+	gi
+=0;i<
+	gNumLo›s
+;i++) {
+
+203 #i‡
+OPT_A1
+
+
+204 if(
+	gótög_mi˚_cou¡
+ !0 || 
+NumBowls
+ - 
+ótög_ˇts_cou¡
+ == 0){
+
+205 
+ˇt_¶ìp
+(
+C©SÀïTime
+);
+
+208 
+	gbowl
+ = 1; bow»<
+NumBowls
+; bowl++){
+
+209 if(
+	gbowls
+[
+bow umbî
+-1] == '-'){
+
+210 
+lock_acquúe
+(
+cmlock
+);
+
+211 
+ˇt_ót
+(
+bowl
+, 
+C©E©Time
+);
+
+212 
+lock_ªÀa£
+(
+cmlock
+);
+
+220 
+	gi
+;
+
+221 
+	gbowl
+;
+
+224 (Ë
+	gunu£dpoöãr
+;
+
+225 (Ë
+	gˇäumbî
+;
+
+230 
+	gi
+=0;i<
+	gNumLo›s
+;i++) {
+
+242 
+	gbowl
+ = (()
+øndom
+(Ë% 
+NumBowls
+) + 1;
+
+243 
+ˇt_ót
+(
+bowl
+,1);
+
+247 
+V
+(
+C©Mou£Waô
+);
+
+272 
+	$mou£_simuœti⁄
+(* 
+unu£dpoöãr
+,
+
+273 
+mou£numbî
+)
+
+275 
+i
+;
+
+276 
+bowl
+;
+
+279 (Ë
+unu£dpoöãr
+;
+
+280 (Ë
+mou£numbî
+;
+
+286 
+i
+=0;i<
+NumLo›s
+;i++) {
+
+289 #i‡
+OPT_A1
+
+
+290 if(
+ótög_ˇts_cou¡
+ !0 || 
+NumBowls
+ -Éating_cats_count == 0){
+
+291 
+	`mou£_¶ìp
+(
+Mou£SÀïTime
+);
+
+294 
+bow umbî
+ = 1; 
+bowl
+ <
+NumBowls
+; bowlnumber++){
+
+295 if(
+bowls
+[
+bow umbî
+-1] == '-'){
+
+296 
+	`lock_acquúe
+(
+cmlock
+);
+
+297 
+	`mou£_ót
+(
+bowl
+, 
+Mou£E©Time
+);
+
+298 
+	`lock_ªÀa£
+(
+cmlock
+);
+
+309 
+	`mou£_¶ìp
+(
+Mou£SÀïTime
+);
+
+321 
+bowl
+ = (()
+	`øndom
+(Ë% 
+NumBowls
+) + 1;
+
+322 
+	`mou£_ót
+(
+bowl
+, 
+Mou£E©Time
+);
+
+328 
+	`V
+(
+C©Mou£Waô
+);
+
+329 
+	}
+}
+
+364 
+	$ˇtmou£
+(
+«rgs
+,
+
+365 ** 
+¨gs
+)
+
+367 
+ödex
+, 
+îr‹
+;
+
+368 
+i
+;
+
+371 i‡((
+«rgs
+ != 9) && (nargs != 5)) {
+
+372 
+	`k¥ötf
+("Usage: <command> NUM_BOWLS NUM_CATS NUM_MICE NUM_LOOPS\n");
+
+373 
+	`k¥ötf
+("or\n");
+
+374 
+	`k¥ötf
+("Usage: <command> NUM_BOWLS NUM_CATS NUM_MICE NUM_LOOPS ");
+
+375 
+	`k¥ötf
+("CAT_EATING_TIME CAT_SLEEPING_TIME MOUSE_EATING_TIME MOUSE_SLEEPING_TIME\n");
+
+380 
+NumBowls
+ = 
+	`©oi
+(
+¨gs
+[1]);
+
+381 i‡(
+NumBowls
+ <= 0) {
+
+382 
+	`k¥ötf
+("ˇtmou£: invÆidÇumbî o‡bowls: %d\n",
+NumBowls
+);
+
+385 
+NumC©s
+ = 
+	`©oi
+(
+¨gs
+[2]);
+
+386 i‡(
+NumC©s
+ < 0) {
+
+387 
+	`k¥ötf
+("ˇtmou£: invÆidÇumbî o‡ˇts: %d\n",
+NumC©s
+);
+
+390 
+NumMi˚
+ = 
+	`©oi
+(
+¨gs
+[3]);
+
+391 i‡(
+NumMi˚
+ < 0) {
+
+392 
+	`k¥ötf
+("ˇtmou£: invÆidÇumbî o‡mi˚: %d\n",
+NumMi˚
+);
+
+395 
+NumLo›s
+ = 
+	`©oi
+(
+¨gs
+[4]);
+
+396 i‡(
+NumLo›s
+ <= 0) {
+
+397 
+	`k¥ötf
+("ˇtmou£: invÆidÇumbî o‡lo›s: %d\n",
+NumLo›s
+);
+
+401 i‡(
+«rgs
+ == 9) {
+
+402 
+C©E©Time
+ = 
+	`©oi
+(
+¨gs
+[5]);
+
+403 i‡(
+NumLo›s
+ <= 0) {
+
+404 
+	`k¥ötf
+("ˇtmou£: invÆid c©É©ögÅime: %d\n",
+C©E©Time
+);
+
+408 
+C©SÀïTime
+ = 
+	`©oi
+(
+¨gs
+[6]);
+
+409 i‡(
+NumLo›s
+ <= 0) {
+
+410 
+	`k¥ötf
+("ˇtmou£: invÆid c© sÀïögÅime: %d\n",
+C©SÀïTime
+);
+
+414 
+Mou£E©Time
+ = 
+	`©oi
+(
+¨gs
+[7]);
+
+415 i‡(
+NumLo›s
+ <= 0) {
+
+416 
+	`k¥ötf
+("ˇtmou£: invÆid mou£É©ögÅime: %d\n",
+Mou£E©Time
+);
+
+420 
+Mou£SÀïTime
+ = 
+	`©oi
+(
+¨gs
+[8]);
+
+421 i‡(
+NumLo›s
+ <= 0) {
+
+422 
+	`k¥ötf
+("ˇtmou£: invÆid mou£ sÀïögÅime: %d\n",
+Mou£SÀïTime
+);
+
+427 
+	`k¥ötf
+("Using %d bowls, %d cats,ánd %d mice. Looping %dÅimes.\n",
+
+428 
+NumBowls
+,
+NumC©s
+,
+NumMi˚
+,
+NumLo›s
+);
+
+429 
+	`k¥ötf
+("Usög c©É©ögÅimê%d, c© sÀïögÅimê%d\n", 
+C©E©Time
+, 
+C©SÀïTime
+);
+
+430 
+	`k¥ötf
+("Usög mou£É©ögÅimê%d, mou£ sÀïögÅimê%d\n", 
+Mou£E©Time
+, 
+Mou£SÀïTime
+);
+
+434 
+C©Mou£Waô
+ = 
+	`£m_¸óã
+("CatMouseWait",0);
+
+435 i‡(
+C©Mou£Waô
+ =
+NULL
+) {
+
+436 
+	`∑nic
+("catmouse: couldÇot create semaphore\n");
+
+442 i‡(
+	`öôülize_bowls
+(
+NumBowls
+)) {
+
+443 
+	`∑nic
+("catmouse:Érror initializing bowls.\n");
+
+450 
+ödex
+ = 0; index < 
+NumC©s
+; index++) {
+
+460 
+îr‹
+ = 
+	`thªad_f‹k
+("ˇt_simuœti⁄Åhªad", 
+NULL
+, 
+ˇt_simuœti⁄
+, NULL, 
+ödex
+);
+
+461 i‡(
+îr‹
+) {
+
+462 
+	`∑nic
+("ˇt_simuœti⁄:Åhªad_f‹k faûed: %s\n", 
+	`°ªº‹
+(
+îr‹
+));
+
+469 
+ödex
+ = 0; index < 
+NumMi˚
+; index++) {
+
+470 
+îr‹
+ = 
+	`thªad_f‹k
+("mou£_simuœti⁄Åhªad", 
+NULL
+, 
+mou£_simuœti⁄
+, NULL, 
+ödex
+);
+
+471 i‡(
+îr‹
+) {
+
+472 
+	`∑nic
+("mou£_simuœti⁄:Åhªad_f‹k faûed: %s\n",
+	`°ªº‹
+(
+îr‹
+));
+
+478 
+i
+=0;i<(
+NumC©s
++
+NumMi˚
+);i++) {
+
+479 
+	`P
+(
+C©Mou£Waô
+);
+
+483 
+	`£m_de°roy
+(
+C©Mou£Waô
+);
+
+486 
+	`˛ónup_bowls
+();
+
+489 
+	}
+}
+
+	@whalemating.c
+
+33 
+	~<ty≥s.h
+>
+
+34 
+	~<lib.h
+>
+
+35 
+	~<thªad.h
+>
+
+36 
+	~<ã°.h
+>
+
+38 
+	#NMATING
+ 10
+
+	)
+
+42 
+	$mÆe
+(*
+p
+, 
+which
+)
+
+44 ()
+p
+;
+
+45 
+	`k¥ötf
+("mÆêwhÆê#%ld sèπög\n", 
+which
+);
+
+48 
+	}
+}
+
+52 
+	$„mÆe
+(*
+p
+, 
+which
+)
+
+54 ()
+p
+;
+
+55 
+	`k¥ötf
+("„mÆêwhÆê#%ld sèπög\n", 
+which
+);
+
+58 
+	}
+}
+
+62 
+	$m©chmakî
+(*
+p
+, 
+which
+)
+
+64 ()
+p
+;
+
+65 
+	`k¥ötf
+("m©chmakî whÆê#%ld sèπög\n", 
+which
+);
+
+68 
+	}
+}
+
+73 
+	$whÆem©ög
+(
+«rgs
+, **
+¨gs
+)
+
+76 
+i
+, 
+j
+, 
+îr
+=0;
+
+78 ()
+«rgs
+;
+
+79 ()
+¨gs
+;
+
+81 
+i
+ = 0; i < 3; i++) {
+
+82 
+j
+ = 0; j < 
+NMATING
+; j++) {
+
+83 #ifde‡
+UW
+
+
+84 
+i
+) {
+
+86 
+îr
+ = 
+	`thªad_f‹k
+("MÆêWhÆêThªad", 
+NULL
+,
+
+87 
+mÆe
+, 
+NULL
+, 
+j
+);
+
+90 
+îr
+ = 
+	`thªad_f‹k
+("FemÆêWhÆêThªad", 
+NULL
+,
+
+91 
+„mÆe
+, 
+NULL
+, 
+j
+);
+
+94 
+îr
+ = 
+	`thªad_f‹k
+("M©chmakî WhÆêThªad", 
+NULL
+,
+
+95 
+m©chmakî
+, 
+NULL
+, 
+j
+);
+
+99 
+i
+) {
+
+101 
+îr
+ = 
+	`thªad_f‹k
+("Male Whale Thread",
+
+102 
+mÆe
+, 
+NULL
+, 
+j
+, NULL);
+
+105 
+îr
+ = 
+	`thªad_f‹k
+("Female Whale Thread",
+
+106 
+„mÆe
+, 
+NULL
+, 
+j
+, NULL);
+
+109 
+îr
+ = 
+	`thªad_f‹k
+("Matchmaker Whale Thread",
+
+110 
+m©chmakî
+, 
+NULL
+, 
+j
+, NULL);
+
+114 i‡(
+îr
+) {
+
+115 
+	`∑nic
+("whalemating:Åhread_fork failed: %s)\n",
+
+116 
+	`°ªº‹
+(
+îr
+));
+
+122 
+	}
+}
+
+	@
+1
+.
+1
+/usr/include
+4
+48
+bowls.c
+catmouse.c
+catmousecrap.c
+whalemating.c

@@ -1,0 +1,5941 @@
+cscope 15 $HOME/cs350-os161/os161-1.99/kern/test               0000029637
+	@arraytest.c
+
+30 
+	~<ty≥s.h
+>
+
+31 
+	~<lib.h
+>
+
+32 
+	~<¨øy.h
+>
+
+33 
+	~<ã°.h
+>
+
+35 
+	#TESTSIZE
+ 73
+
+	)
+
+39 
+	$ã°a
+(
+¨øy
+ *
+a
+)
+
+41 
+ã°¨øy
+[
+TESTSIZE
+];
+
+42 
+i
+, 
+j
+, 
+n
+, 
+r
+, *
+p
+;
+
+44 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+45 
+ã°¨øy
+[
+i
+]=i;
+
+48 
+n
+ = 
+	`¨øy_num
+(
+a
+);
+
+49 
+	`KASSERT
+(
+n
+==0);
+
+51 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+52 
+r
+ = 
+	`¨øy_add
+(
+a
+, &
+ã°¨øy
+[
+i
+], 
+NULL
+);
+
+53 
+	`KASSERT
+(
+r
+==0);
+
+54 
+n
+ = 
+	`¨øy_num
+(
+a
+);
+
+55 
+	`KASSERT
+(
+n
+==
+i
++1);
+
+57 
+n
+ = 
+	`¨øy_num
+(
+a
+);
+
+58 
+	`KASSERT
+(
+n
+==
+TESTSIZE
+);
+
+60 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+61 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 
+i
+);
+
+62 
+	`KASSERT
+(*
+p
+ =
+i
+);
+
+64 
+n
+ = 
+	`¨øy_num
+(
+a
+);
+
+65 
+	`KASSERT
+(
+n
+==
+TESTSIZE
+);
+
+67 
+j
+=0; j<
+TESTSIZE
+*4; j++) {
+
+68 
+i
+ = 
+	`øndom
+()%
+TESTSIZE
+;
+
+69 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 
+i
+);
+
+70 
+	`KASSERT
+(*
+p
+ =
+i
+);
+
+72 
+n
+ = 
+	`¨øy_num
+(
+a
+);
+
+73 
+	`KASSERT
+(
+n
+==
+TESTSIZE
+);
+
+75 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+76 
+	`¨øy_£t
+(
+a
+, 
+i
+, &
+ã°¨øy
+[
+TESTSIZE
+-i-1]);
+
+79 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+80 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 
+i
+);
+
+81 
+	`KASSERT
+(*
+p
+ =
+TESTSIZE
+-
+i
+-1);
+
+84 
+r
+ = 
+	`¨øy_£tsize
+(
+a
+, 
+TESTSIZE
+/2);
+
+85 
+	`KASSERT
+(
+r
+==0);
+
+87 
+i
+=0; i<
+TESTSIZE
+/2; i++) {
+
+88 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 
+i
+);
+
+89 
+	`KASSERT
+(*
+p
+ =
+TESTSIZE
+-
+i
+-1);
+
+92 
+	`¨øy_ªmove
+(
+a
+, 1);
+
+94 
+i
+=1; i<
+TESTSIZE
+/2 - 1; i++) {
+
+95 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 
+i
+);
+
+96 
+	`KASSERT
+(*
+p
+ =
+TESTSIZE
+-
+i
+-2);
+
+98 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 0);
+
+99 
+	`KASSERT
+(*
+p
+ =
+TESTSIZE
+-1);
+
+101 
+	`¨øy_£tsize
+(
+a
+, 2);
+
+102 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 0);
+
+103 
+	`KASSERT
+(*
+p
+ =
+TESTSIZE
+-1);
+
+104 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 1);
+
+105 
+	`KASSERT
+(*
+p
+ =
+TESTSIZE
+-3);
+
+107 
+	`¨øy_£t
+(
+a
+, 1, 
+NULL
+);
+
+108 
+	`¨øy_£tsize
+(
+a
+, 2);
+
+109 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 0);
+
+110 
+	`KASSERT
+(*
+p
+ =
+TESTSIZE
+-1);
+
+111 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 1);
+
+112 
+	`KASSERT
+(
+p
+==
+NULL
+);
+
+114 
+	`¨øy_£tsize
+(
+a
+, 
+TESTSIZE
+*10);
+
+115 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 0);
+
+116 
+	`KASSERT
+(*
+p
+ =
+TESTSIZE
+-1);
+
+117 
+p
+ = 
+	`¨øy_gë
+(
+a
+, 1);
+
+118 
+	`KASSERT
+(
+p
+==
+NULL
+);
+
+119 
+	}
+}
+
+122 
+	$¨øyã°
+(
+«rgs
+, **
+¨gs
+)
+
+124 
+¨øy
+ *
+a
+;
+
+126 ()
+«rgs
+;
+
+127 ()
+¨gs
+;
+
+129 
+	`k¥ötf
+("BeginningárrayÅest...\n");
+
+130 
+a
+ = 
+	`¨øy_¸óã
+();
+
+131 
+	`KASSERT
+(
+a
+ !
+NULL
+);
+
+133 
+	`ã°a
+(
+a
+);
+
+135 
+	`¨øy_£tsize
+(
+a
+, 0);
+
+137 
+	`ã°a
+(
+a
+);
+
+139 
+	`¨øy_£tsize
+(
+a
+, 0);
+
+140 
+	`¨øy_de°roy
+(
+a
+);
+
+142 
+	`k¥ötf
+("ArrayÅest complete\n");
+
+144 
+	}
+}
+
+	@bitmaptest.c
+
+30 
+	~<ty≥s.h
+>
+
+31 
+	~<lib.h
+>
+
+32 
+	~<bôm≠.h
+>
+
+33 
+	~<ã°.h
+>
+
+35 
+	#TESTSIZE
+ 533
+
+	)
+
+38 
+	$bôm≠ã°
+(
+«rgs
+, **
+¨gs
+)
+
+40 
+bôm≠
+ *
+b
+;
+
+41 
+d©a
+[
+TESTSIZE
+];
+
+42 
+uöt32_t
+ 
+x
+;
+
+43 
+i
+;
+
+45 ()
+«rgs
+;
+
+46 ()
+¨gs
+;
+
+48 
+	`k¥ötf
+("Starting bitmapÅest...\n");
+
+50 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+51 
+d©a
+[
+i
+] = 
+	`øndom
+()%2;
+
+54 
+b
+ = 
+	`bôm≠_¸óã
+(
+TESTSIZE
+);
+
+55 
+	`KASSERT
+(
+b
+ !
+NULL
+);
+
+57 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+58 
+	`KASSERT
+(
+	`bôm≠_is£t
+(
+b
+, 
+i
+)==0);
+
+61 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+62 i‡(
+d©a
+[
+i
+]) {
+
+63 
+	`bôm≠_m¨k
+(
+b
+, 
+i
+);
+
+66 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+67 i‡(
+d©a
+[
+i
+]) {
+
+68 
+	`KASSERT
+(
+	`bôm≠_is£t
+(
+b
+, 
+i
+));
+
+71 
+	`KASSERT
+(
+	`bôm≠_is£t
+(
+b
+, 
+i
+)==0);
+
+75 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+76 i‡(
+d©a
+[
+i
+]) {
+
+77 
+	`bôm≠_unm¨k
+(
+b
+, 
+i
+);
+
+80 
+	`bôm≠_m¨k
+(
+b
+, 
+i
+);
+
+83 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+84 i‡(
+d©a
+[
+i
+]) {
+
+85 
+	`KASSERT
+(
+	`bôm≠_is£t
+(
+b
+, 
+i
+)==0);
+
+88 
+	`KASSERT
+(
+	`bôm≠_is£t
+(
+b
+, 
+i
+));
+
+92 
+	`bôm≠_Æloc
+(
+b
+, &
+x
+)==0) {
+
+93 
+	`KASSERT
+(
+x
+ < 
+TESTSIZE
+);
+
+94 
+	`KASSERT
+(
+	`bôm≠_is£t
+(
+b
+, 
+x
+));
+
+95 
+	`KASSERT
+(
+d©a
+[
+x
+]==1);
+
+96 
+d©a
+[
+x
+] = 0;
+
+99 
+i
+=0; i<
+TESTSIZE
+; i++) {
+
+100 
+	`KASSERT
+(
+	`bôm≠_is£t
+(
+b
+, 
+i
+));
+
+101 
+	`KASSERT
+(
+d©a
+[
+i
+]==0);
+
+104 
+	`k¥ötf
+("BitmapÅest complete\n");
+
+106 
+	}
+}
+
+	@fstest.c
+
+41 
+	~<ty≥s.h
+>
+
+42 
+	~<kîn/î∫o.h
+>
+
+43 
+	~<kîn/f˙é.h
+>
+
+44 
+	~<lib.h
+>
+
+45 
+	~<uio.h
+>
+
+46 
+	~<thªad.h
+>
+
+47 
+	~<synch.h
+>
+
+48 
+	~<vfs.h
+>
+
+49 
+	~<fs.h
+>
+
+50 
+	~<vnode.h
+>
+
+51 
+	~<ã°.h
+>
+
+53 
+	#SLOGAN
+ "HODIE MIHI - CRAS TIBI\n"
+
+	)
+
+54 
+	#FILENAME
+ "f°e°.tmp"
+
+	)
+
+55 
+	#NCHUNKS
+ 720
+
+	)
+
+56 
+	#NTHREADS
+ 12
+
+	)
+
+57 
+	#NCREATES
+ 32
+
+	)
+
+59 
+£m≠h‹e
+ *
+	gthªad£m
+ = 
+NULL
+;
+
+63 
+	$öô_thªad£m
+()
+
+65 i‡(
+thªad£m
+==
+NULL
+) {
+
+66 
+thªad£m
+ = 
+	`£m_¸óã
+("fstestsem", 0);
+
+67 i‡(
+thªad£m
+ =
+NULL
+) {
+
+68 
+	`∑nic
+("fstest: sem_create failed\n");
+
+71 
+	}
+}
+
+79 
+	$rŸ©e
+(*
+°r
+, 
+amt
+)
+
+81 
+i
+, 
+ch
+;
+
+83 
+amt
+ = (amt+2600)%26;
+
+84 
+	`KASSERT
+(
+amt
+>=0);
+
+86 
+i
+=0; 
+°r
+[i]; i++) {
+
+87 
+ch
+ = 
+°r
+[
+i
+];
+
+88 i‡(
+ch
+>='A' && ch<='Z') {
+
+89 
+ch
+ = ch - 'A';
+
+90 
+ch
+ +
+amt
+;
+
+91 
+ch
+ %= 26;
+
+92 
+ch
+ = ch + 'A';
+
+93 
+	`KASSERT
+(
+ch
+>='A' && ch<='Z');
+
+95 
+°r
+[
+i
+] = 
+ch
+;
+
+97 
+	}
+}
+
+103 
+	$f°e°_makíame
+(*
+buf
+, 
+size_t
+ 
+buÊí
+,
+
+104 c⁄° *
+fs
+, c⁄° *
+«mesuffix
+)
+
+106 
+	`¢¥ötf
+(
+buf
+, 
+buÊí
+, "%s:%s%s", 
+fs
+, 
+FILENAME
+, 
+«mesuffix
+);
+
+107 
+	`KASSERT
+(
+	`°æí
+(
+buf
+Ë< 
+buÊí
+);
+
+108 
+	}
+}
+
+110 
+	#MAKENAME
+(Ë
+	`f°e°_makíame
+(
+«me
+, “ame), 
+fs
+, 
+«mesuffix
+)
+
+	)
+
+114 
+	$f°e°_ªmove
+(c⁄° *
+fs
+, c⁄° *
+«mesuffix
+)
+
+116 
+«me
+[32];
+
+117 
+buf
+[32];
+
+118 
+îr
+;
+
+120 
+	`MAKENAME
+();
+
+122 
+	`°r˝y
+(
+buf
+, 
+«me
+);
+
+123 
+îr
+ = 
+	`vfs_ªmove
+(
+buf
+);
+
+124 i‡(
+îr
+) {
+
+125 
+	`k¥ötf
+("CouldÇŸÑemovê%s: %s\n", 
+«me
+, 
+	`°ªº‹
+(
+îr
+));
+
+130 
+	}
+}
+
+134 
+	$f°e°_wrôe
+(c⁄° *
+fs
+, c⁄° *
+«mesuffix
+,
+
+135 
+°ridesize
+, 
+°ridïos
+)
+
+137 
+vnode
+ *
+vn
+;
+
+138 
+îr
+;
+
+139 
+i
+;
+
+140 
+size_t
+ 
+shouldbyãs
+=0;
+
+141 
+size_t
+ 
+byãs
+=0;
+
+142 
+off_t
+ 
+pos
+=0;
+
+143 
+«me
+[32];
+
+144 
+buf
+[32];
+
+145 
+iovec
+ 
+iov
+;
+
+146 
+uio
+ 
+ku
+;
+
+147 
+Êags
+;
+
+149 
+	`KASSERT
+((
+buf
+Ë> 
+	`°æí
+(
+SLOGAN
+));
+
+151 
+	`MAKENAME
+();
+
+153 
+Êags
+ = 
+O_WRONLY
+|
+O_CREAT
+;
+
+154 i‡(
+°ridesize
+ == 1) {
+
+155 
+Êags
+ |
+O_TRUNC
+;
+
+159 
+	`°r˝y
+(
+buf
+, 
+«me
+);
+
+160 
+îr
+ = 
+	`vfs_›í
+(
+buf
+, 
+Êags
+, 0664, &
+vn
+);
+
+161 i‡(
+îr
+) {
+
+162 
+	`k¥ötf
+("CouldÇot open %s for write: %s\n",
+
+163 
+«me
+, 
+	`°ªº‹
+(
+îr
+));
+
+167 
+i
+=0; i<
+NCHUNKS
+; i++) {
+
+168 i‡(
+i
+ % 
+°ridesize
+ !
+°ridïos
+) {
+
+169 
+pos
+ +
+	`°æí
+(
+SLOGAN
+);
+
+172 
+	`°r˝y
+(
+buf
+, 
+SLOGAN
+);
+
+173 
+	`rŸ©e
+(
+buf
+, 
+i
+);
+
+174 
+	`uio_köô
+(&
+iov
+, &
+ku
+, 
+buf
+, 
+	`°æí
+(
+SLOGAN
+), 
+pos
+, 
+UIO_WRITE
+);
+
+175 
+îr
+ = 
+	`VOP_WRITE
+(
+vn
+, &
+ku
+);
+
+176 i‡(
+îr
+) {
+
+177 
+	`k¥ötf
+("%s: Wrôêîr‹: %s\n", 
+«me
+, 
+	`°ªº‹
+(
+îr
+));
+
+178 
+	`vfs_˛o£
+(
+vn
+);
+
+179 
+	`vfs_ªmove
+(
+«me
+);
+
+183 i‡(
+ku
+.
+uio_ªsid
+ > 0) {
+
+184 
+	`k¥ötf
+("%s: Short write: %lu bytesÜeft over\n",
+
+185 
+«me
+, (Ë
+ku
+.
+uio_ªsid
+);
+
+186 
+	`vfs_˛o£
+(
+vn
+);
+
+187 
+	`vfs_ªmove
+(
+«me
+);
+
+191 
+byãs
+ +(
+ku
+.
+uio_off£t
+ - 
+pos
+);
+
+192 
+shouldbyãs
+ +
+	`°æí
+(
+SLOGAN
+);
+
+193 
+pos
+ = 
+ku
+.
+uio_off£t
+;
+
+196 
+	`vfs_˛o£
+(
+vn
+);
+
+198 i‡(
+byãs
+ !
+shouldbyãs
+) {
+
+199 
+	`k¥ötf
+("%s: %lu bytes written, should have been %lu!\n",
+
+200 
+«me
+, (Ë
+byãs
+,
+
+201 (Ë(
+NCHUNKS
+*
+	`°æí
+(
+SLOGAN
+)));
+
+202 
+	`vfs_ªmove
+(
+«me
+);
+
+205 
+	`k¥ötf
+("%s: %lu byã†wrôãn\n", 
+«me
+, (Ë
+byãs
+);
+
+208 
+	}
+}
+
+212 
+	$f°e°_ªad
+(c⁄° *
+fs
+, c⁄° *
+«mesuffix
+)
+
+214 
+vnode
+ *
+vn
+;
+
+215 
+îr
+;
+
+216 
+i
+;
+
+217 
+size_t
+ 
+byãs
+=0;
+
+218 
+«me
+[32];
+
+219 
+buf
+[32];
+
+220 
+iovec
+ 
+iov
+;
+
+221 
+uio
+ 
+ku
+;
+
+223 
+	`MAKENAME
+();
+
+226 
+	`°r˝y
+(
+buf
+, 
+«me
+);
+
+227 
+îr
+ = 
+	`vfs_›í
+(
+buf
+, 
+O_RDONLY
+, 0664, &
+vn
+);
+
+228 i‡(
+îr
+) {
+
+229 
+	`k¥ötf
+("CouldÇot openÅest file forÑead: %s\n",
+
+230 
+	`°ªº‹
+(
+îr
+));
+
+234 
+i
+=0; i<
+NCHUNKS
+; i++) {
+
+235 
+	`uio_köô
+(&
+iov
+, &
+ku
+, 
+buf
+, 
+	`°æí
+(
+SLOGAN
+), 
+byãs
+, 
+UIO_READ
+);
+
+236 
+îr
+ = 
+	`VOP_READ
+(
+vn
+, &
+ku
+);
+
+237 i‡(
+îr
+) {
+
+238 
+	`k¥ötf
+("%s: RódÉº‹: %s\n", 
+«me
+, 
+	`°ªº‹
+(
+îr
+));
+
+239 
+	`vfs_˛o£
+(
+vn
+);
+
+243 i‡(
+ku
+.
+uio_ªsid
+ > 0) {
+
+244 
+	`k¥ötf
+("%s: Sh‹àªad: %lu byã†À· ovî\n", 
+«me
+,
+
+245 (Ë
+ku
+.
+uio_ªsid
+);
+
+246 
+	`vfs_˛o£
+(
+vn
+);
+
+249 
+buf
+[
+	`°æí
+(
+SLOGAN
+)] = 0;
+
+250 
+	`rŸ©e
+(
+buf
+, -
+i
+);
+
+251 i‡(
+	`°rcmp
+(
+buf
+, 
+SLOGAN
+)) {
+
+252 
+	`k¥ötf
+("%s: Test failed:Üine %d mismatched: %s\n",
+
+253 
+«me
+, 
+i
++1, 
+buf
+);
+
+254 
+	`vfs_˛o£
+(
+vn
+);
+
+258 
+byãs
+ = 
+ku
+.
+uio_off£t
+;
+
+261 
+	`vfs_˛o£
+(
+vn
+);
+
+263 i‡(
+byãs
+ !
+NCHUNKS
+*
+	`°æí
+(
+SLOGAN
+)) {
+
+264 
+	`k¥ötf
+("%s: %lu bytesÑead, should have been %lu!\n",
+
+265 
+«me
+, (Ë
+byãs
+,
+
+266 (Ë(
+NCHUNKS
+*
+	`°æí
+(
+SLOGAN
+)));
+
+269 
+	`k¥ötf
+("%s: %lu byã†ªad\n", 
+«me
+, (Ë
+byãs
+);
+
+271 
+	}
+}
+
+277 
+	$dof°e°
+(c⁄° *
+fûesys
+)
+
+279 
+	`k¥ötf
+("*** Sèπög fûesy°emÅe° o¿%s:\n", 
+fûesys
+);
+
+281 i‡(
+	`f°e°_wrôe
+(
+fûesys
+, "", 1, 0)) {
+
+282 
+	`k¥ötf
+("*** Test failed\n");
+
+286 i‡(
+	`f°e°_ªad
+(
+fûesys
+, "")) {
+
+287 
+	`k¥ötf
+("*** Test failed\n");
+
+291 i‡(
+	`f°e°_ªmove
+(
+fûesys
+, "")) {
+
+292 
+	`k¥ötf
+("*** Test failed\n");
+
+296 
+	`k¥ötf
+("*** FilesystemÅest done\n");
+
+297 
+	}
+}
+
+303 
+	$ªad°ªss_thªad
+(*
+fs
+, 
+num
+)
+
+305 c⁄° *
+fûesys
+ = 
+fs
+;
+
+306 i‡(
+	`f°e°_ªad
+(
+fûesys
+, "")) {
+
+307 
+	`k¥ötf
+("*** Thªad %lu: faûed\n", 
+num
+);
+
+309 
+	`V
+(
+thªad£m
+);
+
+310 
+	}
+}
+
+314 
+	$d‹ód°ªss
+(c⁄° *
+fûesys
+)
+
+316 
+i
+, 
+îr
+;
+
+318 
+	`öô_thªad£m
+();
+
+320 
+	`k¥ötf
+("*** Sèπög f†ªad såes†ã° o¿%s:\n", 
+fûesys
+);
+
+322 i‡(
+	`f°e°_wrôe
+(
+fûesys
+, "", 1, 0)) {
+
+323 
+	`k¥ötf
+("*** Test failed\n");
+
+327 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+328 
+îr
+ = 
+	`thªad_f‹k
+("ªad°ªss", 
+NULL
+,
+
+329 
+ªad°ªss_thªad
+, (*)
+fûesys
+, 
+i
+);
+
+330 i‡(
+îr
+) {
+
+331 
+	`∑nic
+("readstress:Åhread_fork failed: %s\n",
+
+332 
+	`°ªº‹
+(
+îr
+));
+
+336 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+337 
+	`P
+(
+thªad£m
+);
+
+340 i‡(
+	`f°e°_ªmove
+(
+fûesys
+, "")) {
+
+341 
+	`k¥ötf
+("*** Test failed\n");
+
+345 
+	`k¥ötf
+("*** fsÑead stressÅest done\n");
+
+346 
+	}
+}
+
+352 
+	$wrôe°ªss_thªad
+(*
+fs
+, 
+num
+)
+
+354 c⁄° *
+fûesys
+ = 
+fs
+;
+
+355 
+num°r
+[8];
+
+356 
+	`¢¥ötf
+(
+num°r
+, “um°r), "%lu", 
+num
+);
+
+358 i‡(
+	`f°e°_wrôe
+(
+fûesys
+, 
+num°r
+, 1, 0)) {
+
+359 
+	`k¥ötf
+("*** Thªad %lu: faûed\n", 
+num
+);
+
+360 
+	`V
+(
+thªad£m
+);
+
+364 i‡(
+	`f°e°_ªad
+(
+fûesys
+, 
+num°r
+)) {
+
+365 
+	`k¥ötf
+("*** Thªad %lu: faûed\n", 
+num
+);
+
+366 
+	`V
+(
+thªad£m
+);
+
+370 i‡(
+	`f°e°_ªmove
+(
+fûesys
+, 
+num°r
+)) {
+
+371 
+	`k¥ötf
+("*** Thªad %lu: faûed\n", 
+num
+);
+
+374 
+	`k¥ötf
+("*** Thªad %lu: d⁄e\n", 
+num
+);
+
+376 
+	`V
+(
+thªad£m
+);
+
+377 
+	}
+}
+
+381 
+	$dowrôe°ªss
+(c⁄° *
+fûesys
+)
+
+383 
+i
+, 
+îr
+;
+
+385 
+	`öô_thªad£m
+();
+
+387 
+	`k¥ötf
+("*** Sèπög f†wrôê°ªs†ã° o¿%s:\n", 
+fûesys
+);
+
+389 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+390 
+îr
+ = 
+	`thªad_f‹k
+("wrôe°ªss", 
+NULL
+,
+
+391 
+wrôe°ªss_thªad
+, (*)
+fûesys
+, 
+i
+);
+
+392 i‡(
+îr
+) {
+
+393 
+	`∑nic
+("thªad_f‹k faûed %s\n", 
+	`°ªº‹
+(
+îr
+));
+
+397 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+398 
+	`P
+(
+thªad£m
+);
+
+401 
+	`k¥ötf
+("*** fs write stressÅest done\n");
+
+402 
+	}
+}
+
+408 
+	$wrôe°ªss2_thªad
+(*
+fs
+, 
+num
+)
+
+410 c⁄° *
+fûesys
+ = 
+fs
+;
+
+412 i‡(
+	`f°e°_wrôe
+(
+fûesys
+, "", 
+NTHREADS
+, 
+num
+)) {
+
+413 
+	`k¥ötf
+("*** Thªad %lu: faûed\n", 
+num
+);
+
+414 
+	`V
+(
+thªad£m
+);
+
+418 
+	`V
+(
+thªad£m
+);
+
+419 
+	}
+}
+
+423 
+	$dowrôe°ªss2
+(c⁄° *
+fûesys
+)
+
+425 
+i
+, 
+îr
+;
+
+426 
+«me
+[32];
+
+427 
+vnode
+ *
+vn
+;
+
+429 
+	`öô_thªad£m
+();
+
+431 
+	`k¥ötf
+("*** Sèπög f†wrôê°ªs†ã° 2 o¿%s:\n", 
+fûesys
+);
+
+434 
+	`f°e°_makíame
+(
+«me
+, “ame), 
+fûesys
+, "");
+
+435 
+îr
+ = 
+	`vfs_›í
+(
+«me
+, 
+O_WRONLY
+|
+O_CREAT
+|
+O_TRUNC
+, 0664, &
+vn
+);
+
+436 i‡(
+îr
+) {
+
+437 
+	`k¥ötf
+("CouldÇŸ cª©êã° fûe: %s\n", 
+	`°ªº‹
+(
+îr
+));
+
+438 
+	`k¥ötf
+("*** Test failed\n");
+
+441 
+	`vfs_˛o£
+(
+vn
+);
+
+443 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+444 
+îr
+ = 
+	`thªad_f‹k
+("wrôe°ªss2", 
+NULL
+,
+
+445 
+wrôe°ªss2_thªad
+, (*)
+fûesys
+, 
+i
+);
+
+446 i‡(
+îr
+) {
+
+447 
+	`∑nic
+("writestress2:Åhread_fork failed: %s\n",
+
+448 
+	`°ªº‹
+(
+îr
+));
+
+452 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+453 
+	`P
+(
+thªad£m
+);
+
+456 i‡(
+	`f°e°_ªad
+(
+fûesys
+, "")) {
+
+457 
+	`k¥ötf
+("*** Test failed\n");
+
+461 i‡(
+	`f°e°_ªmove
+(
+fûesys
+, "")) {
+
+462 
+	`k¥ötf
+("*** Test failed\n");
+
+466 
+	`k¥ötf
+("*** fs write stressÅest 2 done\n");
+
+467 
+	}
+}
+
+473 
+	$¸óã°ªss_thªad
+(*
+fs
+, 
+num
+)
+
+475 c⁄° *
+fûesys
+ = 
+fs
+;
+
+476 
+i
+;
+
+477 
+num°r
+[16];
+
+479 
+i
+=0; i<
+NCREATES
+; i++) {
+
+481 
+	`¢¥ötf
+(
+num°r
+, “um°r), "%lu-%d", 
+num
+, 
+i
+);
+
+483 i‡(
+	`f°e°_wrôe
+(
+fûesys
+, 
+num°r
+, 1, 0)) {
+
+484 
+	`k¥ötf
+("*** Thªad %lu: fûê%d: faûed\n", 
+num
+, 
+i
+);
+
+485 
+	`V
+(
+thªad£m
+);
+
+489 i‡(
+	`f°e°_ªad
+(
+fûesys
+, 
+num°r
+)) {
+
+490 
+	`k¥ötf
+("*** Thªad %lu: fûê%d: faûed\n", 
+num
+, 
+i
+);
+
+491 
+	`V
+(
+thªad£m
+);
+
+495 i‡(
+	`f°e°_ªmove
+(
+fûesys
+, 
+num°r
+)) {
+
+496 
+	`k¥ötf
+("*** Thªad %lu: fûê%d: faûed\n", 
+num
+, 
+i
+);
+
+497 
+	`V
+(
+thªad£m
+);
+
+503 
+	`V
+(
+thªad£m
+);
+
+504 
+	}
+}
+
+508 
+	$do¸óã°ªss
+(c⁄° *
+fûesys
+)
+
+510 
+i
+, 
+îr
+;
+
+512 
+	`öô_thªad£m
+();
+
+514 
+	`k¥ötf
+("*** Sèπög f†¸óã såes†ã° o¿%s:\n", 
+fûesys
+);
+
+516 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+517 #ifde‡
+UW
+
+
+518 
+îr
+ = 
+	`thªad_f‹k
+("¸óã°ªss", 
+NULL
+,
+
+519 
+¸óã°ªss_thªad
+, (*)
+fûesys
+, 
+i
+);
+
+521 
+îr
+ = 
+	`thªad_f‹k
+("createstress",
+
+522 
+¸óã°ªss_thªad
+, (*)
+fûesys
+, 
+i
+,
+
+523 
+NULL
+);
+
+525 i‡(
+îr
+) {
+
+526 
+	`∑nic
+("createstress:Åhread_fork failed %s\n",
+
+527 
+	`°ªº‹
+(
+îr
+));
+
+531 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+532 
+	`P
+(
+thªad£m
+);
+
+535 
+	`k¥ötf
+("*** fs create stressÅest done\n");
+
+536 
+	}
+}
+
+542 
+	$checkfûesy°em
+(
+«rgs
+, **
+¨gs
+)
+
+544 *
+devi˚
+;
+
+546 i‡(
+«rgs
+ != 2) {
+
+547 
+	`k¥ötf
+("Usage: fs[12345] filesystem:\n");
+
+548  
+EINVAL
+;
+
+551 
+devi˚
+ = 
+¨gs
+[1];
+
+554 i‡(
+devi˚
+[
+	`°æí
+(device)-1]==':') {
+
+555 
+devi˚
+[
+	`°æí
+(device)-1] = 0;
+
+559 
+	}
+}
+
+561 
+	#DEFTEST
+(
+ã°«me
+) \
+
+563 
+	`ã°«me
+(
+«rgs
+, **
+¨gs
+) \
+
+565 
+ªsu…
+; \
+
+566 
+ªsu…
+ = 
+	`checkfûesy°em
+(
+«rgs
+, 
+¨gs
+); \
+
+567 i‡(
+ªsu…
+) { \
+
+568  
+ªsu…
+; \
+
+570 do##
+	`ã°«me
+(
+¨gs
+[1]); \
+
+572 }
+
+	)
+
+574 
+DEFTEST
+(
+f°e°
+);
+
+575 
+DEFTEST
+(
+ªad°ªss
+);
+
+576 
+DEFTEST
+(
+wrôe°ªss
+);
+
+577 
+DEFTEST
+(
+wrôe°ªss2
+);
+
+578 
+DEFTEST
+(
+¸óã°ªss
+);
+
+583 
+	$¥ötfûe
+(
+«rgs
+, **
+¨gs
+)
+
+585 
+vnode
+ *
+rv
+, *
+wv
+;
+
+586 
+iovec
+ 
+iov
+;
+
+587 
+uio
+ 
+ku
+;
+
+588 
+off_t
+ 
+Ωos
+=0, 
+wpos
+=0;
+
+589 
+buf
+[128];
+
+590 
+outfûe
+[16];
+
+591 
+ªsu…
+;
+
+592 
+d⁄e
+=0;
+
+594 i‡(
+«rgs
+ != 2) {
+
+595 
+	`k¥ötf
+("Usage:Öf filename\n");
+
+596  
+EINVAL
+;
+
+600 
+	`°r˝y
+(
+outfûe
+, "con:");
+
+602 
+ªsu…
+ = 
+	`vfs_›í
+(
+¨gs
+[1], 
+O_RDONLY
+, 0664, &
+rv
+);
+
+603 i‡(
+ªsu…
+) {
+
+604 
+	`k¥ötf
+("¥ötfûe: %s\n", 
+	`°ªº‹
+(
+ªsu…
+));
+
+605  
+ªsu…
+;
+
+608 
+ªsu…
+ = 
+	`vfs_›í
+(
+outfûe
+, 
+O_WRONLY
+, 0664, &
+wv
+);
+
+609 i‡(
+ªsu…
+) {
+
+610 
+	`k¥ötf
+("¥ötfûe: ouçut: %s\n", 
+	`°ªº‹
+(
+ªsu…
+));
+
+611 
+	`vfs_˛o£
+(
+rv
+);
+
+612  
+ªsu…
+;
+
+615 !
+d⁄e
+) {
+
+616 
+	`uio_köô
+(&
+iov
+, &
+ku
+, 
+buf
+, (buf), 
+Ωos
+, 
+UIO_READ
+);
+
+617 
+ªsu…
+ = 
+	`VOP_READ
+(
+rv
+, &
+ku
+);
+
+618 i‡(
+ªsu…
+) {
+
+619 
+	`k¥ötf
+("RódÉº‹: %s\n", 
+	`°ªº‹
+(
+ªsu…
+));
+
+622 
+Ωos
+ = 
+ku
+.
+uio_off£t
+;
+
+624 i‡(
+ku
+.
+uio_ªsid
+ > 0) {
+
+625 
+d⁄e
+ = 1;
+
+628 
+	`uio_köô
+(&
+iov
+, &
+ku
+, 
+buf
+, (buf)-ku.
+uio_ªsid
+, 
+wpos
+,
+
+629 
+UIO_WRITE
+);
+
+630 
+ªsu…
+ = 
+	`VOP_WRITE
+(
+wv
+, &
+ku
+);
+
+631 i‡(
+ªsu…
+) {
+
+632 
+	`k¥ötf
+("Wrôêîr‹: %s\n", 
+	`°ªº‹
+(
+ªsu…
+));
+
+635 
+wpos
+ = 
+ku
+.
+uio_off£t
+;
+
+637 i‡(
+ku
+.
+uio_ªsid
+ > 0) {
+
+638 
+	`k¥ötf
+("Warning: short write\n");
+
+642 
+	`vfs_˛o£
+(
+wv
+);
+
+643 
+	`vfs_˛o£
+(
+rv
+);
+
+646 
+	}
+}
+
+	@malloctest.c
+
+33 
+	~<ty≥s.h
+>
+
+34 
+	~<lib.h
+>
+
+35 
+	~<thªad.h
+>
+
+36 
+	~<synch.h
+>
+
+37 
+	~<ã°.h
+>
+
+50 
+	#NTRIES
+ 1200
+
+	)
+
+51 
+	#ITEMSIZE
+ 997
+
+	)
+
+52 
+	#NTHREADS
+ 8
+
+	)
+
+56 
+	$mÆlo˘hªad
+(*
+sm
+, 
+num
+)
+
+58 
+£m≠h‹e
+ *
+£m
+ = 
+sm
+;
+
+59 *
+±r
+;
+
+60 *
+ﬁd±r
+=
+NULL
+;
+
+61 *
+ﬁd±r2
+=
+NULL
+;
+
+62 
+i
+;
+
+64 
+i
+=0; i<
+NTRIES
+; i++) {
+
+65 
+±r
+ = 
+	`kmÆloc
+(
+ITEMSIZE
+);
+
+66 i‡(
+±r
+==
+NULL
+) {
+
+67 i‡(
+£m
+) {
+
+68 
+	`k¥ötf
+("thread %lu: kmallocÑeturned NULL\n",
+
+69 
+num
+);
+
+70 
+	`V
+(
+£m
+);
+
+73 
+	`k¥ötf
+("kmallocÑeturnedÇull;Åest failed.\n");
+
+76 i‡(
+ﬁd±r2
+) {
+
+77 
+	`k‰ì
+(
+ﬁd±r2
+);
+
+79 
+ﬁd±r2
+ = 
+ﬁd±r
+;
+
+80 
+ﬁd±r
+ = 
+±r
+;
+
+82 i‡(
+ﬁd±r2
+) {
+
+83 
+	`k‰ì
+(
+ﬁd±r2
+);
+
+85 i‡(
+ﬁd±r
+) {
+
+86 
+	`k‰ì
+(
+ﬁd±r
+);
+
+88 i‡(
+£m
+) {
+
+89 
+	`V
+(
+£m
+);
+
+91 
+	}
+}
+
+94 
+	$mÆlo˘e°
+(
+«rgs
+, **
+¨gs
+)
+
+96 ()
+«rgs
+;
+
+97 ()
+¨gs
+;
+
+99 
+	`k¥ötf
+("Starting kmallocÅest...\n");
+
+100 
+	`mÆlo˘hªad
+(
+NULL
+, 0);
+
+101 
+	`k¥ötf
+("kmallocÅest done\n");
+
+104 
+	}
+}
+
+107 
+	$mÆloc°ªss
+(
+«rgs
+, **
+¨gs
+)
+
+109 
+£m≠h‹e
+ *
+£m
+;
+
+110 
+i
+, 
+ªsu…
+;
+
+112 ()
+«rgs
+;
+
+113 ()
+¨gs
+;
+
+115 
+£m
+ = 
+	`£m_¸óã
+("mallocstress", 0);
+
+116 i‡(
+£m
+ =
+NULL
+) {
+
+117 
+	`∑nic
+("mallocstress: sem_create failed\n");
+
+120 
+	`k¥ötf
+("Starting kmalloc stressÅest...\n");
+
+122 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+123 
+ªsu…
+ = 
+	`thªad_f‹k
+("mÆloc°ªss", 
+NULL
+,
+
+124 
+mÆlo˘hªad
+, 
+£m
+, 
+i
+);
+
+125 i‡(
+ªsu…
+) {
+
+126 
+	`∑nic
+("mallocstress:Åhread_fork failed: %s\n",
+
+127 
+	`°ªº‹
+(
+ªsu…
+));
+
+131 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+132 
+	`P
+(
+£m
+);
+
+135 
+	`£m_de°roy
+(
+£m
+);
+
+136 
+	`k¥ötf
+("kmalloc stressÅest done\n");
+
+139 
+	}
+}
+
+	@nettest.c
+
+33 
+	~<ty≥s.h
+>
+
+34 
+	~<lib.h
+>
+
+35 
+	~<ã°.h
+>
+
+38 
+	$√âe°
+(
+«rgs
+, **
+¨gs
+)
+
+40 ()
+«rgs
+;
+
+41 ()
+¨gs
+;
+
+42 
+	`k¥ötf
+("NoÇetwork supportávailable\n");
+
+44 
+	}
+}
+
+	@synchtest.c
+
+34 
+	~<ty≥s.h
+>
+
+35 
+	~<lib.h
+>
+
+36 
+	~<˛ock.h
+>
+
+37 
+	~<thªad.h
+>
+
+38 
+	~<synch.h
+>
+
+39 
+	~<ã°.h
+>
+
+41 
+	#NSEMLOOPS
+ 63
+
+	)
+
+42 
+	#NLOCKLOOPS
+ 120
+
+	)
+
+43 
+	#NCVLOOPS
+ 5
+
+	)
+
+44 
+	#NTHREADS
+ 32
+
+	)
+
+46 vﬁ©ûê
+	gã°vÆ1
+;
+
+47 vﬁ©ûê
+	gã°vÆ2
+;
+
+48 vﬁ©ûê
+	gã°vÆ3
+;
+
+49 #ifde‡
+UW
+
+
+50 
+£m≠h‹e
+ *
+	gã°£m
+ = 0;
+
+51 
+lock
+ *
+	gã°lock
+ = 0;
+
+52 
+cv
+ *
+	gã°cv
+ = 0;
+
+53 
+£m≠h‹e
+ *
+	gd⁄e£m
+ = 0;
+
+55 
+£m≠h‹e
+ *
+	gã°£m
+;
+
+56 
+lock
+ *
+	gã°lock
+;
+
+57 
+cv
+ *
+	gã°cv
+;
+
+58 
+£m≠h‹e
+ *
+	gd⁄e£m
+;
+
+61 #ifde‡
+UW
+
+
+64 
+	$˛ónôems
+()
+
+66 
+	`k¥ötf
+("cleanitems: Destroying sems,Üocks,ánd cvs\n");
+
+67 
+	`£m_de°roy
+(
+ã°£m
+);
+
+68 
+	`lock_de°roy
+(
+ã°lock
+);
+
+69 
+	`cv_de°roy
+(
+ã°cv
+);
+
+70 
+	`£m_de°roy
+(
+d⁄e£m
+);
+
+71 
+	}
+}
+
+76 
+	$öôôems
+()
+
+78 i‡(
+ã°£m
+==
+NULL
+) {
+
+79 
+ã°£m
+ = 
+	`£m_¸óã
+("testsem", 2);
+
+80 i‡(
+ã°£m
+ =
+NULL
+) {
+
+81 
+	`∑nic
+("synchtest: sem_create failed\n");
+
+84 i‡(
+ã°lock
+==
+NULL
+) {
+
+85 
+ã°lock
+ = 
+	`lock_¸óã
+("testlock");
+
+86 i‡(
+ã°lock
+ =
+NULL
+) {
+
+87 
+	`∑nic
+("synchtest:Üock_create failed\n");
+
+90 i‡(
+ã°cv
+==
+NULL
+) {
+
+91 #ifde‡
+UW
+
+
+92 
+ã°cv
+ = 
+	`cv_¸óã
+("testcv");
+
+94 
+ã°cv
+ = 
+	`cv_¸óã
+("testlock");
+
+96 i‡(
+ã°cv
+ =
+NULL
+) {
+
+97 
+	`∑nic
+("synchtest: cv_create failed\n");
+
+100 i‡(
+d⁄e£m
+==
+NULL
+) {
+
+101 
+d⁄e£m
+ = 
+	`£m_¸óã
+("donesem", 0);
+
+102 i‡(
+d⁄e£m
+ =
+NULL
+) {
+
+103 
+	`∑nic
+("synchtest: sem_create failed\n");
+
+106 
+	}
+}
+
+110 
+	$£mã°thªad
+(*
+junk
+, 
+num
+)
+
+112 
+i
+;
+
+113 ()
+junk
+;
+
+118 
+	`P
+(
+ã°£m
+);
+
+119 
+	`k¥ötf
+("Thªad %2lu: ", 
+num
+);
+
+120 
+i
+=0; i<
+NSEMLOOPS
+; i++) {
+
+121 
+	`k¥ötf
+("%c", ()
+num
++64);
+
+123 
+	`k¥ötf
+("\n");
+
+124 
+	`V
+(
+d⁄e£m
+);
+
+125 #ifde‡
+UW
+
+
+126 
+	`thªad_exô
+();
+
+128 
+	}
+}
+
+131 
+	$£mã°
+(
+«rgs
+, **
+¨gs
+)
+
+133 
+i
+, 
+ªsu…
+;
+
+135 ()
+«rgs
+;
+
+136 ()
+¨gs
+;
+
+138 
+	`öôôems
+();
+
+139 
+	`k¥ötf
+("Starting semaphoreÅest...\n");
+
+140 
+	`k¥ötf
+("IfÅhis hangs, it's broken: ");
+
+141 
+	`P
+(
+ã°£m
+);
+
+142 
+	`P
+(
+ã°£m
+);
+
+143 
+	`k¥ötf
+("ok\n");
+
+145 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+146 
+ªsu…
+ = 
+	`thªad_f‹k
+("£mã°", 
+NULL
+, 
+£mã°thªad
+, NULL, 
+i
+);
+
+147 i‡(
+ªsu…
+) {
+
+148 
+	`∑nic
+("semtest:Åhread_fork failed: %s\n",
+
+149 
+	`°ªº‹
+(
+ªsu…
+));
+
+153 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+154 
+	`V
+(
+ã°£m
+);
+
+155 
+	`P
+(
+d⁄e£m
+);
+
+159 
+	`V
+(
+ã°£m
+);
+
+160 
+	`V
+(
+ã°£m
+);
+
+162 #ifde‡
+UW
+
+
+163 
+	`˛ónôems
+();
+
+165 
+	`k¥ötf
+("SemaphoreÅest done.\n");
+
+167 
+	}
+}
+
+171 
+	$Áû
+(
+num
+, c⁄° *
+msg
+)
+
+173 
+	`k¥ötf
+("thªad %lu: Mism©ch o¿%s\n", 
+num
+, 
+msg
+);
+
+174 
+	`k¥ötf
+("Test failed\n");
+
+176 
+	`lock_ªÀa£
+(
+ã°lock
+);
+
+178 
+	`V
+(
+d⁄e£m
+);
+
+179 
+	`thªad_exô
+();
+
+180 
+	}
+}
+
+184 
+	$lockã°thªad
+(*
+junk
+, 
+num
+)
+
+186 
+i
+;
+
+187 ()
+junk
+;
+
+189 
+i
+=0; i<
+NLOCKLOOPS
+; i++) {
+
+190 
+	`lock_acquúe
+(
+ã°lock
+);
+
+191 
+ã°vÆ1
+ = 
+num
+;
+
+192 
+ã°vÆ2
+ = 
+num
+*num;
+
+193 
+ã°vÆ3
+ = 
+num
+%3;
+
+195 i‡(
+ã°vÆ2
+ !
+ã°vÆ1
+*testval1) {
+
+196 
+	`Áû
+(
+num
+, "testval2/testval1");
+
+199 i‡(
+ã°vÆ2
+%3 !(
+ã°vÆ3
+*testval3)%3) {
+
+200 
+	`Áû
+(
+num
+, "testval2/testval3");
+
+203 i‡(
+ã°vÆ3
+ !
+ã°vÆ1
+%3) {
+
+204 
+	`Áû
+(
+num
+, "testval3/testval1");
+
+207 i‡(
+ã°vÆ1
+ !
+num
+) {
+
+208 
+	`Áû
+(
+num
+, "testval1/num");
+
+211 i‡(
+ã°vÆ2
+ !
+num
+*num) {
+
+212 
+	`Áû
+(
+num
+, "testval2/num");
+
+215 i‡(
+ã°vÆ3
+ !
+num
+%3) {
+
+216 
+	`Áû
+(
+num
+, "testval3/num");
+
+219 
+	`lock_ªÀa£
+(
+ã°lock
+);
+
+221 
+	`V
+(
+d⁄e£m
+);
+
+222 #ifde‡
+UW
+
+
+223 
+	`thªad_exô
+();
+
+225 
+	}
+}
+
+229 
+	$lockã°
+(
+«rgs
+, **
+¨gs
+)
+
+231 
+i
+, 
+ªsu…
+;
+
+233 ()
+«rgs
+;
+
+234 ()
+¨gs
+;
+
+236 
+	`öôôems
+();
+
+237 
+	`k¥ötf
+("StartingÜockÅest...\n");
+
+239 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+240 
+ªsu…
+ = 
+	`thªad_f‹k
+("synchã°", 
+NULL
+, 
+lockã°thªad
+,
+
+241 
+NULL
+, 
+i
+);
+
+242 i‡(
+ªsu…
+) {
+
+243 
+	`∑nic
+("locktest:Åhread_fork failed: %s\n",
+
+244 
+	`°ªº‹
+(
+ªsu…
+));
+
+247 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+248 
+	`P
+(
+d⁄e£m
+);
+
+251 #ifde‡
+UW
+
+
+252 
+	`˛ónôems
+();
+
+254 
+	`k¥ötf
+("LockÅest done.\n");
+
+257 
+	}
+}
+
+261 
+	$cvã°thªad
+(*
+junk
+, 
+num
+)
+
+263 
+i
+;
+
+264 vﬁ©ûê
+j
+;
+
+265 
+time_t
+ 
+£cs1
+, 
+£cs2
+;
+
+266 
+uöt32_t
+ 
+n£cs1
+, 
+n£cs2
+;
+
+268 ()
+junk
+;
+
+270 
+i
+=0; i<
+NCVLOOPS
+; i++) {
+
+271 
+	`lock_acquúe
+(
+ã°lock
+);
+
+272 
+ã°vÆ1
+ !
+num
+) {
+
+273 
+	`gëtime
+(&
+£cs1
+, &
+n£cs1
+);
+
+274 
+	`cv_waô
+(
+ã°cv
+, 
+ã°lock
+);
+
+275 
+	`gëtime
+(&
+£cs2
+, &
+n£cs2
+);
+
+277 i‡(
+n£cs2
+ < 
+n£cs1
+) {
+
+278 
+£cs2
+--;
+
+279 
+n£cs2
+ += 1000000000;
+
+282 
+n£cs2
+ -
+n£cs1
+;
+
+283 
+£cs2
+ -
+£cs1
+;
+
+286 i‡(
+£cs2
+==0 && 
+n£cs2
+ < 40*2000) {
+
+287 
+	`k¥ötf
+("cv_waôÅook o∆y %uÇs\n", 
+n£cs2
+);
+
+288 
+	`k¥ötf
+("That'sÅoo fast... you must be "
+
+290 
+	`V
+(
+d⁄e£m
+);
+
+291 
+	`thªad_exô
+();
+
+295 
+	`k¥ötf
+("Thªad %lu\n", 
+num
+);
+
+296 
+ã°vÆ1
+ = (ã°vÆ1 + 
+NTHREADS
+ - 1)%NTHREADS;
+
+302 
+j
+=0; j<3000; j++);
+
+304 
+	`cv_brﬂdˇ°
+(
+ã°cv
+, 
+ã°lock
+);
+
+305 
+	`lock_ªÀa£
+(
+ã°lock
+);
+
+307 
+	`V
+(
+d⁄e£m
+);
+
+308 #ifde‡
+UW
+
+
+309 
+	`thªad_exô
+();
+
+311 
+	}
+}
+
+314 
+	$cvã°
+(
+«rgs
+, **
+¨gs
+)
+
+317 
+i
+, 
+ªsu…
+;
+
+319 ()
+«rgs
+;
+
+320 ()
+¨gs
+;
+
+322 
+	`öôôems
+();
+
+323 
+	`k¥ötf
+("Starting CVÅest...\n");
+
+324 
+	`k¥ötf
+("Threads shouldÖrint out inÑeverse order.\n");
+
+326 
+ã°vÆ1
+ = 
+NTHREADS
+-1;
+
+328 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+329 
+ªsu…
+ = 
+	`thªad_f‹k
+("synchã°", 
+NULL
+, 
+cvã°thªad
+, NULL, 
+i
+);
+
+330 i‡(
+ªsu…
+) {
+
+331 
+	`∑nic
+("cvtest:Åhread_fork failed: %s\n",
+
+332 
+	`°ªº‹
+(
+ªsu…
+));
+
+335 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+336 
+	`P
+(
+d⁄e£m
+);
+
+339 #ifde‡
+UW
+
+
+340 
+	`˛ónôems
+();
+
+342 
+	`k¥ötf
+("CVÅest done\n");
+
+345 
+	}
+}
+
+	@threadtest.c
+
+33 
+	~<ty≥s.h
+>
+
+34 
+	~<lib.h
+>
+
+35 
+	~<thªad.h
+>
+
+36 
+	~<synch.h
+>
+
+37 
+	~<ã°.h
+>
+
+39 
+	#NTHREADS
+ 8
+
+	)
+
+41 
+£m≠h‹e
+ *
+	gt£m
+ = 
+NULL
+;
+
+45 
+	$öô_£m
+()
+
+47 i‡(
+t£m
+==
+NULL
+) {
+
+48 
+t£m
+ = 
+	`£m_¸óã
+("tsem", 0);
+
+49 i‡(
+t£m
+ =
+NULL
+) {
+
+50 
+	`∑nic
+("threadtest: sem_create failed\n");
+
+53 
+	}
+}
+
+57 
+	$loudthªad
+(*
+junk
+, 
+num
+)
+
+59 
+ch
+ = '0' + 
+num
+;
+
+60 
+i
+;
+
+62 ()
+junk
+;
+
+64 
+i
+=0; i<120; i++) {
+
+65 
+	`putch
+(
+ch
+);
+
+67 
+	`V
+(
+t£m
+);
+
+68 
+	}
+}
+
+82 
+	$quõâhªad
+(*
+junk
+, 
+num
+)
+
+84 
+ch
+ = '0' + 
+num
+;
+
+85 vﬁ©ûê
+i
+;
+
+87 ()
+junk
+;
+
+89 
+	`putch
+(
+ch
+);
+
+90 
+i
+=0; i<200000; i++);
+
+91 
+	`putch
+(
+ch
+);
+
+93 
+	`V
+(
+t£m
+);
+
+94 
+	}
+}
+
+98 
+	$ru¡hªads
+(
+dﬁoud
+)
+
+100 
+«me
+[16];
+
+101 
+i
+, 
+ªsu…
+;
+
+103 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+104 
+	`¢¥ötf
+(
+«me
+, “ame), "thªadã°%d", 
+i
+);
+
+105 
+ªsu…
+ = 
+	`thªad_f‹k
+(
+«me
+, 
+NULL
+,
+
+106 
+dﬁoud
+ ? 
+loudthªad
+ : 
+quõâhªad
+,
+
+107 
+NULL
+, 
+i
+);
+
+108 i‡(
+ªsu…
+) {
+
+109 
+	`∑nic
+("threadtest:Åhread_fork failed %s)\n",
+
+110 
+	`°ªº‹
+(
+ªsu…
+));
+
+114 
+i
+=0; i<
+NTHREADS
+; i++) {
+
+115 
+	`P
+(
+t£m
+);
+
+117 
+	}
+}
+
+121 
+	$thªadã°
+(
+«rgs
+, **
+¨gs
+)
+
+123 ()
+«rgs
+;
+
+124 ()
+¨gs
+;
+
+126 
+	`öô_£m
+();
+
+127 
+	`k¥ötf
+("StartingÅhreadÅest...\n");
+
+128 
+	`ru¡hªads
+(1);
+
+129 
+	`k¥ötf
+("\nThreadÅest done.\n");
+
+132 
+	}
+}
+
+135 
+	$thªadã°2
+(
+«rgs
+, **
+¨gs
+)
+
+137 ()
+«rgs
+;
+
+138 ()
+¨gs
+;
+
+140 
+	`öô_£m
+();
+
+141 
+	`k¥ötf
+("StartingÅhreadÅest 2...\n");
+
+142 
+	`ru¡hªads
+(0);
+
+143 
+	`k¥ötf
+("\nThreadÅest 2 done.\n");
+
+146 
+	}
+}
+
+	@tt3.c
+
+33 
+	~<ty≥s.h
+>
+
+34 
+	~<lib.h
+>
+
+35 
+	~<wch™.h
+>
+
+36 
+	~<thªad.h
+>
+
+37 
+	~<synch.h
+>
+
+38 
+	~<ã°.h
+>
+
+40 
+	~"›t-synch¥obs.h
+"
+
+44 #i‡
+OPT_SYNCHPROBS
+
+
+45 
+	#DIM
+ 10
+
+	)
+
+47 
+	#DIM
+ 70
+
+	)
+
+51 
+	#SLEEPALOT_PRINTS
+ 20
+
+	)
+
+52 
+	#SLEEPALOT_ITERS
+ 4
+
+	)
+
+54 
+	#WAKER_WAKES
+ 100
+
+	)
+
+56 
+	#COMPUTE_ITERS
+ 10
+
+	)
+
+58 
+	#NWAITCHANS
+ 12
+
+	)
+
+59 
+wch™
+ *
+	gwaôch™s
+[
+NWAITCHANS
+];
+
+61 vﬁ©ûê
+	gwakîd⁄e
+;
+
+62 
+£m≠h‹e
+ *
+	gwakî£m
+;
+
+63 
+£m≠h‹e
+ *
+	gd⁄e£m
+;
+
+67 
+	$£tup
+()
+
+69 
+tmp
+[16];
+
+70 
+i
+;
+
+72 i‡(
+wakî£m
+ =
+NULL
+) {
+
+73 
+wakî£m
+ = 
+	`£m_¸óã
+("wakersem", 1);
+
+74 
+d⁄e£m
+ = 
+	`£m_¸óã
+("donesem", 0);
+
+75 
+i
+=0; i<
+NWAITCHANS
+; i++) {
+
+76 
+	`¢¥ötf
+(
+tmp
+, —mp), "wc%d", 
+i
+);
+
+77 
+waôch™s
+[
+i
+] = 
+	`wch™_¸óã
+(
+	`k°rdup
+(
+tmp
+));
+
+80 
+wakîd⁄e
+ = 0;
+
+81 
+	}
+}
+
+85 
+	$¶ì∑lŸ_thªad
+(*
+junk
+, 
+num
+)
+
+87 
+i
+, 
+j
+;
+
+89 ()
+junk
+;
+
+91 
+i
+=0; i<
+SLEEPALOT_PRINTS
+; i++) {
+
+92 
+j
+=0; j<
+SLEEPALOT_ITERS
+; j++) {
+
+93 
+wch™
+ *
+w
+;
+
+95 
+w
+ = 
+waôch™s
+[
+	`øndom
+()%
+NWAITCHANS
+];
+
+96 
+	`wch™_lock
+(
+w
+);
+
+97 
+	`wch™_¶ìp
+(
+w
+);
+
+99 
+	`k¥ötf
+("[%lu]", 
+num
+);
+
+101 
+	`V
+(
+d⁄e£m
+);
+
+102 
+	}
+}
+
+106 
+	$wakî_thªad
+(*
+junk1
+, 
+junk2
+)
+
+108 
+i
+, 
+d⁄e
+;
+
+110 ()
+junk1
+;
+
+111 ()
+junk2
+;
+
+114 
+	`P
+(
+wakî£m
+);
+
+115 
+d⁄e
+ = 
+wakîd⁄e
+;
+
+116 
+	`V
+(
+wakî£m
+);
+
+117 i‡(
+d⁄e
+) {
+
+121 
+i
+=0; i<
+WAKER_WAKES
+; i++) {
+
+122 
+wch™
+ *
+w
+;
+
+124 
+w
+ = 
+waôch™s
+[
+	`øndom
+()%
+NWAITCHANS
+];
+
+125 
+	`wch™_wakóŒ
+(
+w
+);
+
+127 
+	`thªad_yõld
+();
+
+130 
+	`V
+(
+d⁄e£m
+);
+
+131 
+	}
+}
+
+135 
+	$make_¶ì∑lŸs
+(
+howm™y
+)
+
+137 
+«me
+[16];
+
+138 
+i
+, 
+ªsu…
+;
+
+140 
+i
+=0; i<
+howm™y
+; i++) {
+
+141 
+	`¢¥ötf
+(
+«me
+, “ame), "¶ì∑lŸ%d", 
+i
+);
+
+142 
+ªsu…
+ = 
+	`thªad_f‹k
+(
+«me
+, 
+NULL
+, 
+¶ì∑lŸ_thªad
+, NULL, 
+i
+);
+
+143 i‡(
+ªsu…
+) {
+
+144 
+	`∑nic
+("thªad_f‹k faûed: %s\n", 
+	`°ªº‹
+(
+ªsu…
+));
+
+147 
+ªsu…
+ = 
+	`thªad_f‹k
+("wakî", 
+NULL
+, 
+wakî_thªad
+, NULL, 0);
+
+148 i‡(
+ªsu…
+) {
+
+149 
+	`∑nic
+("thªad_f‹k faûed: %s\n", 
+	`°ªº‹
+(
+ªsu…
+));
+
+151 
+	}
+}
+
+155 
+	$compuã_thªad
+(*
+junk1
+, 
+num
+)
+
+157 
+	sm©rix
+ {
+
+158 
+m
+[
+DIM
+][DIM];
+
+160 
+m©rix
+ *
+m1
+, *
+m2
+, *
+m3
+;
+
+161 
+tŸ
+;
+
+162 
+i
+, 
+j
+, 
+k
+, 
+m
+;
+
+163 
+uöt32_t
+ 
+ønd
+;
+
+165 ()
+junk1
+;
+
+167 
+m1
+ = 
+	`kmÆloc
+((
+m©rix
+));
+
+168 
+	`KASSERT
+(
+m1
+ !
+NULL
+);
+
+169 
+m2
+ = 
+	`kmÆloc
+((
+m©rix
+));
+
+170 
+	`KASSERT
+(
+m2
+ !
+NULL
+);
+
+171 
+m3
+ = 
+	`kmÆloc
+((
+m©rix
+));
+
+172 
+	`KASSERT
+(
+m3
+ !
+NULL
+);
+
+174 
+m
+=0; m<
+COMPUTE_ITERS
+; m++) {
+
+176 
+i
+=0; i<
+DIM
+; i++) {
+
+177 
+j
+=0; j<
+DIM
+; j++) {
+
+178 
+ønd
+ = 
+	`øndom
+();
+
+179 
+m1
+->
+m
+[
+i
+][
+j
+] = 
+ønd
+ >> 16;
+
+180 
+m2
+->
+m
+[
+i
+][
+j
+] = 
+ønd
+ & 0xffff;
+
+184 
+i
+=0; i<
+DIM
+; i++) {
+
+185 
+j
+=0; j<
+DIM
+; j++) {
+
+186 
+tŸ
+ = 0;
+
+187 
+k
+=0; k<
+DIM
+; k++) {
+
+188 
+tŸ
+ +
+m1
+->
+m
+[
+i
+][
+k
+] * 
+m2
+->m[k][
+j
+];
+
+190 
+m3
+->
+m
+[
+i
+][
+j
+] = 
+tŸ
+;
+
+194 
+tŸ
+ = 0;
+
+195 
+i
+=0; i<
+DIM
+; i++) {
+
+196 
+tŸ
+ +
+m3
+->
+m
+[
+i
+][i];
+
+199 
+	`k¥ötf
+("{%lu: %u}", 
+num
+, (Ë
+tŸ
+);
+
+200 
+	`thªad_yõld
+();
+
+203 
+	`k‰ì
+(
+m1
+);
+
+204 
+	`k‰ì
+(
+m2
+);
+
+205 
+	`k‰ì
+(
+m3
+);
+
+207 
+	`V
+(
+d⁄e£m
+);
+
+208 
+	}
+}
+
+212 
+	$make_compuãs
+(
+howm™y
+)
+
+214 
+«me
+[16];
+
+215 
+i
+, 
+ªsu…
+;
+
+217 
+i
+=0; i<
+howm™y
+; i++) {
+
+218 
+	`¢¥ötf
+(
+«me
+, “ame), "compuã%d", 
+i
+);
+
+219 
+ªsu…
+ = 
+	`thªad_f‹k
+(
+«me
+, 
+NULL
+, 
+compuã_thªad
+, NULL, 
+i
+);
+
+220 i‡(
+ªsu…
+) {
+
+221 
+	`∑nic
+("thªad_f‹k faûed: %s\n", 
+	`°ªº‹
+(
+ªsu…
+));
+
+224 
+	}
+}
+
+228 
+	$föish
+(
+howm™ytŸÆ
+)
+
+230 
+i
+;
+
+231 
+i
+=0; i<
+howm™ytŸÆ
+; i++) {
+
+232 
+	`P
+(
+d⁄e£m
+);
+
+234 
+	`P
+(
+wakî£m
+);
+
+235 
+wakîd⁄e
+ = 1;
+
+236 
+	`V
+(
+wakî£m
+);
+
+237 
+	`P
+(
+d⁄e£m
+);
+
+238 
+	}
+}
+
+242 
+	$ru¡e°3
+(
+n¶ìps
+, 
+ncompuãs
+)
+
+244 
+	`£tup
+();
+
+245 
+	`k¥ötf
+("StartingÅhreadÅest 3 (%d [sleepalots], %d {computes}, "
+
+247 
+n¶ìps
+, 
+ncompuãs
+);
+
+248 
+	`make_¶ì∑lŸs
+(
+n¶ìps
+);
+
+249 
+	`make_compuãs
+(
+ncompuãs
+);
+
+250 
+	`föish
+(
+n¶ìps
++
+ncompuãs
+);
+
+251 
+	`k¥ötf
+("\nThreadÅest 3 done\n");
+
+252 
+	}
+}
+
+255 
+	$thªadã°3
+(
+«rgs
+, **
+¨gs
+)
+
+257 i‡(
+«rgs
+==1) {
+
+258 
+	`ru¡e°3
+(5, 2);
+
+260 i‡(
+«rgs
+==3) {
+
+261 
+	`ru¡e°3
+(
+	`©oi
+(
+¨gs
+[1]),átoi(args[2]));
+
+264 
+	`k¥ötf
+("Usage:Åt3 [sleepthreads computethreads]\n");
+
+268 
+	}
+}
+
+	@uw-tests.c
+
+7 
+	~<ty≥s.h
+>
+
+8 
+	~<synch.h
+>
+
+9 
+	~<thªad.h
+>
+
+10 
+	~<ã°.h
+>
+
+12 
+	#NAME_LEN
+ (20)
+
+	)
+
+14 
+lock
+ *
+	gã°lock
+;
+
+15 
+£m≠h‹e
+ *
+	gd⁄e£m
+;
+
+17 
+	#NTESTLOOPS
+ (5000)
+
+	)
+
+18 
+	#NTESTTHREADS
+ (8)
+
+	)
+
+19 
+	#START_VALUE
+ (0)
+
+	)
+
+20 vﬁ©ûê
+	gã°_vÆue
+ = (
+START_VALUE
+);
+
+21 
+	gu£_locks
+ = 1;
+
+34 
+	$˛ónôems
+()
+
+36 
+	`k¥ötf
+("cleanitems: Destroying semsándÜocks\n");
+
+37 
+	`lock_de°roy
+(
+ã°lock
+);
+
+38 
+	`£m_de°roy
+(
+d⁄e£m
+);
+
+39 
+	}
+}
+
+43 
+	$öôôems
+()
+
+45 i‡(
+ã°lock
+==
+NULL
+) {
+
+46 
+ã°lock
+ = 
+	`lock_¸óã
+("testlock");
+
+47 i‡(
+ã°lock
+ =
+NULL
+) {
+
+48 
+	`∑nic
+("synchtest:Üock_create failed\n");
+
+52 i‡(
+d⁄e£m
+==
+NULL
+) {
+
+53 
+d⁄e£m
+ = 
+	`£m_¸óã
+("donesem", 0);
+
+54 i‡(
+d⁄e£m
+ =
+NULL
+) {
+
+55 
+	`∑nic
+("synchtest: sem_create failed\n");
+
+58 
+	}
+}
+
+63 
+	$add_thªad
+(*
+junk
+, 
+num
+)
+
+65 
+i
+;
+
+66 (Ë
+num
+;
+
+67 (Ë
+junk
+;
+
+69 
+i
+=0; i<
+NTESTLOOPS
+; i++) {
+
+70 i‡(
+u£_locks
+) {
+
+71 
+	`lock_acquúe
+(
+ã°lock
+);
+
+78 
+ã°_vÆue
+ =Åest_value + 1;
+
+79 
+ã°_vÆue
+ =Åest_value + 1;
+
+80 
+ã°_vÆue
+ =Åest_value + 1;
+
+81 
+ã°_vÆue
+ =Åest_value + 1;
+
+82 
+ã°_vÆue
+ =Åest_value + 1;
+
+84 i‡(
+u£_locks
+) {
+
+85 
+	`lock_ªÀa£
+(
+ã°lock
+);
+
+89 
+	`V
+(
+d⁄e£m
+);
+
+90 
+	`thªad_exô
+();
+
+91 
+	}
+}
+
+96 
+	$sub_thªad
+(*
+junk
+, 
+num
+)
+
+98 
+i
+;
+
+99 ()
+num
+;
+
+100 ()
+junk
+;
+
+102 
+i
+=0; i<
+NTESTLOOPS
+; i++) {
+
+103 i‡(
+u£_locks
+) {
+
+104 
+	`lock_acquúe
+(
+ã°lock
+);
+
+111 
+ã°_vÆue
+ =Åest_value - 1;
+
+112 
+ã°_vÆue
+ =Åest_value - 1;
+
+113 
+ã°_vÆue
+ =Åest_value - 1;
+
+114 
+ã°_vÆue
+ =Åest_value - 1;
+
+115 
+ã°_vÆue
+ =Åest_value - 1;
+
+117 i‡(
+u£_locks
+) {
+
+118 
+	`lock_ªÀa£
+(
+ã°lock
+);
+
+122 
+	`V
+(
+d⁄e£m
+);
+
+123 
+	`thªad_exô
+();
+
+124 
+	}
+}
+
+127 
+	$uwlockã°1
+(
+«rgs
+, **
+¨gs
+)
+
+129 
+i
+, 
+ªsu…
+;
+
+130 
+«me
+[
+NAME_LEN
+];
+
+132 ()
+«rgs
+;
+
+133 ()
+¨gs
+;
+
+135 
+	`öôôems
+();
+
+136 
+	`k¥ötf
+("Starting uwlocktest1...\n");
+
+138 
+i
+=0; i<
+NTESTTHREADS
+; i++) {
+
+139 
+	`¢¥ötf
+(
+«me
+, 
+NAME_LEN
+, "add_thªad %d", 
+i
+);
+
+140 
+ªsu…
+ = 
+	`thªad_f‹k
+(
+«me
+, 
+NULL
+, 
+add_thªad
+, NULL, 
+i
+);
+
+141 i‡(
+ªsu…
+) {
+
+142 
+	`∑nic
+("uwlocktest1:Åhread_fork failed: %s\n",
+
+143 
+	`°ªº‹
+(
+ªsu…
+));
+
+147 
+i
+=0; i<
+NTESTTHREADS
+; i++) {
+
+148 
+	`¢¥ötf
+(
+«me
+, 
+NAME_LEN
+, "sub_thªad %d", 
+i
+);
+
+149 
+ªsu…
+ = 
+	`thªad_f‹k
+(
+«me
+, 
+NULL
+, 
+sub_thªad
+, NULL, 
+i
+);
+
+150 i‡(
+ªsu…
+) {
+
+151 
+	`∑nic
+("uwlocktest1:Åhread_fork failed: %s\n",
+
+152 
+	`°ªº‹
+(
+ªsu…
+));
+
+156 
+i
+=0; i<
+NTESTTHREADS
+*2; i++) {
+
+157 
+	`P
+(
+d⁄e£m
+);
+
+160 
+	`k¥ötf
+("vÆuêo‡ã°_vÆuê%d should bê%d\n", 
+ã°_vÆue
+, 
+START_VALUE
+);
+
+161 i‡(
+ã°_vÆue
+ =
+START_VALUE
+) {
+
+162 
+	`k¥ötf
+("TEST SUCCEEDED\n");
+
+164 
+	`k¥ötf
+("TEST FAILED\n");
+
+166 
+	`KASSERT
+(
+ã°_vÆue
+ =
+START_VALUE
+);
+
+168 
+	`˛ónôems
+();
+
+169 
+	`k¥ötf
+("uwlocktest1 done.\n");
+
+172 
+	}
+}
+
+	@
+1
+.
+1
+/usr/include
+9
+99
+arraytest.c
+bitmaptest.c
+fstest.c
+malloctest.c
+nettest.c
+synchtest.c
+threadtest.c
+tt3.c
+uw-tests.c
