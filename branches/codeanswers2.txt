@@ -1,6 +1,6 @@
 1.
 
-3.We call vfs_close so we can free all resources related to the file that was opened by vfs_open. Otherwise, resources used by the file containing user program will never be freed after going to back to the user mode
+3.We call vfs_close so we can free all resources related to the file that was opened by vfs_open. Otherwise, resources used by the file containing user program will never be freed after going to back to the user mode. Since the same file can be opened multiple times with different file locations, it is important to close file as soon as the work is done. 
 
 4.
 
