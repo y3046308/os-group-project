@@ -4,7 +4,7 @@
 
 4.
 
-5.
+5.userptr_t is a pointer that points to address that is currently residing in user space.
 
 6.
 
