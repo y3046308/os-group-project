@@ -21,22 +21,24 @@ struct fd{       // file descriptor indicating each individual file
 
 struct fd* table;  // collection of file descriptor
 
-fd* create_fd(int flag, char *name, vnode* file){
+fd* create_fd(){
   fd* file_descriptor;
   file_descriptor = kmalloc(sizeof(fd));
-  file_descriptor->file_flag = flag;
-  file_descriptor->filename = name;
-  file_descriptor->file = file;
+  file_descriptor->file_flag = 0;
+  file_descriptor->filename = "";
+  file_descriptor->file = NULL;
   return file_descriptor
 }
 
-/*
 int sys_open(const char* filename, int flags) {
-	(void)filename;
-	(void)flags;
+	//(void)filename;
+	//(void)flags;
+  fd* tmp = create_fd();
+  //int vfs_open(char *path, int openflags, mode_t mode, struct vnode **ret);
+  //int cur = vfs_open(
 	return 1;
 }
-
+/*
 int sys_close(int fd){
   vfs_close(...);  
 }*/
