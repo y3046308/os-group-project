@@ -409,6 +409,7 @@ defoption netfs
 # Note that "emufs" is completely contained in the "emu" device.
 #
 
+file	syscall/filesystem.c
 
 ########################################
 #                                      #
