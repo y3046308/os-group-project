@@ -31,6 +31,7 @@ int sys_read(int fd, void *buf, size_t buflen) {
 
 	return 1;
 }
+
 int sys_write(int fd, const void *buf, size_t nbytes) {
 
 	(void)fd;
@@ -68,4 +69,8 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 	//kprintf("asd");
 
 	return result;
+}
+
+void sys__exit(int exitcode) {
+	(void)exitcode;
 }
