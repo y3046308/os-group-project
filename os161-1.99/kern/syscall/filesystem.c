@@ -19,7 +19,16 @@ struct fd{       // file descriptor indicating each individual file
 	struct vnode* file;
 };
 
-struct fd** table;  // collection of file descriptor
+struct fd* table;  // collection of file descriptor
+
+fd* create_fd(int flag, char *name, vnode* file){
+  fd* file_descriptor;
+  file_descriptor = kmalloc(sizeof(fd));
+  file_descriptor->file_flag = flag;
+  file_descriptor->filename = name;
+  file_descriptor->file = file;
+  return file_descriptor
+}
 
 /*
 int sys_open(const char* filename, int flags) {
