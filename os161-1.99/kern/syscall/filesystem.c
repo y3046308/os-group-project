@@ -1,4 +1,3 @@
-
 #include <types.h>
 #include <kern/errno.h>
 #include <lib.h>
@@ -11,6 +10,7 @@
 #include <vnode.h>
 #include <current.h>
 #include <kern/fcntl.h>
+#include "opt-A2.h"
 
 /*
 int sys_open(const char* filename, int flags) {
@@ -21,6 +21,27 @@ int sys_open(const char* filename, int flags) {
 
 int sys_close(int fd){
   vfs_close(...);  
+}*/
+
+
+#if OPT_A2
+struct fd{
+	int file_flag;
+	char *filename;
+	struct vnode* file;
+};
+
+
+
+/*int sys_open(char *filename, int file_flag){
+	KASSERT(filename != NULL);
+	KASSERT(file_flag == O_RDONLY || file_flag == O_RDWR || file_flag == O_WRONLY);
+	struct fd f;
+	f.file_flag = file_flag;
+	f.filename = filename;
+	vfs_open(filename, file_flag
+	
+	
 }*/
 
 int sys_read(int fd, void *buf, size_t buflen) {
