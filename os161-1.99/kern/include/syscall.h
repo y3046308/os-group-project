@@ -30,6 +30,8 @@
 #ifndef _SYSCALL_H_
 #define _SYSCALL_H_
 
+ #include "opt-A2.h";
+
 
 struct trapframe; /* from <machine/trapframe.h> */
 
@@ -57,7 +59,11 @@ void enter_new_process(int argc, userptr_t argv, vaddr_t stackptr,
 
 int sys_reboot(int code);
 int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
+
+#if OPT_A2
 int sys_read(int fd, void *buf, size_t buflen);
 int sys_write(int fd, const void *buf, size_t nbytes);
+void sys__exit(int exitcode);
+#endif
 
 #endif /* _SYSCALL_H_ */
