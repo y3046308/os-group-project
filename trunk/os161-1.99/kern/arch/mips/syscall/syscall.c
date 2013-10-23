@@ -35,6 +35,7 @@
 #include <thread.h>
 #include <current.h>
 #include <syscall.h>
+#include "opt-A2.h"
 
 
 /*
@@ -110,7 +111,20 @@ syscall(struct trapframe *tf)
 		break;
 
 	    /* Add stuff here */
- 
+#if OPT_A2
+	    case SYS_read:
+	    	err = sys_read(1,&retval,sizeof(int));
+		break;
+
+		case SYS_write:
+			err = sys_write(1,&retval,sizeof(int));
+		break;
+
+		case SYS__exit:
+			err = sys__exit(1);
+		break;
+#endif
+
 	    default:
 		kprintf("Unknown syscall %d\n", callno);
 		err = ENOSYS;
