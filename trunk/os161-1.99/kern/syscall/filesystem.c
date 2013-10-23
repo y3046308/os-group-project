@@ -1,5 +1,4 @@
 
-
 #include <types.h>
 #include <kern/errno.h>
 #include <lib.h>
@@ -19,7 +18,11 @@ int sys_open(const char* filename, int flags) {
 	(void)flags;
 	return 1;
 }
-*/
+
+int sys_close(int fd){
+  vfs_close(...);  
+}*/
+
 int sys_read(int fd, void *buf, size_t buflen) {
 	(void)fd;
 	(void)buf;
