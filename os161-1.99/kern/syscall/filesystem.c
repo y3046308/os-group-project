@@ -1,3 +1,4 @@
+#if OPT_A2
 #include <types.h>
 #include <kern/errno.h>
 #include <lib.h>
@@ -12,6 +13,14 @@
 #include <kern/fcntl.h>
 #include "opt-A2.h"
 
+struct fd{       // file descriptor indicating each individual file
+	int file_flag;
+	char *filename;
+	struct vnode* file;
+};
+
+struct fd** table;  // collection of file descriptor
+
 /*
 int sys_open(const char* filename, int flags) {
 	(void)filename;
@@ -22,16 +31,6 @@ int sys_open(const char* filename, int flags) {
 int sys_close(int fd){
   vfs_close(...);  
 }*/
-
-
-#if OPT_A2
-struct fd{
-	int file_flag;
-	char *filename;
-	struct vnode* file;
-};
-
-
 
 /*int sys_open(char *filename, int file_flag){
 	KASSERT(filename != NULL);
@@ -95,3 +94,4 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 void sys__exit(int exitcode) {
 	(void)exitcode;
 }
+#end if
