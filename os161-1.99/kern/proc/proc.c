@@ -83,7 +83,8 @@ proc_create(const char *name)
 	proc->p_cwd = NULL;
 
 	#if OPT_A2
-	pid_t t_pid;
+	pid_t pid = 1;
+	curthread->t_pid = pid;
 	#endif
 
 	return proc;
