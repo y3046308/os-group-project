@@ -87,11 +87,11 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 
 	(void)fd;
 
-	struct vnode *vn;
-	char *console = NULL;
-	console = kstrdup("con:");
-	int result = vfs_open(console,O_WRONLY,0,&vn);
-	kfree(console);
+	struct vnode *vn; // creating vnode (temp)
+	char *console = NULL; // console string ("con:")
+	console = kstrdup("con:"); // set to console
+	int result = vfs_open(console,O_WRONLY,0,&vn); // open the console vnode
+	kfree(console); // free the console
 
 	struct uio u;
 	struct iovec iov;
@@ -111,7 +111,7 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 	VOP_WRITE(vn,&u);
 
 	// SIMPLE IMPLEMENTATION
-	//kprintf("asd");
+	// kprintf("asd");
 
 	return result;
 }
@@ -123,7 +123,9 @@ pid_t sys_getpid(){
 void sys__exit(int exitcode) {
 	threadarray_remove(&curproc->p_threads, 0);
 	proc_destroy(curthread->t_proc);
-	curthread->t_proc = NULL;
+	// code below is removed. Since the process is destroyed, there is no "curthread" now.
+	// We cannot access to it.
+	// curthread->t_proc = NULL;
 	(void)exitcode;
 }
 #endif
