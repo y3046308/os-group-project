@@ -1,4 +1,3 @@
-
 #include <types.h>
 #include <kern/errno.h>
 #include <lib.h>
@@ -31,6 +30,16 @@ struct fd* create_fd(const char* filename){
 	return file_descriptor;
 }
 
+vnode* find_flag(int fd){    // find f.d with given fd
+  struct fd* copy = table;
+  while (*copy != NULL){
+    if (*copy->file_flag == fd){
+      return *copy->file;
+    }
+    copy = copy + 1;
+  }
+}
+
 int sys_open(const char* filename, int flags) {
 	(void)filename;
 	(void)flags;
@@ -42,7 +51,7 @@ int sys_open(const char* filename, int flags) {
 }
 /*
 int sys_close(int fd){
-  vfs_close(...);  
+  vfs_close(find_flag(fd)); 
 }*/
 
 /*int sys_open(char *filename, int file_flag){
