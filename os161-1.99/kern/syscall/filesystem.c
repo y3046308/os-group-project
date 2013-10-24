@@ -50,18 +50,18 @@ int sys_open(const char* filename, int flags) {
   	//int cur = vfs_open(
 	return 1;
 }
-/*
+
 int sys_close(int fd){
-  vnode* tmp = find_flag(fd);
+  struct vnode* tmp = find_flag(fd);
   if (tmp != NULL){
     vfs_close(tmp); 
     return 0;      //successfully closed.
   }
   else{
-    errno = EBADF;    // fd is not a valid file handle
+    return EBADF;    // fd is not a valid file handle
   }
   return -1;   // error found
-}*/
+}
 
 /*int sys_open(char *filename, int file_flag){
 	KASSERT(filename != NULL);
