@@ -121,6 +121,7 @@ pid_t sys_getpid(){
 }
 
 void sys__exit(int exitcode) {
+	threadarray_remove(&curproc->p_threads, 0);
 	proc_destroy(curthread->t_proc);
 	curthread->t_proc = NULL;
 	(void)exitcode;
