@@ -69,7 +69,7 @@ int sys_read(int fd, void *buf, size_t buflen);
 int sys_write(int fd, const void *buf, size_t nbytes);
 int sys_open(const char* filename, int flags);
 int sys_close(int fd);
-int sys_getpid(void);
+pid_t sys_getpid(void);
 void sys__exit(int exitcode);
 #endif
 
