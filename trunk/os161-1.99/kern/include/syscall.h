@@ -63,7 +63,9 @@ int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
 
 #if OPT_A2
 struct fd* create_fd(int flag, const char* filename, struct vnode* vn);
-struct vnode* find_flag(int fd);
+struct fd* find_fd_flag(int fd);
+struct fd* find_fd_name(const char* name);
+void add_fd(struct fd* file); 
 
 int sys_read(int fd, void *buf, size_t buflen);
 int sys_write(int fd, const void *buf, size_t nbytes);
