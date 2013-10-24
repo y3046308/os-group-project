@@ -21,12 +21,12 @@ struct fd{       // file descriptor indicating each individual file
 
 struct fd* table;  // collection of file descriptor
 
-struct fd* create_fd(const char* filename){
+struct fd* create_fd(int flag, const char* filename, struct vnode* vn){
 	struct fd* file_descriptor;
 	file_descriptor = kmalloc(sizeof(struct fd));
-	file_descriptor->file_flag = 0;
+	file_descriptor->file_flag = flag;
 	file_descriptor->filename = (char *)filename;
-	file_descriptor->file = NULL;
+	file_descriptor->file = vn;
 	return file_descriptor;
 }
 
