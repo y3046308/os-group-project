@@ -47,6 +47,7 @@
 #include <current.h>
 #include <addrspace.h>
 #include <vnode.h>
+#include "opt-A2.h"
 
 /*
  * The process for the kernel; this holds all the kernel-only threads.
@@ -80,6 +81,10 @@ proc_create(const char *name)
 
 	/* VFS fields */
 	proc->p_cwd = NULL;
+
+	#if OPT_A2
+	pid_t t_pid;
+	#endif
 
 	return proc;
 }

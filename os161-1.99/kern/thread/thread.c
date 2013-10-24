@@ -52,7 +52,7 @@
 #include <vnode.h>
 
 #include "opt-synchprobs.h"
-
+#include "opt-A2.h"
 
 /* Magic number used as a guard value on kernel thread stacks. */
 #define THREAD_STACK_MAGIC 0xbaadf00d
@@ -150,6 +150,9 @@ thread_create(const char *name)
 	thread->t_iplhigh_count = 1; /* corresponding to t_curspl */
 
 	/* If you add to struct thread, be sure to initialize here */
+	#if OPT_A2
+	thread->t_pid;
+	#endif
 
 	return thread;
 }

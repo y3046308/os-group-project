@@ -106,6 +106,9 @@ struct thread {
 	 */
 
 	/* add more here as needed */
+	 #if OPT_A2
+	 pid_t t_pid;
+	 #endif
 	
 
 };

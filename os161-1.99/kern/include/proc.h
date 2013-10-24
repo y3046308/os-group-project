@@ -38,6 +38,7 @@
 
 #include <spinlock.h>
 #include <thread.h> /* required for struct threadarray */
+#include "opt-A2.h"
 
 struct addrspace;
 struct vnode;
@@ -57,6 +58,9 @@ struct proc {
 	struct vnode *p_cwd;		/* current working directory */
 
 	/* add more material here as needed */
+	#if OPT_A2
+	pid_t t_pid;
+	#endif
 };
 
 /* This is the process structure for the kernel and for kernel-only threads. */
