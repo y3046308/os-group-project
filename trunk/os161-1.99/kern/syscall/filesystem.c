@@ -26,15 +26,40 @@ struct fd* create_fd(int flag, const char* filename, struct vnode* vn){
 	file_descriptor = kmalloc(sizeof(struct fd));
 	file_descriptor->file_flag = flag;
 	file_descriptor->filename = (char *)filename;
-	file_descriptor->file = vn;
+	if (vn != NULL){
+		file_descriptor->file = vn;
+	}
+	else{
+		file_descriptor->file = kmalloc(sizeof(struct vnode));
+	}
 	return file_descriptor;
 }
 
-struct vnode* find_flag(int fd){    // find f.d with given fd
+void add_fd(struct fd* file){		// add new file descriptor to table
+  struct fd* copy = table;
+  while (copy != NULL){
+    copy = copy + 1;
+  }
+  copy = kmalloc(sizeof(struct fd));
+  copy = file;
+}
+
+struct fd* find_fd_flag(int fd){    // find f.d with given fd
   struct fd* copy = table;
   while (copy != NULL){
     if (copy->file_flag == fd){
-      return copy->file;
+      return copy;
+    }
+    copy = copy + 1;
+  }
+  return NULL;           // fd not found
+}
+
+struct fd* find_fd_name(const char* name){    // find f.d with given file name
+  struct fd* copy = table;
+  while (copy != NULL){
+    if (copy->filename == name){
+      return copy;
     }
     copy = copy + 1;
   }
@@ -42,44 +67,50 @@ struct vnode* find_flag(int fd){    // find f.d with given fd
 }
 
 int sys_open(const char* filename, int flags) {
-	(void)filename;
-	(void)flags;
-  	struct fd* tmp = create_fd(flags, (char*)filename, NULL);
-  	(void)tmp;
-  	//int vfs_open(char *path, int openflags, mode_t mode, struct vnode **ret);
-  	//int cur = vfs_open(
-	return 1;
+	int open = -1;
+	if (filename  == NULL) return EFAULT; // filename was an invalid pointer.
+
+	if (flags != O_RDONLY || flags != O_WRONLY || flags != O_RDWR || flags != O_CREAT || 
+            flags != O_EXCL || flags != O_TRUNC || flags != O_APPEND) return EINVAL; //		flags contained invalid values.
+            
+	struct fd* tmp = find_fd_name(filename);             // find a file from file description table
+	if (tmp == NULL){
+		if(flags != O_CREAT) return ENOENT;  // The named file does not exist, and O_CREAT was not specified.
+		else{					// if flag is O_CREAT, create a file
+			int newFlag;
+			for (newFlag = 3; newFlag < MAX_TABLE ; newFlag++){
+				if ((table + newFlag) == NULL){
+					break;		// if table at [newFlag] does not exit, it will be used to store new f.d
+				}
+			} 
+			add_fd(create_fd(newFlag, (char*)filename, NULL));	// create a new fd and add it into table
+			open = newFlag;
+		}
+        }
+	else{
+		if(flags == O_EXCL) return EEXIST; // The named file exists, and O_EXCL was specified.
+
+	  	open = vfs_open((char*)filename, flags, 0, &tmp->file);        // actually open a file
+        }
+	return open;
 }
 
 int sys_close(int fd){
-  struct vnode* tmp = find_flag(fd);
+  struct vnode* tmp = find_fd_flag(fd)->file;
   if (tmp != NULL){
     vfs_close(tmp); 
     return 0;      //successfully closed.
   }
   else{
-    return EBADF;    // fd is not a valid file handle
+    //errno = EBADF;    // fd is not a valid file handle
   }
   return -1;   // error found
 }
-
-/*int sys_open(char *filename, int file_flag){
-	KASSERT(filename != NULL);
-	KASSERT(file_flag == O_RDONLY || file_flag == O_RDWR || file_flag == O_WRONLY);
-	struct fd f;
-	f.file_flag = file_flag;
-	f.filename = filename;
-	vfs_open(filename, file_flag
-	
-	
-}*/
 
 int sys_read(int fd, void *buf, size_t buflen) {
 	(void)fd;
 	(void)buf;
 	(void)buflen;
-
-
 	return 1;
 }
 
