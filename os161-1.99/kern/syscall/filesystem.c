@@ -38,6 +38,7 @@ vnode* find_flag(int fd){    // find f.d with given fd
     }
     copy = copy + 1;
   }
+  return NULL;           // fd not found
 }
 
 int sys_open(const char* filename, int flags) {
@@ -51,7 +52,15 @@ int sys_open(const char* filename, int flags) {
 }
 /*
 int sys_close(int fd){
-  vfs_close(find_flag(fd)); 
+  vnode* tmp = find_flag(fd);
+  if (tmp != NULL){
+    vfs_close(tmp); 
+    return 0;      //successfully closed.
+  }
+  else{
+    errno = EBADF;    // fd is not a valid file handle
+  }
+  return -1;   // error found
 }*/
 
 /*int sys_open(char *filename, int file_flag){
