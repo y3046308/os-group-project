@@ -117,7 +117,8 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 }
 
 int sys_getpid(){
-    return curthread->id;
+    //return curthread->id;
+    return -1;
 }
 
 void sys__exit(int exitcode) {
