@@ -1,4 +1,4 @@
-#if OPT_A2
+
 #include <types.h>
 #include <kern/errno.h>
 #include <lib.h>
@@ -12,6 +12,7 @@
 #include <current.h>
 #include <kern/fcntl.h>
 #include "opt-A2.h"
+#if OPT_A2
 
 struct fd{       // file descriptor indicating each individual file
 	int file_flag;
@@ -21,21 +22,22 @@ struct fd{       // file descriptor indicating each individual file
 
 struct fd* table;  // collection of file descriptor
 
-fd* create_fd(){
-  fd* file_descriptor;
-  file_descriptor = kmalloc(sizeof(fd));
-  file_descriptor->file_flag = 0;
-  file_descriptor->filename = "";
-  file_descriptor->file = NULL;
-  return file_descriptor
+struct fd* create_fd(const char* filename){
+	struct fd* file_descriptor;
+	file_descriptor = kmalloc(sizeof(struct fd));
+	file_descriptor->file_flag = 0;
+	file_descriptor->filename = (char *)filename;
+	file_descriptor->file = NULL;
+	return file_descriptor;
 }
 
 int sys_open(const char* filename, int flags) {
-	//(void)filename;
-	//(void)flags;
-  fd* tmp = create_fd();
-  //int vfs_open(char *path, int openflags, mode_t mode, struct vnode **ret);
-  //int cur = vfs_open(
+	(void)filename;
+	(void)flags;
+  	struct fd* tmp = create_fd(filename);
+  	(void)tmp;
+  	//int vfs_open(char *path, int openflags, mode_t mode, struct vnode **ret);
+  	//int cur = vfs_open(
 	return 1;
 }
 /*
@@ -82,12 +84,6 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 	iov.iov_ubase = (void *)buf;
 	iov.iov_len = nbytes;
 
-//	u = uio_kinit(&iov, &u, (void *)buf, nbytes, 0, UIO_WRITE );
-// uio_iovec describes the location and length of the buffer that is being transferred to or from. This buffer can be in the application part of the kernel address space or in the kernel's part.
-// uio_resid describes the amount of data to transfer
-// uio_rw identifies whether the transfer is from the file/device or to the file/device,
-// uio_segflag indicates whether the buffer is in the user (application) part of the address space or the kernel's part of the address space.
-// uio_space points to the addrspace object of the process that is doing the VOP_WRITE or VOP_READ. This is only used if the buffer is is in the user part of the address space - otherwise, it should be set to NULL.
 	u.uio_iov = &iov;
 	u.uio_resid = nbytes;
 	u.uio_rw = UIO_WRITE;
@@ -105,4 +101,4 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 void sys__exit(int exitcode) {
 	
 }
-#end if
+#endif
