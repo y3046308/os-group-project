@@ -117,6 +117,6 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 }
 
 void sys__exit(int exitcode) {
-	
+	(void)exitcode;
 }
 #endif
