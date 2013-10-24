@@ -108,7 +108,7 @@ struct thread {
 
 	/* add more here as needed */
 	 #if OPT_A2
-	 pid_t t_pid;
+	 //struct proc * t_proc;
 	 #endif
 	
 
