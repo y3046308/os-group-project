@@ -39,6 +39,7 @@
 #include <array.h>
 #include <spinlock.h>
 #include <threadlist.h>
+#include "opt-A2.h"
 
 struct cpu;
 
@@ -110,6 +111,8 @@ struct thread {
 	 pid_t t_pid;
 	 #endif
 	
+
+	struct fd *fd_table;
 
 };
 

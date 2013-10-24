@@ -13,7 +13,7 @@
 # The things that can be set here are documented in mk/os161.config.mk.
 #
 
-OSTREE=/u7/s8lee/cs350-os161/root
+OSTREE=/Users/CSBaek/os-group-project/root
 PLATFORM=sys161
 MACHINE=mips
 COMPAT_CFLAGS=
