@@ -116,6 +116,10 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 	return result;
 }
 
+int sys_getpid(){
+    return curthread->id;
+}
+
 void sys__exit(int exitcode) {
 	proc_destroy(curthread->t_proc);
 	curthread->t_proc = NULL;
