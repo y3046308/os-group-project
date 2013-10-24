@@ -151,7 +151,7 @@ thread_create(const char *name)
 
 	/* If you add to struct thread, be sure to initialize here */
 	#if OPT_A2
-	thread->t_pid = NULL;
+	thread->t_proc = NULL;
 	#endif
 
 	return thread;

@@ -30,11 +30,11 @@ struct fd* create_fd(int flag, const char* filename, struct vnode* vn){
 	return file_descriptor;
 }
 
-vnode* find_flag(int fd){    // find f.d with given fd
+struct vnode* find_flag(int fd){    // find f.d with given fd
   struct fd* copy = table;
-  while (*copy != NULL){
-    if (*copy->file_flag == fd){
-      return *copy->file;
+  while (copy != NULL){
+    if (copy->file_flag == fd){
+      return copy->file;
     }
     copy = copy + 1;
   }
@@ -44,7 +44,7 @@ vnode* find_flag(int fd){    // find f.d with given fd
 int sys_open(const char* filename, int flags) {
 	(void)filename;
 	(void)flags;
-  	struct fd* tmp = create_fd(filename);
+  	struct fd* tmp = create_fd(flags, (char*)filename, NULL);
   	(void)tmp;
   	//int vfs_open(char *path, int openflags, mode_t mode, struct vnode **ret);
   	//int cur = vfs_open(
