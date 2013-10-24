@@ -109,7 +109,6 @@ struct thread {
 	/* add more here as needed */
 	 #if OPT_A2
 	 //struct proc * t_proc;
-    int id; // process id
 	 #endif
 	
 
