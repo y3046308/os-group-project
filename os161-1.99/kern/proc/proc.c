@@ -82,9 +82,9 @@ proc_create(const char *name)
 	/* VFS fields */
 	proc->p_cwd = NULL;
 
-	#if OPT_A2
+	/*#if OPT_A2
 	curthread->t_proc = proc;
-	#endif
+	#endif*/
 
 	return proc;
 }
