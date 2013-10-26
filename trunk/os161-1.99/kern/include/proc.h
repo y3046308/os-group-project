@@ -39,6 +39,7 @@
 #include <spinlock.h>
 #include <thread.h> /* required for struct threadarray */
 #include "opt-A2.h"
+#include <array.h>
 
 struct addrspace;
 struct vnode;
@@ -80,6 +81,24 @@ extern struct proc *kproc;
 DECLARRAY(proc);
 DEFARRAY(proc, THREADINLINE);
 
+
+/* exitcode array */
+struct exitc {
+	pid_t pid;
+	int exitcode;
+};
+
+#ifndef EXITCINLINE
+#define EXITCINLINE INLINE
+#endif
+
+DECLARRAY(exitc);
+DEFARRAY(exitc, THREADINLINE);
+struct exitcarray *codes;
+
+// Maximum number of process
+#define MAX_NUMPROC (PID_MAX - PID_MIN)
+
 /* Call once during system startup to allocate data structures. */
 void proc_bootstrap(void);
 
@@ -100,6 +119,8 @@ struct addrspace *curproc_getas(void);
 
 /* Change the address space of the current process, and return the old one. */
 struct addrspace *curproc_setas(struct addrspace *);
+
+struct proc* find_proc(pid_t pid);
 
 
 #endif /* _PROC_H_ */

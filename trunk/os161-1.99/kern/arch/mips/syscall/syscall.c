@@ -82,6 +82,7 @@ syscall(struct trapframe *tf)
 	int callno;
 	int32_t retval;
 	int err;
+	pid_t pid;
 
 	KASSERT(curthread != NULL);
 	KASSERT(curthread->t_curspl == 0);
@@ -113,7 +114,7 @@ syscall(struct trapframe *tf)
 	    /* Add stuff here */
 #if OPT_A2
 	    case SYS_read:
-	    	err = sys_read(1,&retval,sizeof(int));
+	    	err = sys_read(tf->tf_a0,(void *)tf->tf_a1,tf->tf_a2);
 		break;
 
 		case SYS_write:
@@ -121,7 +122,7 @@ syscall(struct trapframe *tf)
 		break;
 
 		case SYS_getpid:
-			sys_getpid();
+			pid = sys_getpid();
 		break;
 		case SYS__exit:
 			sys__exit(1);
