@@ -121,6 +121,19 @@ struct proc * find_proc(pid_t pid) {
 	}
 	return NULL;
 }
+struct exitc * find_exitc(pid_t pid) {
+
+	int size = exitcarray_num(codes);
+	struct exitc *temp = NULL;
+
+	for(int i = 0 ; i < size ; i++) {
+		temp = exitcarray_get(codes,i);
+		if(temp->pid == pid) {
+			return temp;
+		}
+	}
+	return NULL;
+}
 
 /*
  * Destroy a proc structure.
