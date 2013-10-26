@@ -1,5 +1,6 @@
 #include <types.h>
 #include <kern/errno.h>
+#include <../../user/include/errno.h>
 #include <lib.h>
 #include <uio.h>
 #include <proc.h>
@@ -12,6 +13,9 @@
 #include <kern/fcntl.h>
 #include "opt-A2.h"
 #if OPT_A2
+#define MAX_TABLE 10	// only allow 10 files in table
+
+int errno;
 
 struct fd{       // file descriptor indicating each individual file
 	int file_flag;
@@ -68,30 +72,32 @@ struct fd* find_fd_name(const char* name){    // find f.d with given file name
 
 int sys_open(const char* filename, int flags) {
 	int open = -1;
-	if (filename  == NULL) return EFAULT; // filename was an invalid pointer.
+	if (filename  == NULL) errno = EFAULT; // filename was an invalid pointer.
 
-	if (flags != O_RDONLY || flags != O_WRONLY || flags != O_RDWR || flags != O_CREAT || 
-            flags != O_EXCL || flags != O_TRUNC || flags != O_APPEND) return EINVAL; //		flags contained invalid values.
-            
-	struct fd* tmp = find_fd_name(filename);             // find a file from file description table
-	if (tmp == NULL){
-		if(flags != O_CREAT) return ENOENT;  // The named file does not exist, and O_CREAT was not specified.
-		else{					// if flag is O_CREAT, create a file
-			int newFlag;
-			for (newFlag = 3; newFlag < MAX_TABLE ; newFlag++){
-				if ((table + newFlag) == NULL){
-					break;		// if table at [newFlag] does not exit, it will be used to store new f.d
-				}
-			} 
-			add_fd(create_fd(newFlag, (char*)filename, NULL));	// create a new fd and add it into table
-			open = newFlag;
+	else if (flags != O_RDONLY || flags != O_WRONLY || flags != O_RDWR || flags != O_CREAT || 
+            flags != O_EXCL || flags != O_TRUNC || flags != O_APPEND) errno = EINVAL; //		flags contained invalid values.
+        else{    
+		struct fd* tmp = find_fd_name(filename);             // find a file from file description table
+		if (tmp == NULL){
+			if(flags != O_CREAT) errno = ENOENT;  // The named file does not exist, and O_CREAT was not specified.
+			else{					// if flag is O_CREAT, create a file
+				int newFlag;
+				for (newFlag = 3; newFlag < MAX_TABLE ; newFlag++){
+					if ((table + newFlag) == NULL){
+						break;		// if table at [newFlag] does not exit, it will be used to store new f.d
+					}
+				} 
+				add_fd(create_fd(newFlag, (char*)filename, NULL));	// create a new fd and add it into table
+				open = newFlag;
+			}
 		}
-        }
-	else{
-		if(flags == O_EXCL) return EEXIST; // The named file exists, and O_EXCL was specified.
-
-	  	open = vfs_open((char*)filename, flags, 0, &tmp->file);        // actually open a file
-        }
+		else{
+			if(flags == O_EXCL) errno = EEXIST; // The named file exists, and O_EXCL was specified.
+			else{
+		  		open = vfs_open((char*)filename, flags, 0, &tmp->file);        // actually open a file
+			}
+		}
+	}
 	return open;
 }
 
@@ -102,7 +108,7 @@ int sys_close(int fd){
     return 0;      //successfully closed.
   }
   else{
-    //errno = EBADF;    // fd is not a valid file handle
+    errno = EBADF;    // fd is not a valid file handle
   }
   return -1;   // error found
 }
