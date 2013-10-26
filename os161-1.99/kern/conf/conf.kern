@@ -410,6 +410,7 @@ defoption netfs
 #
 
 file	syscall/filesystem.c
+file	syscall/procops.c
 
 ########################################
 #                                      #

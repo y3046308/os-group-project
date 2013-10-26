@@ -59,7 +59,7 @@ struct proc {
 
 	/* add more material here as needed */
 	#if OPT_A2
-	pid_t t_pid;
+	pid_t p_pid;
 	#endif
 	
 };
