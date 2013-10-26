@@ -45,6 +45,7 @@
 #include <types.h>
 #include <proc.h>
 #include <current.h>
+#include <synch.h>
 #include <addrspace.h>
 #include <vnode.h>
 #include "opt-A2.h"
@@ -84,6 +85,9 @@ proc_create(const char *name)
 
 	#if OPT_A2
 	proc->p_pid = 0;
+	proc->p_cv = cv_create("process cv");
+	proc->p_lk = lock_create("process lock");
+
 	#endif
 
 	return proc;
@@ -142,6 +146,8 @@ proc_destroy(struct proc *proc)
 
 	threadarray_cleanup(&proc->p_threads);
 	spinlock_cleanup(&proc->p_lock);
+	cv_destroy(proc->p_cv);
+	lock_destroy(proc->p_lk);
 
 	kfree(proc->p_name);
 	kfree(proc);
