@@ -153,8 +153,4 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 	return result;
 }
 
-pid_t sys_getpid(){
-    return curthread->t_proc->t_pid;
-}
-
 #endif

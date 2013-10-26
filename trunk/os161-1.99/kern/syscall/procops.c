@@ -14,6 +14,20 @@
 #include "opt-A2.h"
 #if OPT_A2
 
+
+pid_t sys_getpid() {
+	return curthread->t_proc->p_pid;
+}
+
+pid_t sys_waitpid(pid_t pid, int *status, int options) {
+	(void)status;
+	(void)options;
+
+	
+
+	return pid;
+}
+
 void sys__exit(int exitcode) {
 	threadarray_remove(&curproc->p_threads, 0);
 	proc_destroy(curthread->t_proc);
