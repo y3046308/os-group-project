@@ -60,7 +60,7 @@
  *
  * Note that expanding an array with setsize doesn't initialize the new
  * elements. (Usually the caller is about to store into them anyway.)
- */
+ */	
 
 struct array {
 	void **v;

@@ -14,21 +14,8 @@
 #include <kern/fcntl.h>
 #include "opt-A2.h"
 #if OPT_A2
+#include <array.h>
 
-
-struct proc * find_proc(pid_t pid) {
-
-	int size = procarray_num(procarr);
-	struct proc *temp = NULL;
-
-	for(int i = 0 ; i < size ; i++) {
-		temp = procarray_get(procarr,i);
-		if(temp->p_pid == pid) {
-			return temp;
-		}
-	}
-	return NULL;
-}
 
 pid_t sys_getpid() {
 	return curthread->t_proc->p_pid;
@@ -51,6 +38,18 @@ pid_t sys_waitpid(pid_t pid, int *status, int options) {
 }
 
 void sys__exit(int exitcode) {
+
+	if(codes == NULL) {
+		codes = exitcarray_create();
+		exitcarray_init(codes);
+	}
+
+	struct exitc *c;
+	c->exitcode = exitcode;
+	c->pid = curthread->t_proc->p_pid;
+
+	exitcarray_add(codes, c, NULL);
+
 	threadarray_remove(&curproc->p_threads, 0);
 	proc_destroy(curthread->t_proc);
 	curthread->t_proc = NULL;
@@ -58,7 +57,6 @@ void sys__exit(int exitcode) {
 	// code below is removed. Since the process is destroyed, there is no "curthread" now.
 	// We cannot access to it.
 	// curthread->t_proc = NULL;
-	(void)exitcode;
 }
 
 #endif

@@ -50,6 +50,10 @@
 #include <vnode.h>
 #include "opt-A2.h"
 
+#if OPT_A2
+#include <limits.h>
+#endif
+
 /*
  * The process for the kernel; this holds all the kernel-only threads.
  */
@@ -84,13 +88,38 @@ proc_create(const char *name)
 	proc->p_cwd = NULL;
 
 	#if OPT_A2
-	proc->p_pid = 0;
+	
+	// pid creation
+	for(pid_t curid = PID_MIN ; curid <= PID_MAX ; curid++) { // loop through available pid range.
+		if(find_proc(curid) == NULL) { // first available pid found.
+			proc->p_pid = curid; // set pid.
+			break; // break loop.
+		}
+	}
+
 	proc->p_cv = cv_create("process cv");
 	proc->p_lk = lock_create("process lock");
 
 	#endif
 
 	return proc;
+}
+
+/*
+ * Find process in procarray.
+ */
+struct proc * find_proc(pid_t pid) {
+
+	int size = procarray_num(procarr);
+	struct proc *temp = NULL;
+
+	for(int i = 0 ; i < size ; i++) {
+		temp = procarray_get(procarr,i);
+		if(temp->p_pid == pid) {
+			return temp;
+		}
+	}
+	return NULL;
 }
 
 /*
@@ -159,6 +188,7 @@ proc_destroy(struct proc *proc)
 void
 proc_bootstrap(void)
 {
+	procarr = procarray_create();
 	kproc = proc_create("[kernel]");
 	if (kproc == NULL) {
 		panic("proc_create for kproc failed\n");
