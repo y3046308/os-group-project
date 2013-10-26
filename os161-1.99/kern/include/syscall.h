@@ -66,6 +66,7 @@ struct fd* create_fd(int flag, const char* filename, struct vnode* vn);
 struct fd* find_fd_flag(int fd);
 struct fd* find_fd_name(const char* name);
 void add_fd(struct fd* file); 
+struct proc* find_proc(pid_t pid);
 
 int sys_read(int fd, void *buf, size_t buflen);
 int sys_write(int fd, const void *buf, size_t nbytes);

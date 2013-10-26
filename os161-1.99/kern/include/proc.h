@@ -43,6 +43,8 @@
 struct addrspace;
 struct vnode;
 
+struct procarray *procarr;
+
 /*
  * Process structure.
  */
@@ -60,12 +62,23 @@ struct proc {
 	/* add more material here as needed */
 	#if OPT_A2
 	pid_t p_pid;
+	struct cv *p_cv;
+	struct lock *p_lk;
 	#endif
 	
 };
 
 /* This is the process structure for the kernel and for kernel-only threads. */
 extern struct proc *kproc;
+
+
+/* PROCESS ARRAY */
+#ifndef PROCESSINLINE
+#define PROCESSINLINE INLINE
+#endif
+
+DECLARRAY(proc);
+DEFARRAY(proc, THREADINLINE);
 
 /* Call once during system startup to allocate data structures. */
 void proc_bootstrap(void);
