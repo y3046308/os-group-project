@@ -17,13 +17,17 @@
 #include <array.h>
 
 
+pid_t sys_fork() {
+	return 1;
+}
+
 pid_t sys_getpid() {
 	return curthread->t_proc->p_pid;
 }
 
 pid_t sys_waitpid(pid_t pid, int *status, int options) {
 	(void)status;
-	(void)options;
+	(void)options; // do nothing with it. 
 
 	struct proc* p = find_proc(pid);
 	if(p == NULL) return pid;
@@ -33,6 +37,9 @@ pid_t sys_waitpid(pid_t pid, int *status, int options) {
 		cv_wait(p->p_cv, p->p_lk);
 	}
 	lock_release(p->p_lk);
+
+	struct exitc *c = find_exitc(pid);
+	*status = c->exitcode;
 
 	return pid;
 }

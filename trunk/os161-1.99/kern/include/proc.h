@@ -122,5 +122,7 @@ struct addrspace *curproc_setas(struct addrspace *);
 
 struct proc* find_proc(pid_t pid);
 
+struct exitc* find_exitc(pid_t pid);
+
 
 #endif /* _PROC_H_ */
