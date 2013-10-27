@@ -12,44 +12,54 @@
 #include <current.h>
 #include <kern/fcntl.h>
 #include "opt-A2.h"
+#include "synch.h"
+#include "array.h"
 #if OPT_A2
-#define MAX_TABLE 10	// only allow 10 files in table
+
+#define MAX_fd_table 64	// only allow 64 files in fd_table (size of TLB)
 
 int errno;
 
 struct fd{       // file descriptor indicating each individual file
-	int file_flag;
+	int file_flag; 
+	int file_handle;
 	char *filename;
 	struct vnode* file;
 };
 
-struct fd* table;  // collection of file descriptor
+/*#ifndef FDINLINE
+#define FDINLINE INLINE
+#endif
 
-struct fd* create_fd(int flag, const char* filename, struct vnode* vn){
+DECLARRAY(fd);
+DEFARRAY(fd, FDINLINE);
+
+volatile int i = 0; //index of fd
+struct fdarray* fd_table = NULL;  // collection of file descriptor*/
+
+struct fd[MAX_fd_table] fd_table = kmalloc(sizeof(struct fd)*MAX_fd_table);
+
+static struct fd* create_fd(int flag, int handle, const char* filename, struct vnode* vn){
 	struct fd* file_descriptor;
 	file_descriptor = kmalloc(sizeof(struct fd));
 	file_descriptor->file_flag = flag;
+	file_descriptor->file_handle = handle;
 	file_descriptor->filename = (char *)filename;
-	if (vn != NULL){
-		file_descriptor->file = vn;
-	}
-	else{
-		file_descriptor->file = kmalloc(sizeof(struct vnode));
-	}
+	KASSERT(vn != NULL);
+	file_descriptor->file = vn;
 	return file_descriptor;
 }
 
-void add_fd(struct fd* file){		// add new file descriptor to table
-  struct fd* copy = table;
-  while (copy != NULL){
-    copy = copy + 1;
-  }
-  copy = kmalloc(sizeof(struct fd));
-  copy = file;
+static void add_fd(struct fd file){		// add new file descriptor to fd_table
+	int i = 0;
+	while(fd_table[i] != NULL){
+		i++;
+	}	
+	fd_table[i] = file;
 }
 
-struct fd* find_fd_flag(int fd){    // find f.d with given fd
-  struct fd* copy = table;
+static struct fd* find_fd_flag(int file_handle){    // find f.d with given fh
+  struct fd* copy = fd_table;
   while (copy != NULL){
     if (copy->file_flag == fd){
       return copy;
@@ -59,8 +69,8 @@ struct fd* find_fd_flag(int fd){    // find f.d with given fd
   return NULL;           // fd not found
 }
 
-struct fd* find_fd_name(const char* name){    // find f.d with given file name
-  struct fd* copy = table;
+/*struct fd* find_fd_name(const char* name){    // find f.d with given file name
+  struct fd* copy = fd_table;
   while (copy != NULL){
     if (copy->filename == name){
       return copy;
@@ -68,26 +78,26 @@ struct fd* find_fd_name(const char* name){    // find f.d with given file name
     copy = copy + 1;
   }
   return NULL;           // fd not found
-}
+}*/
 
-int sys_open(const char* filename, int flags) {
+/*int sys_open(const char* filename, int flags) {
 	int open = -1;
 	if (filename  == NULL) errno = EFAULT; // filename was an invalid pointer.
 
 	else if (flags != O_RDONLY || flags != O_WRONLY || flags != O_RDWR || flags != O_CREAT || 
             flags != O_EXCL || flags != O_TRUNC || flags != O_APPEND) errno = EINVAL; //		flags contained invalid values.
         else{    
-		struct fd* tmp = find_fd_name(filename);             // find a file from file description table
+		struct fd* tmp = find_fd_name(filename);             // find a file from file description fd_table
 		if (tmp == NULL){
 			if(flags != O_CREAT) errno = ENOENT;  // The named file does not exist, and O_CREAT was not specified.
 			else{					// if flag is O_CREAT, create a file
 				int newFlag;
-				for (newFlag = 3; newFlag < MAX_TABLE ; newFlag++){
-					if ((table + newFlag) == NULL){
-						break;		// if table at [newFlag] does not exit, it will be used to store new f.d
+				for (newFlag = 3; newFlag < MAX_fd_table ; newFlag++){
+					if ((fd_table + newFlag) == NULL){
+						break;		// if fd_table at [newFlag] does not exit, it will be used to store new f.d
 					}
 				} 
-				add_fd(create_fd(newFlag, (char*)filename, NULL));	// create a new fd and add it into table
+				add_fd(create_fd(newFlag, (char*)filename, NULL));	// create a new fd and add it into fd_table
 				open = newFlag;
 			}
 		}
@@ -99,7 +109,7 @@ int sys_open(const char* filename, int flags) {
 		}
 	}
 	return open;
-}
+}*/
 
 int sys_close(int fd){
   struct vnode* tmp = find_fd_flag(fd)->file;
@@ -111,6 +121,33 @@ int sys_close(int fd){
     errno = EBADF;    // fd is not a valid file handle
   }
   return -1;   // error found
+}
+
+volatile int index_file = 0;
+int sys_open(char *filename, int file_flag, mode_t mode){
+	if(filename != NULL){
+		errno = EFAULT;
+		return -1;
+	}
+	if(file_flag & O_APPEND){
+		errno = EINVAL;
+		return -1;
+	}
+	struct vnode** new_file = NULL;
+	vnode* new_node = vfs_open(filename, file_flag, mode , new_file);
+	int fh;
+
+	struct fd* f = fd_create(file_flag, file_handle, filename, new_node);
+
+
+	if(fd_table == NULL) {
+		fd_table = fdarray_create();
+		fdarray_init(fd_table);
+	}
+	fdarray_add(fd_table, f, NULL);
+
+
+	return  //index of the fd in the fd_fd_table
 }
 
 int sys_read(int fd, void *buf, size_t buflen) {
