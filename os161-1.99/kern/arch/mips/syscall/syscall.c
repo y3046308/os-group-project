@@ -121,7 +121,7 @@ syscall(struct trapframe *tf)
 			err = sys_write(tf->tf_a0,(void *)tf->tf_a1,tf->tf_a2);
 		break;
 		case SYS_fork:
-			pid = sys_fork();
+			pid = sys_fork(tf);
 		break;
 		case SYS_getpid:
 			pid = sys_getpid();

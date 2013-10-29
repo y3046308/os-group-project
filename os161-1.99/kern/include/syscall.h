@@ -62,17 +62,13 @@ int sys_reboot(int code);
 int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
 
 #if OPT_A2
-struct fd* create_fd(int flag, const char* filename, struct vnode* vn);
-struct fd* find_fd_flag(int fd);
-struct fd* find_fd_name(const char* name);
-void add_fd(struct fd* file); 
 
 int sys_read(int fd, void *buf, size_t buflen);
 int sys_write(int fd, const void *buf, size_t nbytes);
-int sys_open(const char* filename, int flags);
+int sys_open(const char* filename, int flags, mode_t mode);
 int sys_close(int fd);
 
-pid_t sys_fork(void);
+pid_t sys_fork(struct trapframe *tf);
 pid_t sys_getpid(void);
 pid_t sys_waitpid(pid_t pid, int *status, int options);
 void sys__exit(int exitcode);

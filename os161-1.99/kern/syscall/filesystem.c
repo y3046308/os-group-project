@@ -36,8 +36,7 @@ DEFARRAY(fd, FDINLINE);
 
 volatile int i = 0; //index of fd
 struct fdarray* fd_table = NULL;  // collection of file descriptor*/
-
-struct fd[MAX_fd_table] fd_table = kmalloc(sizeof(struct fd)*MAX_fd_table);
+struct fd **fd_table = NULL;
 
 static struct fd* create_fd(int flag, int handle, const char* filename, struct vnode* vn){
 	struct fd* file_descriptor;
@@ -47,10 +46,14 @@ static struct fd* create_fd(int flag, int handle, const char* filename, struct v
 	file_descriptor->filename = (char *)filename;
 	KASSERT(vn != NULL);
 	file_descriptor->file = vn;
+
 	return file_descriptor;
 }
 
-static void add_fd(struct fd file){		// add new file descriptor to fd_table
+static void add_fd(struct fd* file){		// add new file descriptor to fd_table
+	if(fd_table == NULL) {
+		fd_table = kmalloc(sizeof(struct fd*)*MAX_fd_table);
+	}
 	int i = 0;
 	while(fd_table[i] != NULL){
 		i++;
@@ -58,11 +61,11 @@ static void add_fd(struct fd file){		// add new file descriptor to fd_table
 	fd_table[i] = file;
 }
 
-static struct fd* find_fd_flag(int file_handle){    // find f.d with given fh
-  struct fd* copy = fd_table;
+static struct fd* find_fd_handle(int file_handle){    // find f.d with given fh
+  struct fd** copy = fd_table;
   while (copy != NULL){
-    if (copy->file_flag == fd){
-      return copy;
+    if ((*copy)->file_flag == file_handle){
+      return *copy;
     }
     copy = copy + 1;
   }
@@ -112,7 +115,7 @@ static struct fd* find_fd_flag(int file_handle){    // find f.d with given fh
 }*/
 
 int sys_close(int fd){
-  struct vnode* tmp = find_fd_flag(fd)->file;
+  struct vnode* tmp = find_fd_handle(fd)->file;
   if (tmp != NULL){
     vfs_close(tmp); 
     return 0;      //successfully closed.
@@ -124,7 +127,7 @@ int sys_close(int fd){
 }
 
 volatile int index_file = 0;
-int sys_open(char *filename, int file_flag, mode_t mode){
+int sys_open(const char *filename, int file_flag, mode_t mode){
 	if(filename != NULL){
 		errno = EFAULT;
 		return -1;
@@ -134,21 +137,24 @@ int sys_open(char *filename, int file_flag, mode_t mode){
 		return -1;
 	}
 	struct vnode** new_file = NULL;
-	vnode* new_node = vfs_open(filename, file_flag, mode , new_file);
-	int fh;
-
-	struct fd* f = fd_create(file_flag, file_handle, filename, new_node);
-
-
-	if(fd_table == NULL) {
-		fd_table = fdarray_create();
-		fdarray_init(fd_table);
+	int new_node = vfs_open((char*)filename, file_flag, mode , new_file);
+	if(new_node) {
+		return -1;
 	}
-	fdarray_add(fd_table, f, NULL);
 
+	int i = 0;
+	while(fd_table != NULL) {
+		i++;
+	}
 
-	return  //index of the fd in the fd_fd_table
+	int file_handle = fd_table[i]->file_handle;
+
+	struct fd* f = create_fd(file_flag, file_handle, filename, *new_file);
+	add_fd(f);
+
+	return 0;  //index of the fd in the fd_fd_table
 }
+
 
 int sys_read(int fd, void *buf, size_t buflen) {
 	(void)fd;

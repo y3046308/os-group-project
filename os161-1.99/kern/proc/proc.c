@@ -42,13 +42,19 @@
  * process that will have more than one thread is the kernel process.
  */
 
+
+
 #include <types.h>
-#include <proc.h>
 #include <current.h>
 #include <synch.h>
 #include <addrspace.h>
 #include <vnode.h>
 #include "opt-A2.h"
+#if OPT_A2
+#define PROCESSINLINE
+#define EXITCINLINE
+#endif
+#include <proc.h>
 
 #if OPT_A2
 #include <limits.h>
