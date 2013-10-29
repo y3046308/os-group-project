@@ -1,3 +1,5 @@
+#include "opt-A2.h"
+#if OPT_A2
 #include <types.h>
 #include <kern/errno.h>
 #include <../../user/include/errno.h>
@@ -12,12 +14,25 @@
 #include <vnode.h>
 #include <current.h>
 #include <kern/fcntl.h>
-#include "opt-A2.h"
-#if OPT_A2
 #include <array.h>
+#include <mips/trapframe.h>
 
 
-pid_t sys_fork() {
+pid_t sys_fork(struct trapframe *tf) {
+
+	struct proc *newproc;
+	(void)tf;
+	newproc->p_name = curproc->p_name; // name
+	newproc->p_threads = curproc->p_threads; // thread
+	newproc->p_cwd = curproc->p_cwd; // vnode
+	newproc->p_addrspace = curproc->p_addrspace; // addrspace
+
+
+
+	//result = thread_fork(args[0] /* thread name */,
+	//		proc /* new process */,
+	//		cmd_progthread /* thread function */,
+	//		args /* thread arg */, nargs /* thread arg */);
 	return 1;
 }
 
@@ -27,10 +42,16 @@ pid_t sys_getpid() {
 
 pid_t sys_waitpid(pid_t pid, int *status, int options) {
 	(void)status;
-	(void)options; // do nothing with it. 
+	(void)options; // do nothing with it.
+
+	struct exitc *c; 
 
 	struct proc* p = find_proc(pid);
-	if(p == NULL) return pid;
+	if(p == NULL) {
+		c = find_exitc(pid);
+		*status = c->exitcode;
+		return pid;
+	}
 
 	lock_acquire(p->p_lk);
 	while(find_proc(pid) != NULL) {
@@ -38,7 +59,7 @@ pid_t sys_waitpid(pid_t pid, int *status, int options) {
 	}
 	lock_release(p->p_lk);
 
-	struct exitc *c = find_exitc(pid);
+	c = find_exitc(pid);
 	*status = c->exitcode;
 
 	return pid;

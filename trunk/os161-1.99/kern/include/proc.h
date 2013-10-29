@@ -79,7 +79,7 @@ extern struct proc *kproc;
 #endif
 
 DECLARRAY(proc);
-DEFARRAY(proc, THREADINLINE);
+DEFARRAY(proc, PROCESSINLINE);
 
 
 /* exitcode array */
@@ -93,7 +93,7 @@ struct exitc {
 #endif
 
 DECLARRAY(exitc);
-DEFARRAY(exitc, THREADINLINE);
+DEFARRAY(exitc, EXITCINLINE);
 struct exitcarray *codes;
 
 // Maximum number of process
