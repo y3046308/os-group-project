@@ -106,6 +106,8 @@ proc_create(const char *name)
 	proc->p_cv = cv_create("process cv");
 	proc->p_lk = lock_create("process lock");
 
+	proc->fd_table = NULL;
+
 	#endif
 
 	return proc;

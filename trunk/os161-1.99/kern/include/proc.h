@@ -39,7 +39,11 @@
 #include <spinlock.h>
 #include <thread.h> /* required for struct threadarray */
 #include "opt-A2.h"
+
+#if OPT_A2
 #include <array.h>
+#include <syscall.h>
+#endif
 
 struct addrspace;
 struct vnode;
@@ -65,6 +69,7 @@ struct proc {
 	pid_t p_pid;
 	struct cv *p_cv;
 	struct lock *p_lk;
+	struct fd **fd_table;
 	#endif
 	
 };

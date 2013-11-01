@@ -20,13 +20,6 @@
 
 int errno;
 
-struct fd{       // file descriptor indicating each individual file
-	int file_flag; 
-	int file_handle;
-	char *filename;
-	struct vnode* file;
-};
-
 /*#ifndef FDINLINE
 #define FDINLINE INLINE
 #endif
@@ -36,7 +29,6 @@ DEFARRAY(fd, FDINLINE);
 
 volatile int i = 0; //index of fd
 struct fdarray* fd_table = NULL;  // collection of file descriptor*/
-struct fd **fd_table = NULL;
 
 static struct fd* create_fd(int flag, int handle, const char* filename, struct vnode* vn){
 	struct fd* file_descriptor;
@@ -51,18 +43,18 @@ static struct fd* create_fd(int flag, int handle, const char* filename, struct v
 }
 
 static void add_fd(struct fd* file){		// add new file descriptor to fd_table
-	if(fd_table == NULL) {
-		fd_table = kmalloc(sizeof(struct fd*)*MAX_fd_table);
+	if(curproc->fd_table == NULL) {
+		curproc->fd_table = kmalloc(sizeof(struct fd*)*MAX_fd_table);
 	}
 	int i = 0;
-	while(fd_table[i] != NULL){
+	while(curproc->fd_table[i] != NULL){
 		i++;
 	}	
-	fd_table[i] = file;
+	curproc->fd_table[i] = file;
 }
 
 static struct fd* find_fd_handle(int file_handle){    // find f.d with given fh
-  struct fd** copy = fd_table;
+  struct fd** copy = curproc->fd_table;
   while (copy != NULL){
     if ((*copy)->file_flag == file_handle){
       return *copy;
@@ -126,7 +118,6 @@ int sys_close(int fd){
   return -1;   // error found
 }
 
-volatile int index_file = 0;
 int sys_open(const char *filename, int file_flag, mode_t mode){
 	if(filename != NULL){
 		errno = EFAULT;
@@ -143,11 +134,11 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 	}
 
 	int i = 0;
-	while(fd_table != NULL) {
+	while(curproc->fd_table != NULL) {
 		i++;
 	}
 
-	int file_handle = fd_table[i]->file_handle;
+	int file_handle = curproc->fd_table[i]->file_handle;
 
 	struct fd* f = create_fd(file_flag, file_handle, filename, *new_file);
 	add_fd(f);
