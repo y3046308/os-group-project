@@ -31,7 +31,7 @@
 #define _SYSCALL_H_
 
 #include "opt-A2.h"
- #include <vnode.h>
+#include <vnode.h>
 
 
 struct trapframe; /* from <machine/trapframe.h> */
@@ -62,6 +62,13 @@ int sys_reboot(int code);
 int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
 
 #if OPT_A2
+
+struct fd{       // file descriptor indicating each individual file
+	int file_flag; 
+	int file_handle;
+	char *filename;
+	struct vnode* file;
+};
 
 int sys_read(int fd, void *buf, size_t buflen);
 int sys_write(int fd, const void *buf, size_t nbytes);

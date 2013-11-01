@@ -41,7 +41,6 @@ pid_t sys_getpid() {
 }
 
 pid_t sys_waitpid(pid_t pid, int *status, int options) {
-	(void)status;
 	(void)options; // do nothing with it.
 
 	struct exitc *c; 
