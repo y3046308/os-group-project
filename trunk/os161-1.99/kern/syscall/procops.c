@@ -20,7 +20,7 @@
 
 int errno;
 
-pid_t sys_fork(struct trapframe *tf) {
+pid_t sys_fork() {
 
 	if(procarray_num(procarr) == PID_MAX - PID_MIN) {
 		errno = EMPROC;
@@ -28,7 +28,6 @@ pid_t sys_fork(struct trapframe *tf) {
 	}
 
 	struct proc *newproc;
-	(void)tf;
 
 	// copy
 	newproc->p_name = curproc->p_name; // name
@@ -51,6 +50,8 @@ pid_t sys_fork(struct trapframe *tf) {
 	// copy threads
 	struct threadarray oldthreads = curproc->p_threads;
 	pid_t result;
+
+	// fork threads
 	for(unsigned i = 0 ; i < threadarray_num(&oldthreads) ; i++) {
 		struct thread *t = threadarray_get(&oldthreads,i);
 		result = thread_fork(t->t_name,
@@ -59,12 +60,13 @@ pid_t sys_fork(struct trapframe *tf) {
 				t->data1,
 				t->data2);
 	}
-	if(result) {
+
+	// return values
+	if(result) { // parent
 		return newproc->p_pid;
-	} else {
+	} else { // child
 		return 0;
 	}
-	return 1;
 }
 
 pid_t sys_getpid() {
