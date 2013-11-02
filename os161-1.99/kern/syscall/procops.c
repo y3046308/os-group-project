@@ -16,23 +16,54 @@
 #include <kern/fcntl.h>
 #include <array.h>
 #include <mips/trapframe.h>
+#include <limits.h>
 
+int errno;
 
 pid_t sys_fork(struct trapframe *tf) {
 
+	if(procarray_num(procarr) == PID_MAX - PID_MIN) {
+		errno = EMPROC;
+		return 0;
+	}
+
 	struct proc *newproc;
 	(void)tf;
+
+	// copy
 	newproc->p_name = curproc->p_name; // name
-	newproc->p_threads = curproc->p_threads; // thread
 	newproc->p_cwd = curproc->p_cwd; // vnode
 	newproc->p_addrspace = curproc->p_addrspace; // addrspace
 
+	// create new
+	spinlock_init(&newproc->p_lock);
+	newproc->p_cv = cv_create("proc cv");
+	newproc->p_lk = lock_create("proc lock");
+	newproc->fd_table = NULL;
+	// pid creation
+	for(pid_t curid = PID_MIN ; curid <= PID_MAX ; curid++) { // loop through available pid range.
+		if(find_proc(curid) == NULL) { // first available pid found.
+			newproc->p_pid = curid; // set pid.
+			break; // break loop.
+		}
+	}
 
-
-	//result = thread_fork(args[0] /* thread name */,
-	//		proc /* new process */,
-	//		cmd_progthread /* thread function */,
-	//		args /* thread arg */, nargs /* thread arg */);
+	// copy threads
+	struct threadarray oldthreads = curproc->p_threads;
+	pid_t result;
+	for(unsigned i = 0 ; i < threadarray_num(&oldthreads) ; i++) {
+		struct thread *t = threadarray_get(&oldthreads,i);
+		result = thread_fork(t->t_name,
+				newproc,
+				t->entrypoint,
+				t->data1,
+				t->data2);
+	}
+	if(result) {
+		return newproc->p_pid;
+	} else {
+		return 0;
+	}
 	return 1;
 }
 

@@ -109,6 +109,9 @@ struct thread {
 	/* add more here as needed */
 	 #if OPT_A2
 	 //struct proc * t_proc;
+	 void (*entrypoint)(void *data1, unsigned long data2);
+	 void *data1; 
+	 unsigned long data2;
 	 #endif
 	
 

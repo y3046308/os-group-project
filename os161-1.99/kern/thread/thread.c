@@ -529,6 +529,9 @@ thread_fork(const char *name,
 
 	/* Lock the current cpu's run queue and make the new thread runnable */
 	thread_make_runnable(newthread, false);
+	newthread->entrypoint = entrypoint;
+	newthread->data1 = data1;
+	newthread->data2 = data2;
 
 	return 0;
 }
