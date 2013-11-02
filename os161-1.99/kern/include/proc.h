@@ -70,6 +70,7 @@ struct proc {
 	struct cv *p_cv;
 	struct lock *p_lk;
 	struct fd **fd_table;
+	int open_num;
 	#endif
 	
 };

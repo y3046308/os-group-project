@@ -53,16 +53,19 @@ static void add_fd(struct fd* file){		// add new file descriptor to fd_table
 	curproc->fd_table[i] = file;
 }
 
-static struct fd* find_fd_handle(int file_handle){    // find f.d with given fh
+// find_fd function is commented out because we have no use for it so far. Uncomment and use function if necessary
+
+/*static struct fd* find_fd(char* filename){    // find f.d with given fh
   struct fd** copy = curproc->fd_table;
-  while (copy != NULL){
-    if ((*copy)->file_flag == file_handle){
-      return *copy;
+  for(int i =0; i < MAX_fd_table; i++){
+    if (strcmp((copy[i])->filename, filename) == 0){
+      return copy[i];
     }
-    copy = copy + 1;
   }
   return NULL;           // fd not found
-}
+}*/
+
+
 
 /*struct fd* find_fd_name(const char* name){    // find f.d with given file name
   struct fd* copy = fd_table;
@@ -107,7 +110,7 @@ static struct fd* find_fd_handle(int file_handle){    // find f.d with given fh
 }*/
 
 int sys_close(int fd){
-  struct vnode* tmp = find_fd_handle(fd)->file;
+  struct vnode* tmp = curproc->fd_table[fd]->file;
   if (tmp != NULL){
     vfs_close(tmp); 
     return 0;      //successfully closed.
@@ -119,19 +122,39 @@ int sys_close(int fd){
 }
 
 int sys_open(const char *filename, int file_flag, mode_t mode){
-	if(filename != NULL){
+	if(filename != NULL){ //bad memory reference
 		errno = EFAULT;
 		return -1;
 	}
-	if(file_flag & O_APPEND){
+	if(file_flag & O_APPEND){ //flags contained invalid values
 		errno = EINVAL;
 		return -1;
 	}
+	
 	struct vnode** new_file = NULL;
-	int new_node = vfs_open((char*)filename, file_flag, mode , new_file);
-	if(new_node) {
+	int ret;
+	char* filenamecast = strcpy(filenamecast, filename);
+	ret = vfs_lookup(filenamecast, new_file);
+	if(file_flag & O_CREAT && ret != -1 && file_flag & O_EXCL){
+		errno = EEXIST;
 		return -1;
 	}
+	
+	//vfs_lookup(filename, new_file); //takes care of EISDIR and ENOTDIR
+	
+	new_file = NULL;
+	if(curproc->open_num < MAX_fd_table){  //Too many opened files
+		ret = vfs_open(filenamecast, file_flag, mode , new_file);
+		curproc->open_num++;
+		if(ret < 0){
+			return -1;
+		}		
+	}else{
+		errno = EMFILE;
+		return -1;
+	}
+	
+	//still need to check errors: ENOSPC and EIO	
 
 	int i = 0;
 	while(curproc->fd_table != NULL) {
