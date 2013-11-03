@@ -46,11 +46,10 @@ static void add_fd(struct fd* file){		// add new file descriptor to fd_table
 
 int sys_close(int fd){
   struct vnode* tmp = curproc->fd_table[fd]->file;
-  if (tmp != NULL){
+  if (tmp != NULL) {
     vfs_close(tmp); 
     return 0;      //successfully closed.
-  }
-  else{
+  } else{
     errno = EBADF;    // fd is not a valid file handle
   }
   return -1;   // error found
