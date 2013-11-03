@@ -106,7 +106,9 @@ proc_create(const char *name)
 	proc->p_cv = cv_create("process cv");
 	proc->p_lk = lock_create("process lock");
 
-	proc->fd_table = NULL;
+	proc->open_num = 0;
+
+	proc->fd_table = kmalloc(sizeof(struct fd*) * MAX_fd_table);
 
 	#endif
 

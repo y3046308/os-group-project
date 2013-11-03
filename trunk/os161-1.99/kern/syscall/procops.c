@@ -110,7 +110,7 @@ void sys__exit(int exitcode) {
 	exitcarray_add(codes, c, NULL);
 
 	threadarray_remove(&curproc->p_threads, 0);
-	//thread_exit();
+	thread_exit();
 	proc_destroy(curthread->t_proc);
 	// curthread->t_proc = NULL; //what is this??? you removed it at the bottom and then added it here?
 	// code below is removed. Since the process is destroyed, there is no "curthread" now.
