@@ -63,6 +63,8 @@ int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
 
 #if OPT_A2
 
+#define MAX_fd_table 64	// only allow 64 files in fd_table (size of TLB)
+
 struct fd{       // file descriptor indicating each individual file
 	int file_flag; 
 	int file_handle;

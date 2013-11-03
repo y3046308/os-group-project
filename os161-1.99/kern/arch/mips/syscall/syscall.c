@@ -113,8 +113,10 @@ syscall(struct trapframe *tf)
 
 	    /* Add stuff here */
 #if OPT_A2
+		case SYS_open:
+			retval = sys_open((char *)tf->tf_a0,tf->tf_a1,tf->tf_a2);
 	    case SYS_read:
-	    	err = sys_read(tf->tf_a0,(void *)tf->tf_a1,tf->tf_a2);
+	    	retval = sys_read(tf->tf_a0,(void *)tf->tf_a1,tf->tf_a2);
 		break;
 
 		case SYS_write:
