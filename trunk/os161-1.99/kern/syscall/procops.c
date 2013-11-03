@@ -30,10 +30,10 @@ pid_t sys_fork() {
 	struct proc *newproc;
 
 	// copy
-	newproc->p_name = curproc->p_name; // name
+	newproc->p_name = curproc->p_name;  // name
+	kprintf("asd\n");
 	newproc->p_cwd = curproc->p_cwd; // vnode
 	newproc->p_addrspace = curproc->p_addrspace; // addrspace
-
 	// create new
 	spinlock_init(&newproc->p_lock);
 	newproc->p_cv = cv_create("proc cv");
