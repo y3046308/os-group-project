@@ -27,11 +27,10 @@ pid_t sys_fork() {
 		return 0;
 	}
 
-	struct proc *newproc;
+	struct proc *newproc = kmalloc(sizeof(*newproc));
 
 	// copy
-	newproc->p_name = curproc->p_name;  // name
-	kprintf("asd\n");
+	newproc->p_name = curthread->t_proc->p_name;  // name
 	newproc->p_cwd = curproc->p_cwd; // vnode
 	newproc->p_addrspace = curproc->p_addrspace; // addrspace
 	// create new
@@ -111,9 +110,9 @@ void sys__exit(int exitcode) {
 	exitcarray_add(codes, c, NULL);
 
 	threadarray_remove(&curproc->p_threads, 0);
+	//thread_exit();
 	proc_destroy(curthread->t_proc);
-	curthread->t_proc = NULL; //what is this??? you removed it at the bottom and then added it here?
-	thread_exit();
+	// curthread->t_proc = NULL; //what is this??? you removed it at the bottom and then added it here?
 	// code below is removed. Since the process is destroyed, there is no "curthread" now.
 	// We cannot access to it.
 	// curthread->t_proc = NULL;

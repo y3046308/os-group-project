@@ -97,7 +97,7 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 	struct fd* f = create_fd(file_flag, file_handle, filename, *new_file); //add fd to the fd table
 	add_fd(f);
 
-	return 0;  //index of the fd in the fd_fd_table
+	return file_handle;  //index of the fd in the fd_fd_table
 }
 
 
