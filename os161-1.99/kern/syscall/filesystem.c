@@ -32,15 +32,8 @@ static struct fd* create_fd(int flag, int handle, const char* filename, struct v
 	return file_descriptor;
 }
 
-static void add_fd(struct fd* file){		// add new file descriptor to fd_table
-	if(curproc->fd_table == NULL) {
-		curproc->fd_table = kmalloc(sizeof(struct fd*)*MAX_fd_table);
-	}
-	int i = 0;
-	while(curproc->fd_table[i] != NULL){
-		i++;
-	}	
-	curproc->fd_table[i] = file;
+static void add_fd(struct fd* file, int filehandle){            // add new file descriptor to fd_table
+        curproc->fd_table[filehandle] = file;
 }
 
 int sys_close(int fd){
@@ -96,7 +89,7 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 	}
 
 	struct fd* f = create_fd(file_flag, file_handle, filename, *new_file); //add fd to the fd table
-	add_fd(f);
+  add_fd(f, file_handle);
 
 	return file_handle;  //index of the fd in the fd_fd_table
 }
