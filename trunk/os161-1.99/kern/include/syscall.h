@@ -67,9 +67,9 @@ int sys___time(userptr_t user_seconds, userptr_t user_nanoseconds);
 
 struct fd{       // file descriptor indicating each individual file
 	int file_flag; 
-	int file_handle;
 	char *filename;
 	struct vnode* file;
+	off_t offset;
 };
 
 int sys_read(int fd, void *buf, size_t buflen);

@@ -15,31 +15,33 @@
 #include "opt-A2.h"
 #include "synch.h"
 #include "array.h"
+#include <kern/unistd.h>
 
 #if OPT_A2
 
 int errno;
 
-static struct fd* create_fd(int flag, int handle, const char* filename, struct vnode* vn){
+static struct fd* create_fd(int flag, const char* filename, struct vnode* vn){
 	struct fd* file_descriptor;
 	file_descriptor = kmalloc(sizeof(struct fd));
 	file_descriptor->file_flag = flag;
-	file_descriptor->file_handle = handle;
 	file_descriptor->filename = (char *)filename;
+	file_descriptor->offset = 0;
 	KASSERT(vn != NULL);
 	file_descriptor->file = vn;
 
 	return file_descriptor;
 }
 
-static void add_fd(struct fd* file, int filehandle){            // add new file descriptor to fd_table
-        curproc->fd_table[filehandle] = file;
+static void add_fd(struct fd* file, int file_handle){		// add new file descriptor to fd_table
+	curproc->fd_table[file_handle] = file;
 }
 
 int sys_close(int fd){
-  struct vnode* tmp = curproc->fd_table[fd]->file;
-  if (tmp != NULL) {
-    vfs_close(tmp); 
+  if (curproc->fd_table[fd] != NULL) {
+    vfs_close(curproc->fd_table[fd]->file);
+	kfree(curproc->fd_table[fd]);
+	curproc->fd_table[fd] = NULL;
     return 0;      //successfully closed.
   } else{
     errno = EBADF;    // fd is not a valid file handle
@@ -48,6 +50,7 @@ int sys_close(int fd){
 }
 
 int sys_open(const char *filename, int file_flag, mode_t mode){
+	
 	if(filename == NULL){ //bad memory reference
 		errno = EFAULT;
 		return -1;
@@ -81,15 +84,15 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 	}
 	
 	//still need to check errors: ENOSPC and EIO********************************************************************	
-
+	
 	int file_handle = 3; //file handle is the index at which the fd is located
-
+	
 	while(curproc->fd_table[file_handle] != NULL) { //find empty slot in fd_table
 		file_handle++;
 	}
 
-	struct fd* f = create_fd(file_flag, file_handle, filename, *new_file); //add fd to the fd table
-  add_fd(f, file_handle);
+	struct fd* f = create_fd(file_flag, filename, *new_file); //add fd to the fd table
+	add_fd(f,file_handle);
 
 	return file_handle;  //index of the fd in the fd_fd_table
 }
@@ -104,30 +107,45 @@ int sys_read(int fd, void *buf, size_t buflen) {
 
 int sys_write(int fd, const void *buf, size_t nbytes) {
 
-	(void)fd;
-
 	struct vnode *vn; // creating vnode (temp)
-	char *console = NULL; // console string ("con:")
-	console = kstrdup("con:"); // set to console
-	int result = vfs_open(console,O_WRONLY,0,&vn); // open the console vnode
-	kfree(console); // free the console
-
 	struct uio u;
-	struct iovec iov;
-	struct addrspace *as;
+    struct iovec iov;
+    struct addrspace *as;
+	int result;
 
 	as = as_create();
 
-	iov.iov_ubase = (void *)buf;
-	iov.iov_len = nbytes;
+    iov.iov_ubase = (void *)buf;
+    iov.iov_len = nbytes;
 
-	u.uio_iov = &iov;
-	u.uio_resid = nbytes;
-	u.uio_rw = UIO_WRITE;
-	u.uio_segflg = UIO_USERSPACE;
-	u.uio_space = curproc_getas();
+    u.uio_iov = &iov;
+    u.uio_resid = nbytes;
+    u.uio_rw = UIO_WRITE;
+    u.uio_segflg = UIO_USERSPACE;
+    u.uio_space = curproc_getas();
 
-	VOP_WRITE(vn,&u);
+	if(fd == STDIN_FILENO){
+		errno = EIO;
+		return -1;
+	}
+
+	if(fd == STDOUT_FILENO || fd == STDERR_FILENO){
+		char *console = NULL; // console string ("con:")
+		console = kstrdup("con:"); // set to console
+		vfs_open(console,O_WRONLY,0,&vn); // open the console vnode
+		kfree(console); // free the console
+		result = VOP_WRITE(vn,&u);
+	}
+	
+	else{
+		if(curproc->fd_table[fd]->file_flag & O_RDONLY){
+			errno = EBADF;
+			return -1;
+		}
+		u.uio_offset = curproc->fd_table[fd]->offset;
+		result = VOP_WRITE(curproc->fd_table[fd]->file, &u);
+	}
+
 
 	// SIMPLE IMPLEMENTATION
 	// kprintf("asd");
