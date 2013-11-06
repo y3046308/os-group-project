@@ -29,6 +29,7 @@
 
 #include <types.h>
 #include <kern/errno.h>
+#include <../../user/include/errno.h>
 #include <kern/syscall.h>
 #include <lib.h>
 #include <mips/trapframe.h>
@@ -37,6 +38,7 @@
 #include <syscall.h>
 #include "opt-A2.h"
 
+int errno;
 
 /*
  * System call dispatcher.
@@ -115,26 +117,29 @@ syscall(struct trapframe *tf)
 #if OPT_A2
 		case SYS_open:
 			retval = sys_open((char *)tf->tf_a0,tf->tf_a1,tf->tf_a2);
-		break;
+			if (retval < 0)	err = errno;
+			break;
 		case SYS_close:
 			retval = sys_close(tf->tf_a0);
-		break;
-	    case SYS_read:
-	    	retval = sys_read(tf->tf_a0,(void *)tf->tf_a1,tf->tf_a2);
-		break;
-
+			if (retval < 0) err = errno;
+			break;
+		case SYS_read:
+	    		retval = sys_read(tf->tf_a0,(void *)tf->tf_a1,tf->tf_a2);
+			if (retval < 0) err = errno;
+			break;
 		case SYS_write:
 			retval = sys_write(tf->tf_a0,(void *)tf->tf_a1,tf->tf_a2);
-		break;
+			if (retval < 0) err = errno;
+			break;
 		case SYS_fork:
 			pid = sys_fork();
-		break;
+			break;
 		case SYS_getpid:
 			pid = sys_getpid();
-		break;
+			break;
 		case SYS__exit:
 			sys__exit(1);
-		break;
+			break;
 #endif
 
 	    default:
