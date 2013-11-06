@@ -51,7 +51,6 @@ int sys_close(int fd){
 }
 
 int sys_open(const char *filename, int file_flag, mode_t mode){
-	
 	if(filename == NULL){ //bad memory reference
 		errno = EFAULT;
 		return -1;
@@ -189,6 +188,4 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 
         return nbytes - u.uio_resid;
 }
-
-
 #endif
