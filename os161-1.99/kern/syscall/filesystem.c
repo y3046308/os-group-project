@@ -101,7 +101,7 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 
 int sys_read(int fd, void *buf, size_t buflen) {
         struct fd* tmp;
-        if (fd < 0 || fd > MAX_fd_table){       // if fd < 0 || fd > MAX_fd_table or 
+        if (fd < 3 || fd >= MAX_fd_table){       // if fd < 0 || fd > MAX_fd_table or 
                 errno = EBADF;
                 return -1;
         }
@@ -140,13 +140,13 @@ int sys_read(int fd, void *buf, size_t buflen) {
 }
 
 int sys_write(int fd, const void *buf, size_t nbytes) {
-	struct vnode *vn; // creating vnode (temp)
-	struct uio u;
+	  struct vnode *vn; // creating vnode (temp)
+	  struct uio u;
     struct iovec iov;
     struct addrspace *as;
-	int result;
+	  int result;
 
-	as = as_create();
+	  as = as_create();
 
     iov.iov_ubase = (void *)buf;
     iov.iov_len = nbytes;
