@@ -107,7 +107,7 @@ int sys_read(int fd, void *buf, size_t buflen) {
         else{
             tmp = curproc->fd_table[fd];
             if (tmp == NULL || (tmp != NULL && tmp->file->vn_opencount == 0) || // if there's nothing at fd in fd_table or the file is not yet opened
-                tmp->file_flag != O_RDONLY || tmp->file_flag != O_RDWR){        // or if file is not readable
+                tmp->file_flag == O_WRONLY){        // or if file is not readable
                 errno = EBADF;  // error
                 return -1;
             }
@@ -122,7 +122,7 @@ int sys_read(int fd, void *buf, size_t buflen) {
         struct addrspace *as ;
         int retval;
         as = as_create();
-//      uio_knit(&iov, &u, );  // uio_kinit can be used to declare uio's but for now, let's ignore it for convenience. 
+
         iov.iov_ubase = buf;
         iov.iov_len = buflen;
 
@@ -139,7 +139,6 @@ int sys_read(int fd, void *buf, size_t buflen) {
 }
 
 int sys_write(int fd, const void *buf, size_t nbytes) {
-
 	struct vnode *vn; // creating vnode (temp)
 	struct uio u;
     struct iovec iov;
