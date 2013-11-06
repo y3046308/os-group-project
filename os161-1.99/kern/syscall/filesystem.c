@@ -101,7 +101,7 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 
 int sys_read(int fd, void *buf, size_t buflen) {
         struct fd* tmp;
-        if (fd < 3 || fd >= MAX_fd_table){       // if fd < 0 || fd > MAX_fd_table or 
+        if (fd < 0 || fd >= MAX_fd_table){       // if fd < 0 || fd > MAX_fd_table or 
                 errno = EBADF;
                 return -1;
         }
