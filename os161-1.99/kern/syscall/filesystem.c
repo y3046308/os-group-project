@@ -140,56 +140,54 @@ int sys_read(int fd, void *buf, size_t buflen) {
 }
 
 int sys_write(int fd, const void *buf, size_t nbytes) {
-	  struct vnode *vn; // creating vnode (temp)
-	  struct uio u;
-    struct iovec iov;
-    struct addrspace *as;
-	  int result;
+	      struct vnode *vn; // creating vnode (temp)
+        struct uio u;
+        struct iovec iov;
+        struct addrspace *as;
 
-	  as = as_create();
+        as = as_create();
 
-    iov.iov_ubase = (void *)buf;
-    iov.iov_len = nbytes;
+        iov.iov_ubase = (void *)buf;
+        iov.iov_len = nbytes;
 
-    u.uio_iov = &iov;
-    u.uio_resid = nbytes;
-    u.uio_rw = UIO_WRITE;
-    u.uio_segflg = UIO_USERSPACE;
-    u.uio_space = curproc_getas();
+        u.uio_iov = &iov;
+        u.uio_resid = nbytes;
+        u.uio_rw = UIO_WRITE;
+        u.uio_segflg = UIO_USERSPACE;
+        u.uio_space = curproc_getas();
 
-	if(fd == STDIN_FILENO){
-		errno = EIO;
-		return -1;
-	}
+        if(fd == STDIN_FILENO){
+                errno = EIO;
+                return -1;
+        }
 
-	if(fd == STDOUT_FILENO || fd == STDERR_FILENO){
-		char *console = NULL; // console string ("con:")
-		console = kstrdup("con:"); // set to console
-		vfs_open(console,O_WRONLY,0,&vn); // open the console vnode
-		kfree(console); // free the console
-		result = VOP_WRITE(vn,&u);
-		if(result < 0){
-			errno = EIO; //A hardware I/O error occurred writing the data
-			return -1;
-		}
-	}
-	
-	else{
-		if(curproc->fd_table[fd]->file_flag & O_RDONLY){
-			errno = EBADF;
-			return -1;
-		}
-		u.uio_offset = curproc->fd_table[fd]->offset;
-		VOP_WRITE(curproc->fd_table[fd]->file, &u);
-		if(u.uio_resid){
-			errno = ENOSPC; //There is no free space remaining on the filesystem containing the file
-			return -1;
-		}
-		curproc->fd_table[fd]->offset += nbytes - u.uio_resid;
-		curproc->fd_table[fd]->buflen += nbytes - u.uio_resid; //update buflength of fd
-	}
-	
-	return nbytes - u.uio_resid;
+        if(fd == STDOUT_FILENO || fd == STDERR_FILENO){
+                char *console = NULL; // console string ("con:")
+                console = kstrdup("con:"); // set to console
+                vfs_open(console,O_WRONLY,0,&vn); // open the console vnode
+                kfree(console); // free the console
+                int result = VOP_WRITE(vn,&u);
+                if(result < 0){
+                        errno = EIO; //A hardware I/O error occurred writing the data
+                        return -1;
+                }
+        }
+        else{
+                if(curproc->fd_table[fd]->file_flag & O_RDONLY){
+                        errno = EBADF;
+                        return -1;
+                }
+                u.uio_offset = curproc->fd_table[fd]->offset;
+                VOP_WRITE(curproc->fd_table[fd]->file, &u);
+                if(u.uio_resid){
+                        errno = ENOSPC; //There is no free space remaining on the filesystem containing the file
+                        return -1;
+                }
+                curproc->fd_table[fd]->offset += nbytes - u.uio_resid;
+                curproc->fd_table[fd]->buflen += nbytes - u.uio_resid; //update buflength of fd
+        }
+
+        return nbytes - u.uio_resid;
 }
 
 
