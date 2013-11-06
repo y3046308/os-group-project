@@ -57,7 +57,7 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 	}
 	if(file_flag & O_APPEND){ //flags contained invalid values
 		errno = EINVAL;
-		return -2;
+		return -1;
 	}
 	
 	struct vnode** new_file; //passed into vfs_lookup function
@@ -68,7 +68,7 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 	ret = vfs_lookup(filenamecast, new_file); //takes care of EISDIR and ENOTDIR hopefully
 	if(file_flag & O_CREAT && ret >= 0 && file_flag & O_EXCL){
 		errno = EEXIST; //file creation failed because it already exists
-		return -3;
+		return -1;
 	}
 	
 	//new_file = NULL; //passed into vfs_open function
@@ -80,7 +80,7 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 		}
 	}else{ //fd table is full, open disallowed
 		errno = EMFILE; 
-		return -4;
+		return -1;
 	}
 	
 	//still need to check errors: ENOSPC and EIO********************************************************************	
