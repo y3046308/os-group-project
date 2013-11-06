@@ -136,7 +136,7 @@ int sys_read(int fd, void *buf, size_t buflen) {
         u.uio_space = curproc_getas();
 
         retval = VOP_READ(tmp->file, &u);
-        return retval;
+        return buflen - u.uio_resid;
 }
 
 int sys_write(int fd, const void *buf, size_t nbytes) {
