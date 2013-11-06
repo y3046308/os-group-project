@@ -115,16 +115,16 @@ syscall(struct trapframe *tf)
 #if OPT_A2
 		case SYS_open:
 			retval = sys_open((char *)tf->tf_a0,tf->tf_a1,tf->tf_a2);
-			break;
+		break;
 		case SYS_close:
 			retval = sys_close(tf->tf_a0);
-			break;
+		break;
 	    case SYS_read:
 	    	retval = sys_read(tf->tf_a0,(void *)tf->tf_a1,tf->tf_a2);
 		break;
 
 		case SYS_write:
-			err = sys_write(tf->tf_a0,(void *)tf->tf_a1,tf->tf_a2);
+			retval = sys_write(tf->tf_a0,(void *)tf->tf_a1,tf->tf_a2);
 		break;
 		case SYS_fork:
 			pid = sys_fork();

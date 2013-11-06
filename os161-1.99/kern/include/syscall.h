@@ -70,6 +70,7 @@ struct fd{       // file descriptor indicating each individual file
 	char *filename;
 	struct vnode* file;
 	off_t offset;
+	size_t buflen; //buflength (number of bytes left in the file to write)
 };
 
 int sys_read(int fd, void *buf, size_t buflen);
