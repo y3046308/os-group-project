@@ -27,6 +27,7 @@ static struct fd* create_fd(int flag, const char* filename, struct vnode* vn){
 	file_descriptor->file_flag = flag;
 	file_descriptor->filename = (char *)filename;
 	file_descriptor->offset = 0;
+	file_descriptor->buflen = 0;
 	KASSERT(vn != NULL);
 	file_descriptor->file = vn;
 
@@ -41,7 +42,7 @@ int sys_close(int fd){
   if (curproc->fd_table[fd] != NULL) {
     vfs_close(curproc->fd_table[fd]->file);
 	kfree(curproc->fd_table[fd]);
-	curproc->fd_table[fd] = NULL;
+	curproc->fd_table[fd] = NULL; 
     return 0;      //successfully closed.
   } else{
     errno = EBADF;    // fd is not a valid file handle
@@ -167,6 +168,10 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 		vfs_open(console,O_WRONLY,0,&vn); // open the console vnode
 		kfree(console); // free the console
 		result = VOP_WRITE(vn,&u);
+		if(result < 0){
+			errno = EIO; //A hardware I/O error occurred writing the data
+			return -1;
+		}
 	}
 	
 	else{
@@ -175,14 +180,16 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 			return -1;
 		}
 		u.uio_offset = curproc->fd_table[fd]->offset;
-		result = VOP_WRITE(curproc->fd_table[fd]->file, &u);
+		VOP_WRITE(curproc->fd_table[fd]->file, &u);
+		if(u.uio_resid){
+			errno = ENOSPC; //There is no free space remaining on the filesystem containing the file
+			return -1;
+		}
+		curproc->fd_table[fd]->offset += nbytes - u.uio_resid;
+		curproc->fd_table[fd]->buflen += nbytes - u.uio_resid; //update buflength of fd
 	}
-
-
-	// SIMPLE IMPLEMENTATION
-	// kprintf("asd");
-
-	return result;
+	
+	return nbytes - u.uio_resid;
 }
 
 
