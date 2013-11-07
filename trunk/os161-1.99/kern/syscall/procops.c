@@ -67,14 +67,55 @@ pid_t sys_fork(struct trapframe *tf) {
 
 	// fork thread
 	// struct thread *t = threadarray_get(&oldthreads,0);
-	int spl = splhigh();
+
+	// copy trapframe to heap.
+	struct trapframe *ctf = kmalloc(sizeof(struct trapframe));
+	ctf->tf_vaddr = tf->tf_vaddr;
+	ctf->tf_status = tf->tf_status;
+	ctf->tf_cause = tf->tf_cause;
+	ctf->tf_lo = tf->tf_lo;
+	ctf->tf_hi = tf->tf_hi;
+	ctf->tf_ra = tf->tf_ra;
+	ctf->tf_at = tf->tf_at;
+	ctf->tf_v0 = tf->tf_v0;
+	ctf->tf_v1 = tf->tf_v1;
+	ctf->tf_a0 = tf->tf_a0;
+	ctf->tf_a1 = tf->tf_a1;
+	ctf->tf_a2 = tf->tf_a2;
+	ctf->tf_a3 = tf->tf_a3;
+	ctf->tf_t0 = tf->tf_t0;
+	ctf->tf_t1 = tf->tf_t1;
+	ctf->tf_t2 = tf->tf_t2;
+	ctf->tf_t3 = tf->tf_t3;
+	ctf->tf_t4 = tf->tf_t4;
+	ctf->tf_t5 = tf->tf_t5;
+	ctf->tf_t6 = tf->tf_t6;
+	ctf->tf_t7 = tf->tf_t7;
+	ctf->tf_s0 = tf->tf_s0;
+	ctf->tf_s1 = tf->tf_s1;
+	ctf->tf_s2 = tf->tf_s2;
+	ctf->tf_s3 = tf->tf_s3;
+	ctf->tf_s4 = tf->tf_s4;
+	ctf->tf_s5 = tf->tf_s5;
+	ctf->tf_s6 = tf->tf_s6;
+	ctf->tf_s7 = tf->tf_s7;
+	ctf->tf_t8 = tf->tf_t8;
+	ctf->tf_t9 = tf->tf_t9;
+	ctf->tf_k0 = tf->tf_k0;
+	ctf->tf_k1 = tf->tf_k1;
+	ctf->tf_gp = tf->tf_gp;
+	ctf->tf_sp = tf->tf_sp;
+	ctf->tf_s8 = tf->tf_s8;
+	ctf->tf_epc = tf->tf_epc;
+
+	//int spl = splhigh();
 	result = thread_fork(curthread->t_proc->p_name,
 			newproc,	
-			enter_forked_process, tf, (unsigned long)curproc->p_addrspace
+			enter_forked_process, ctf, (unsigned long)curproc->p_addrspace
 			);
 
 	// parent return.
-	splx(spl);
+	//splx(spl);
 
 	return newproc->p_pid;
 }
@@ -89,6 +130,11 @@ pid_t sys_waitpid(pid_t pid, int *status, int options) {
 	struct exitc *c; 
 
 	struct proc* p = find_proc(pid); // search for process
+
+	if(pid == curproc->p_pid) {
+		return pid;
+	}
+
 	if(p != NULL) {
 		lock_acquire(p->p_lk);
 		while(find_proc(pid) != NULL) {

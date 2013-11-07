@@ -89,6 +89,7 @@ syscall(struct trapframe *tf)
 	int callno;
 	int32_t retval;
 	int err;
+	pid_t pid;
 
 	KASSERT(curthread != NULL);
 	KASSERT(curthread->t_curspl == 0);
@@ -136,16 +137,16 @@ syscall(struct trapframe *tf)
 			if (retval < 0) err = errno;
 			break;
 		case SYS_fork:
-			retval = sys_fork(tf); // actually, do not need to set retval. it always return 0.
+			sys_fork(tf); // actually, do not need to set retval. it always return 0.
 			break;
 		case SYS_waitpid:
-			retval = sys_waitpid(tf->tf_a0, (int *)tf->tf_a1, tf->tf_a2);
+			pid = sys_waitpid(tf->tf_a0, (int *)tf->tf_a1, tf->tf_a2);
 			break;
 		case SYS_getpid:
-			retval = sys_getpid();
+			pid = sys_getpid();
 			break;
 		case SYS__exit:
-			sys__exit(1);
+			sys__exit(tf->tf_a0);
 			break;
 #endif
 
@@ -198,8 +199,6 @@ void enter_forked_process(void *tf, unsigned long unused) {
 	// tf - trapframe
 	// unused - addrspace
 
-	lock_acquire(curproc->p_lk);
-
 	struct trapframe *ptf = tf;
 
 	// address space
@@ -251,7 +250,7 @@ void enter_forked_process(void *tf, unsigned long unused) {
 	ctf.tf_s8 = ptf->tf_s8;
 	ctf.tf_epc = ptf->tf_epc + 4;
 
-	lock_release(curproc->p_lk);
+	kfree(ptf);
 
 	mips_usermode(&ctf);
 }
