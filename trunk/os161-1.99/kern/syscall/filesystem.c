@@ -144,14 +144,28 @@ int sys_read(int fd, void *buf, size_t buflen) {
 }
 
 int sys_write(int fd, const void *buf, size_t nbytes) {
-        if(fd < 0 || fd >= MAX_fd_table){
-                errno = EBADF;
-                return -1;
-        }
+	struct fd* tmp;
         if (!buf){      // else if invalid buffer
                 errno = EFAULT;
                 return -1;
         }
+
+        if(fd < 0 || fd >= MAX_fd_table){
+                errno = EBADF;
+                return -1;
+        }
+	else if (fd == 0){	// fd == STDIN_FILENO
+		errno = EIO;
+		return -1;
+	}
+	else if (fd >= 3 && fd < MAX_fd_table){
+		tmp = curproc->fd_table[fd];
+                if (tmp == NULL || (tmp->file_flag & O_RDONLY)){
+                         errno = EBADF;
+                         return -1;
+                }
+	}
+
 	struct vnode *vn; // creating vnode (temp)
 	struct uio u;
 	struct iovec iov;
@@ -168,11 +182,7 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
         u.uio_segflg = UIO_USERSPACE;
         u.uio_space = curproc_getas();
 
-	if(fd == STDIN_FILENO){
-		errno = EIO;
-		return -1;
-	}
-	else if(fd == STDOUT_FILENO || fd == STDERR_FILENO){
+	if(fd == STDOUT_FILENO || fd == STDERR_FILENO){
 		char *console = NULL; // console string ("con:")
 		console = kstrdup("con:"); // set to console
 		vfs_open(console,O_WRONLY,0,&vn); // open the console vnode
@@ -184,11 +194,6 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 		}
 	}
 	else{
-        	struct fd* tmp = curproc->fd_table[fd]; 
-	        if (tmp == NULL || (tmp->file_flag & O_RDONLY)){
-	                 errno = EBADF;
-        	         return -1;
- 	        }
 		u.uio_offset = curproc->fd_table[fd]->offset;
 		VOP_WRITE(curproc->fd_table[fd]->file, &u);
 		if(u.uio_resid){
