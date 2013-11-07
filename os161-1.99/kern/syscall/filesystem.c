@@ -54,16 +54,41 @@ int sys_close(int fd){
 }
 
 int sys_open(const char *filename, int file_flag, mode_t mode){
-	bool create = false;
+	bool create = false, notfull = false;;
         if(filename == NULL){ //bad memory reference
                 errno = EFAULT;
                 return -1;
         }
-        if(file_flag & O_APPEND){ //flags contained invalid values
+       if(file_flag & O_APPEND){ //flags contained invalid values
                 errno = EINVAL;
                 return -1;
         }
-        
+	struct vnode* new_file;
+	int ret;
+	if (curproc->open_num < MAX_fd_table){	// fd table is avilable
+		notfull = true;
+		ret = vfs_open((char *)filename, file_flag, mode , &new_file);
+		curproc->open_num++;
+		if (ret >= 0){
+			if ((file_flag & O_CREAT) && (file_flag & O_EXCL)){
+				errno = EEXIST;
+				return -1;
+			}
+		}
+		else{
+			create = true;
+			if (file_flag & ~O_CREAT){
+				errno = ENOENT;
+				return -1;
+			}
+		}
+	}
+	if (!notfull){	// if table is full
+		if (create) errno = ENOSPC;
+		else errno = EMFILE;
+		return -1;
+	}
+ /*       
         struct vnode** new_file; //passed into vfs_lookup function
         char* filenamecast = kmalloc(sizeof((char *) NAME_MAX));
         strcpy(filenamecast, filename); //cast constant filename -> non-constant
@@ -75,7 +100,7 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
         }
 	else if (ret < 0){
 		create = true;
-		if (!(file_flag & O_CREAT)){
+		if (file_flag & ~O_CREAT){
                         errno = ENOENT;
                         return -1;
                 }
@@ -92,7 +117,7 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 		else errno = EMFILE;
                 return -1;
         }
-        
+   */     
         //still need to check errors: ENOSPC and EIO********************************************************************        
         
         int file_handle = 3; //file handle is the index at which the fd is located
@@ -100,8 +125,8 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
         while(curproc->fd_table[file_handle] != NULL) { //find empty slot in fd_table
                 file_handle++;
         }
-
-        struct fd* f = create_fd(file_flag, filename, *new_file); //add fd to the fd table
+	struct fd* f = create_fd(file_flag, filename, new_file);
+        //struct fd* f = create_fd(file_flag, filename, *new_file); //add fd to the fd table
         add_fd(f,file_handle);
 
         return file_handle;  //index of the fd in the fd_fd_table
