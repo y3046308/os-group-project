@@ -151,7 +151,7 @@ thread_create(const char *name)
 
 	/* If you add to struct thread, be sure to initialize here */
 	#if OPT_A2
-	thread->t_proc = NULL;
+	
 	#endif
 
 	return thread;
@@ -491,6 +491,8 @@ thread_fork(const char *name,
 		return ENOMEM;
 	}
 
+	
+
 	/* Allocate a stack */
 	newthread->t_stack = kmalloc(STACK_SIZE);
 	if (newthread->t_stack == NULL) {
@@ -529,9 +531,6 @@ thread_fork(const char *name,
 
 	/* Lock the current cpu's run queue and make the new thread runnable */
 	thread_make_runnable(newthread, false);
-	newthread->entrypoint = entrypoint;
-	newthread->data1 = data1;
-	newthread->data2 = data2;
 
 	return 0;
 }

@@ -101,6 +101,7 @@ struct exitc {
 DECLARRAY(exitc);
 DEFARRAY(exitc, EXITCINLINE);
 struct exitcarray *codes;
+extern bool *pid_list;
 
 // Maximum number of process
 #define MAX_NUMPROC (PID_MAX - PID_MIN)
