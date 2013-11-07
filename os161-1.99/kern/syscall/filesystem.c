@@ -54,7 +54,7 @@ int sys_close(int fd){
 }
 
 int sys_open(const char *filename, int file_flag, mode_t mode){
-	bool create = false, notfull = false;;
+	bool create = false, full = true;
         if(filename == NULL){ //bad memory reference
                 errno = EFAULT;
                 return -1;
@@ -66,10 +66,10 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 	struct vnode* new_file;
 	int ret;
 	if (curproc->open_num < MAX_fd_table){	// fd table is avilable
-		notfull = true;
-		ret = vfs_open((char *)filename, file_flag, mode , &new_file);
+		full = false;
+		ret = vfs_open((char *)filename, file_flag, mode , &new_file);	// open file when table has free space
 		curproc->open_num++;
-		if (ret >= 0){
+		if (ret == 0){
 			if ((file_flag & O_CREAT) && (file_flag & O_EXCL)){
 				errno = EEXIST;
 				return -1;
@@ -83,42 +83,11 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 			}
 		}
 	}
-	if (!notfull){	// if table is full
+	if (full){	// if table is full
 		if (create) errno = ENOSPC;
 		else errno = EMFILE;
 		return -1;
 	}
- /*       
-        struct vnode** new_file; //passed into vfs_lookup function
-        char* filenamecast = kmalloc(sizeof((char *) NAME_MAX));
-        strcpy(filenamecast, filename); //cast constant filename -> non-constant
-        int ret = vfs_lookup(filenamecast, new_file); //takes care of EISDIR and ENOTDIR hopefully
-
-        if(file_flag & O_CREAT && ret >= 0 && file_flag & O_EXCL){
-                errno = EEXIST; //file creation failed because it already exists
-                return -1;
-        }
-	else if (ret < 0){
-		create = true;
-		if (file_flag & ~O_CREAT){
-                        errno = ENOENT;
-                        return -1;
-                }
-	}
-        //new_file = NULL; //passed into vfs_open function
-        if(curproc->open_num < MAX_fd_table){  //fd table is not full, open allowed 
-                ret = vfs_open(filenamecast, file_flag, mode , new_file);
-                curproc->open_num++;
-                if(ret < 0){
-                        return -1;
-                }
-        }else{ //fd table is full, open disallowed
-		if (create) errno = ENOSPC;
-		else errno = EMFILE;
-                return -1;
-        }
-   */     
-        //still need to check errors: ENOSPC and EIO********************************************************************        
         
         int file_handle = 3; //file handle is the index at which the fd is located
         
@@ -126,7 +95,6 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
                 file_handle++;
         }
 	struct fd* f = create_fd(file_flag, filename, new_file);
-        //struct fd* f = create_fd(file_flag, filename, *new_file); //add fd to the fd table
         add_fd(f,file_handle);
 
         return file_handle;  //index of the fd in the fd_fd_table
