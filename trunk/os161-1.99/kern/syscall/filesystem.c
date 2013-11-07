@@ -50,6 +50,9 @@ int sys_close(int fd){
 		curproc->fd_table[fd] = NULL;
 		retval = 0;
 	}
+	else{
+		errno = EIO;
+	}
 	return retval; 
 }
 
@@ -144,7 +147,6 @@ int sys_read(int fd, void *buf, size_t buflen) {
 }
 
 int sys_write(int fd, const void *buf, size_t nbytes) {
-	struct fd* tmp;
         if (!buf){      // else if invalid buffer
                 errno = EFAULT;
                 return -1;
@@ -158,9 +160,9 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 		errno = EIO;
 		return -1;
 	}
-	else if (fd >= 3 && fd < MAX_fd_table){
-		tmp = curproc->fd_table[fd];
-                if (tmp == NULL || (tmp->file_flag & O_RDONLY)){
+	else if (fd >= 3 && fd < MAX_fd_table){		// have valid fd
+		struct fd* tmp = curproc->fd_table[fd];
+                if (tmp == NULL || (tmp->file_flag & O_RDONLY)){	// but have no file at fd OR file at fd is RDONLY
                          errno = EBADF;
                          return -1;
                 }
