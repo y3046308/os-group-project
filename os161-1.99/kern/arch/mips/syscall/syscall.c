@@ -37,6 +37,11 @@
 #include <current.h>
 #include <syscall.h>
 #include "opt-A2.h"
+#if OPT_A2
+#include <addrspace.h>
+#include <proc.h>
+#include <synch.h>
+#endif
 
 int errno;
 
@@ -84,7 +89,6 @@ syscall(struct trapframe *tf)
 	int callno;
 	int32_t retval;
 	int err;
-	pid_t pid;
 
 	KASSERT(curthread != NULL);
 	KASSERT(curthread->t_curspl == 0);
@@ -132,10 +136,13 @@ syscall(struct trapframe *tf)
 			if (retval < 0) err = errno;
 			break;
 		case SYS_fork:
-			pid = sys_fork();
+			retval = sys_fork(tf); // actually, do not need to set retval. it always return 0.
+			break;
+		case SYS_waitpid:
+			retval = sys_waitpid(tf->tf_a0, (int *)tf->tf_a1, tf->tf_a2);
 			break;
 		case SYS_getpid:
-			pid = sys_getpid();
+			retval = sys_getpid();
 			break;
 		case SYS__exit:
 			sys__exit(1);
@@ -185,8 +192,66 @@ syscall(struct trapframe *tf)
  *
  * Thus, you can trash it and do things another way if you prefer.
  */
-void
-enter_forked_process(struct trapframe *tf)
-{
-	(void)tf;
+
+void enter_forked_process(void *tf, unsigned long unused) {
+
+	// tf - trapframe
+	// unused - addrspace
+
+	lock_acquire(curproc->p_lk);
+
+	struct trapframe *ptf = tf;
+
+	// address space
+	struct addrspace * newas;
+	as_copy((struct addrspace *)unused, &newas); // copy old addrspace to new one
+	curproc_setas(newas); // set the curproc's addrspace
+	as_activate(); // activate it
+
+	/*ptf->tf_v0 = 0;
+	ptf->tf_a3 = 0;*/
+
+	// trapframe copy.
+	struct trapframe ctf;
+	ctf.tf_vaddr = ptf->tf_vaddr;
+	ctf.tf_status = ptf->tf_status;
+	ctf.tf_cause = ptf->tf_cause;
+	ctf.tf_lo = ptf->tf_lo;
+	ctf.tf_hi = ptf->tf_hi;
+	ctf.tf_ra = ptf->tf_ra;
+	ctf.tf_at = ptf->tf_at;
+	ctf.tf_v0 = 0;
+	ctf.tf_v1 = ptf->tf_v1;
+	ctf.tf_a0 = ptf->tf_a0;
+	ctf.tf_a1 = ptf->tf_a1;
+	ctf.tf_a2 = ptf->tf_a2;
+	ctf.tf_a3 = 0;
+	ctf.tf_t0 = ptf->tf_t0;
+	ctf.tf_t1 = ptf->tf_t1;
+	ctf.tf_t2 = ptf->tf_t2;
+	ctf.tf_t3 = ptf->tf_t3;
+	ctf.tf_t4 = ptf->tf_t4;
+	ctf.tf_t5 = ptf->tf_t5;
+	ctf.tf_t6 = ptf->tf_t6;
+	ctf.tf_t7 = ptf->tf_t7;
+	ctf.tf_s0 = ptf->tf_s0;
+	ctf.tf_s1 = ptf->tf_s1;
+	ctf.tf_s2 = ptf->tf_s2;
+	ctf.tf_s3 = ptf->tf_s3;
+	ctf.tf_s4 = ptf->tf_s4;
+	ctf.tf_s5 = ptf->tf_s5;
+	ctf.tf_s6 = ptf->tf_s6;
+	ctf.tf_s7 = ptf->tf_s7;
+	ctf.tf_t8 = ptf->tf_t8;
+	ctf.tf_t9 = ptf->tf_t9;
+	ctf.tf_k0 = ptf->tf_k0;
+	ctf.tf_k1 = ptf->tf_k1;
+	ctf.tf_gp = ptf->tf_gp;
+	ctf.tf_sp = ptf->tf_sp;
+	ctf.tf_s8 = ptf->tf_s8;
+	ctf.tf_epc = ptf->tf_epc + 4;
+
+	lock_release(curproc->p_lk);
+
+	mips_usermode(&ctf);
 }

@@ -103,6 +103,8 @@ proc_create(const char *name)
 		}
 	}
 
+	procarray_add(procarr,proc,NULL);
+
 	proc->p_cv = cv_create("process cv");
 	proc->p_lk = lock_create("process lock");
 
@@ -125,7 +127,7 @@ struct proc * find_proc(pid_t pid) {
 
 	for(int i = 0 ; i < size ; i++) {
 		temp = procarray_get(procarr,i);
-		if(temp->p_pid == pid) {
+		if(temp != NULL && temp->p_pid == pid) {
 			return temp;
 		}
 	}
