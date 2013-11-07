@@ -90,6 +90,7 @@ syscall(struct trapframe *tf)
 	int32_t retval;
 	int err;
 	pid_t pid;
+	(void)pid;
 
 	KASSERT(curthread != NULL);
 	KASSERT(curthread->t_curspl == 0);
@@ -137,13 +138,13 @@ syscall(struct trapframe *tf)
 			if (retval < 0) err = errno;
 			break;
 		case SYS_fork:
-			sys_fork(tf); // actually, do not need to set retval. it always return 0.
+			retval = sys_fork(tf); // actually, do not need to set retval. it always return 0.
 			break;
 		case SYS_waitpid:
-			pid = sys_waitpid(tf->tf_a0, (int *)tf->tf_a1, tf->tf_a2);
+			retval = sys_waitpid(tf->tf_a0, (int *)tf->tf_a1, tf->tf_a2);
 			break;
 		case SYS_getpid:
-			pid = sys_getpid();
+			retval = sys_getpid();
 			break;
 		case SYS__exit:
 			sys__exit(tf->tf_a0);
