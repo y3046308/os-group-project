@@ -19,5 +19,5 @@
 9. vfs_open is used to open a file or device.
 
 10. Operations you can do on vnode are vop_open, vop_close, vop_reclaim, vop_read, vop_readlink, vop_getdirentry, vop_write, and so on.
-    The rest of the operations can be found in kern/include/vnode.h.When two processes open same files, only one vnode is created and 
-    vn_opencount is set to 2, indicating that two threads are accessing that file. 
+    The rest of the operations can be found in kern/include/vnode.h.When two processes open same files, we have two vnodes and
+    vn_opencount is set to 2, indicating that the file is opened at two places.
