@@ -170,10 +170,18 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 	}
 	else if (fd >= 3 && fd < MAX_fd_table){		// have valid fd
 		struct fd* tmp = curproc->fd_table[fd];
-                if (tmp == NULL || (tmp->file_flag & O_RDONLY)){	// but have no file at fd OR file at fd is RDONLY
+//                if (tmp == NULL || (tmp->file_flag & O_RDONLY)){	// but have no file at fd OR file at fd is RDONLY
+		if (tmp == NULL){ 
                          errno = EBADF;
                          return -1;
                 }
+		switch(tmp->file_flag & O_ACCMODE){
+			case O_WRONLY: break;
+		        case O_RDWR:   break;
+			default:
+				errno = EBADF;
+				return -1;
+		}
 	}
 
 	struct vnode *vn; // creating vnode (temp)
