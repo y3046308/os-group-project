@@ -19,6 +19,7 @@
 #include <limits.h>
 #include <spl.h>
 #include <kern/wait.h>
+#include <copyinout.h>
 
 #define DUMBVM_STACKPAGES 12
 
@@ -220,6 +221,78 @@ void sys__exit(int exitcode) {
 	// code below is removed. Since the process is destroyed, there is no "curthread" now.
 	// We cannot access to it.
 	// curthread->t_proc = NULL;
+}
+
+int sys_execv(const char *progname, char **args) {
+	struct addrspace *as;
+	struct vnode *v;
+	vaddr_t entrypoint, stackptr;
+	int result, argc;
+
+// Copy arguments into kernel buffer
+
+// Open the executable, create a new address space and load the elf into it
+
+	result = vfs_open((char *)progname, O_RDONLY, 0, &v);
+	if (result) {
+		return result;
+	}
+	// KASSERT(curproc_getas() == NULL);
+
+	struct addrspace * newas = curproc_getas();
+
+	as = as_create();
+	if (as == NULL) {
+		vfs_close(v);
+		return ENOMEM;
+	}
+
+	curproc_setas(as);
+	as_activate();
+
+	result = load_elf(v, &entrypoint);
+	if (result) {
+		/* p_addrspace will go away when curproc is destroyed */
+		vfs_close(v);
+		return result;
+	}
+	vfs_close(v);
+
+	result = as_define_stack(as, &stackptr); // stackptr set
+	if (result) {
+		/* p_addrspace will go away when curproc is destroyed */
+		return result;
+	}
+
+	curproc_setas(newas);
+	as_activate();
+
+// Copy the arguments into user stack
+
+	char **copyargs = args;	
+	size_t *temp;
+	argc = 0;
+	while(*copyargs != NULL) {
+		argc = argc + 1;
+		copyargs++;
+	}
+	userptr_t uargs = (userptr_t)stackptr;
+	for(int i = 0 ; i < argc ; i++) {
+		int len = 0;
+		for(int j = 0 ; args[i][j] != '\0' ; j++) {
+			len++;
+		}
+		copyoutstr(args[i], (userptr_t)(stackptr - (4 * i)), ARG_MAX, temp);
+	}
+	stackptr -= argc * 4;
+
+// Return user mode using 
+
+	enter_new_process(argc /*argc*/, uargs /*userspace addr of argv*/,
+			  stackptr, entrypoint);
+
+	return 0;
+
 }
 
 #endif
