@@ -103,7 +103,19 @@ proc_create(const char *name)
 		}
 	}
 
+	if(procarr == NULL) {
+		procarr = procarray_create();
+		procarray_init(procarr);
+	}
+	if(codes == NULL) {
+		codes = exitcarray_create();
+		exitcarray_init(codes);
+	}
 	procarray_add(procarr,proc,NULL);
+	struct exitc *c = kmalloc(sizeof(struct exitc));
+	c->exitcode = -1;
+	c->pid = proc->p_pid;
+	exitcarray_add(codes,c,NULL);
 
 	proc->p_cv = cv_create("process cv");
 	proc->p_lk = lock_create("process lock");
