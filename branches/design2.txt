@@ -1,3 +1,5 @@
+For every question, implementation on error cases were omitted.
+
 1. file descriptor consists of five items: file_flag, filename, file(vnode), offset, and buflen.
    - file_flag indicates what files can do. Ex) Read only, Write Only, Read and Write, etc...
    - filename literally indicates name of the file
@@ -12,6 +14,21 @@
    - In read, before reading the file, we check if file exists at fd in the table. If it does, we open the file using VOP_READ.
    - In write, we first check if file exists at fd in the table. If it does, we open the file using VOP_WRITE. 
    
-2.
-3.
+2. We assign pids to each process in proc_create that's in kern/proc/proc.c. First we iterate through the array of processes,
+  then assign pid to all empty processes in the array. Possible pids are from PID_MIN to PID_MAX.
+  
+  - Fork just copies every element from current process to new process. 
+    -> string p.name, vnode p_cwd
+    -> spinlock p_lock
+    -> array of threads, p_threads
+    -> virtual address space, p_addrspace
+    -> 
+    
+  - getpid just reads id of current process. (we have pid declared inside process structure so getting pid of current process is piece of cake).
+  - _exit
+  
+3. First, if id of current process is equal to given pid, just return pid. Else, find process with id = pid. If such process
+   exists, we wait until current process holds id of pid. Here, we use lock_acquire, lock_release and cv_wait to wait for 
+   the designated process. If we find one, we close it using find_exitc and return its pid.
+
 4.
