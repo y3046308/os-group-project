@@ -38,18 +38,17 @@ static void add_fd(struct fd* file, int file_handle){		// add new file descripto
 	curproc->fd_table[file_handle] = file;
 }
 
-static bool valid_address_check(struct addrspace *as, vaddr_t *addr){
-	if (addr < (vaddr_t*) USERSTACK){
-		if (((vaddr_t*)as->as_vbase1 <= addr && addr < (vaddr_t*)(as->as_vbase1 + as->as_npages1 * PAGE_SIZE)) ||
-		    ((vaddr_t*)as->as_vbase2 <= addr && addr < (vaddr_t*)(as->as_vbase2 + as->as_npages2 * PAGE_SIZE)) ||
-		    ((vaddr_t*)USERSTACK - DUMBVM_STACKPAGES * PAGE_SIZE <= addr)){
+static bool valid_address_check(struct addrspace *as, vaddr_t addr){
+	if (addr < USERSTACK){
+		if ((as->as_vbase1 <= addr && addr < (as->as_vbase1 + as->as_npages1 * PAGE_SIZE)) ||
+		    (as->as_vbase2 <= addr && addr < (as->as_vbase2 + as->as_npages2 * PAGE_SIZE)) ||
+		    (USERSTACK - DUMBVM_STACKPAGES * PAGE_SIZE <= addr)){
 			return true;
 		}
 	}
 	return false;
 }
 int sys_close(int fd){
-	// still needs to manage EIO error case
         int retval = -1;
         if (fd < 0 || fd >= MAX_fd_table){
                 errno = EBADF;
@@ -67,9 +66,8 @@ int sys_close(int fd){
 }
 
 int sys_open(const char *filename, int file_flag, mode_t mode){
-//	struct addrspace *as;
 	bool create = false, full = true;
-        if(filename == NULL || !(valid_address_check(curproc->p_addrspace, (vaddr_t*)filename))){ //bad memory reference
+        if(filename == NULL || !(valid_address_check(curproc->p_addrspace, (vaddr_t)filename))){ //bad memory reference
                 errno = EFAULT;
                 return -1;
         }
@@ -128,7 +126,7 @@ int sys_read(int fd, void *buf, size_t buflen) {
                 return -1;
             }
         }
-        if (!buf || buf == NULL || !valid_address_check(curproc->p_addrspace, (vaddr_t*)buf)){      // else if invalid buffer
+        if (!buf || buf == NULL || !valid_address_check(curproc->p_addrspace, (vaddr_t)buf)){      // else if invalid buffer
                 errno = EFAULT;
                 return -1;
         }
@@ -158,7 +156,7 @@ int sys_read(int fd, void *buf, size_t buflen) {
 }
 
 int sys_write(int fd, const void *buf, size_t nbytes) {
-        if (!buf || buf == NULL || !valid_address_check(curproc->p_addrspace, (vaddr_t*)buf)){      // invalid buffer OR buffer out of range
+        if (!buf || buf == NULL || !valid_address_check(curproc->p_addrspace, (vaddr_t)buf)){      // invalid buffer OR buffer out of range
                 errno = EFAULT;
                 return -1;
         }
