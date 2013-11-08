@@ -1,4 +1,17 @@
-1.
+1. file descriptor consists of five items: file_flag, filename, file(vnode), offset, and buflen.
+   - file_flag indicates what files can do. Ex) Read only, Write Only, Read and Write, etc...
+   - filename literally indicates name of the file
+   - vnode* file indicates information and location of the file.
+   - offset also literally indicates the offset of the file.
+   - buflen indicates number of bytes left in the file to write.
+   
+   - In open, we first check if table of file descriptors are full. If it is, we print error cases. If not, we add the file
+     using vfs_open. After open, we add this file to the table.
+   - In close, the program checks if file exists at fd in the table of file descriptor. If it does, we close file's vnode
+     using vfs_close, free the file descriptor, and set it to NULL.
+   - In read, before reading the file, we check if file exists at fd in the table. If it does, we open the file using VOP_READ.
+   - In write, we first check if file exists at fd in the table. If it does, we open the file using VOP_WRITE. 
+   
 2.
 3.
 4.
