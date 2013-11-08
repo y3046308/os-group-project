@@ -78,6 +78,11 @@ pid_t sys_fork(struct trapframe *tf) {
 
 	procarray_add(procarr,newproc,NULL);
 
+	struct exitc *c = kmalloc(sizeof(struct exitc));
+	c->exitcode = -1;
+	c->pid = newproc->p_pid;
+	exitcarray_add(codes,c,NULL);
+
 	// fork thread
 	// struct thread *t = threadarray_get(&oldthreads,0);
 
@@ -143,6 +148,9 @@ pid_t sys_waitpid(pid_t pid, int *status, int options) {
 		errno = EINVAL;
 		return -1;
 	}
+	if(pid == curproc->p_pid) {
+		return pid;
+	}
 
 	struct exitc *c; 
 
@@ -155,10 +163,6 @@ pid_t sys_waitpid(pid_t pid, int *status, int options) {
 	}
 
 	struct proc* p = find_proc(pid); // search for process
-
-	if(pid == curproc->p_pid) {
-		return pid;
-	}
 
 	if(p != NULL) {
 		lock_acquire(p->p_lk);
@@ -189,18 +193,14 @@ pid_t sys_waitpid(pid_t pid, int *status, int options) {
 void sys__exit(int exitcode) {
 
 	// array init
-	if(codes == NULL) {
-		codes = exitcarray_create();
-		exitcarray_init(codes);
-	}
 
 	exitcode = _MKWAIT_EXIT(exitcode);
 
 	// add to exitcode array
-	struct exitc *c;
-	c->exitcode = exitcode;
-	c->pid = curthread->t_proc->p_pid;
-	exitcarray_add(codes, c, NULL);
+	struct exitc *c = find_exitc(curproc->p_pid);
+	if(c) {
+		c->exitcode = exitcode;
+	}
 
 	// remove from procarray.
 	unsigned num = procarray_num(procarr);
@@ -212,7 +212,7 @@ void sys__exit(int exitcode) {
 	}
 	// pid_list[curproc->p_pid] = false;
 
-	cv_signal(curproc->p_cv,curproc->p_lk);
+	cv_broadcast(curproc->p_cv,curproc->p_lk);
 
 	proc_remthread(curthread);
 	thread_exit();
