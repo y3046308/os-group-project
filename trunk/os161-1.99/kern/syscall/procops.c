@@ -20,7 +20,20 @@
 #include <spl.h>
 #include <kern/wait.h>
 
+#define DUMBVM_STACKPAGES 12
+
 int errno;
+
+static bool valid_address_check(struct addrspace *as, vaddr_t addr){
+	vaddr_t stackbase = USERSTACK - DUMBVM_STACKPAGES * PAGE_SIZE;
+	vaddr_t stacktop = USERSTACK;
+	if ((as->as_vbase1 <= addr && addr < (as->as_vbase1 + as->as_npages1 * PAGE_SIZE)) ||
+	    (as->as_vbase2 <= addr && addr < (as->as_vbase2 + as->as_npages2 * PAGE_SIZE)) ||
+	    (stackbase <= addr && addr < stacktop)) {
+		return true;
+	}
+	return false;
+}
 
 pid_t sys_fork(struct trapframe *tf) {
 
@@ -125,9 +138,21 @@ pid_t sys_getpid() {
 }
 
 pid_t sys_waitpid(pid_t pid, int *status, int options) {
-	(void)options; // do nothing with it.
+	
+	if(options != 0) { // only support option 0.
+		errno = EINVAL;
+		return -1;
+	}
 
 	struct exitc *c; 
+
+	// status pointer validation
+	vaddr_t sp = (vaddr_t)status;
+	struct addrspace *as = curproc->p_addrspace;
+	if (as != NULL && !valid_address_check(as, sp)) { // out of vaddr boundary for this proc
+		errno = EFAULT;
+		return -1;
+	}
 
 	struct proc* p = find_proc(pid); // search for process
 
@@ -144,7 +169,12 @@ pid_t sys_waitpid(pid_t pid, int *status, int options) {
 	}
 
 	c = find_exitc(pid);
-	*status = c->exitcode;
+	if(c) {
+		*status = c->exitcode;
+	} else {
+		errno = ESRCH;
+		return -1;
+	}
 
 	/*unsigned num = exitcarray_num(codes);
 	for (unsigned i = 0 ; i < num ; i++) {
