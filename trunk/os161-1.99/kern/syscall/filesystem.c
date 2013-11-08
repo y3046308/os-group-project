@@ -119,7 +119,7 @@ int sys_read(int fd, void *buf, size_t buflen) {
                 errno = EBADF;
                 return -1;
         }
-	else if (fd == 1 || fd == 2){      // fd == STDOUT_FILENO || STDERR_FILENO
+	else if (fd == STDOUT_FILENO || fd == STDERR_FILENO){      // fd == STDOUT_FILENO || STDERR_FILENO
                 errno = EIO;
                 return -1;
         }
@@ -151,7 +151,7 @@ int sys_read(int fd, void *buf, size_t buflen) {
         u.uio_rw = UIO_READ;
         u.uio_space = curproc_getas();
 	
-	if (fd == 0){
+	if (fd == STDIN_FILENO){
 		struct vnode *vn;
 		char *console = NULL; // console string ("con:")
                 console = kstrdup("con:"); // set to console
@@ -182,7 +182,7 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
                 errno = EBADF;
                 return -1;
         }
-	else if (fd == 0){	// fd == STDIN_FILENO
+	else if (fd == STDIN_FILENO){	// fd == STDIN_FILENO
 		errno = EIO;
 		return -1;
 	}
