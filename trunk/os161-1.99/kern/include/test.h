@@ -29,6 +29,7 @@
 
 #ifndef _TEST_H_
 #define _TEST_H_
+#include "opt-A2.h"
 
 /*
  * Declarations for test code and other miscellaneous high-level
@@ -79,8 +80,11 @@ int mallocstress(int, char **);
 int nettest(int, char **);
 
 /* Routine for running a user-level program. */
+#if OPT_A2
+int runprogram(char** argv, unsigned long argc);
+#else
 int runprogram(char *progname);
-
+#endif
 /* Kernel menu system. */
 void menu(char *argstr);
 /* Boot time shout out */
