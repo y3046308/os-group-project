@@ -1,0 +1,23 @@
+1. copy_in copies number of bytes from user_space address USERSRC to a kernel-space address DEST. 
+
+3.We call vfs_close so we can free all resources related to the file that was opened by vfs_open. 
+ Otherwise, resources used by the file containing user program will never be freed after going to back to the user mode. 
+ Since the same file can be opened multiple times with different file locations, it is important to close file as soon as the work is done. 
+
+4.enter_new_process "warps" to user mode. (??)
+
+5.userptr_t is a pointer that points to address that is currently residing in user space.
+
+6. Implementation that destroys(frees) the thread and its resources should be implemented
+
+7. When sys_call is invoked, interrupt is enabled using curthread->t_curspl. 
+  When kill_curthread is called, interrupt is not disabled. Function itself does not do with interrupt handling.
+
+8. Difference between copyin() and copyinstr() is that copyin() copies a block of memory while copyinstr() copies string from
+   user-level address USERSRC.
+
+9. vfs_open is used to open a file or device.
+
+10. Operations you can do on vnode are vop_open, vop_close, vop_reclaim, vop_read, vop_readlink, vop_getdirentry, vop_write, and so on.
+    The rest of the operations can be found in kern/include/vnode.h.When two processes open same files, we have two vnodes and
+    vn_opencount is set to 2, indicating that the file is opened at two places.
