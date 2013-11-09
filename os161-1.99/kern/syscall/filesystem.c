@@ -26,6 +26,7 @@ static struct fd* create_fd(int flag, const char* filename, struct vnode* vn){
 	file_descriptor = kmalloc(sizeof(struct fd));
 	file_descriptor->file_flag = flag;
 	file_descriptor->filename = (char *)filename;
+	file_descriptor->lock = lock_create(filename);
 	file_descriptor->offset = 0;
 	file_descriptor->buflen = 0;
 	KASSERT(vn != NULL);
@@ -71,10 +72,24 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
                 errno = EFAULT;
                 return -1;
         }
+       switch(file_flag & O_ACCMODE){
+	       case O_RDONLY: break;
+               case O_WRONLY: break;
+               case O_RDWR:   break;
+               case O_CREAT: break;
+               case O_EXCL: break;
+               case O_TRUNC:   break;
+	       case O_APPEND:
+			errno = EINVAL;
+			return -1;
+               default:
+                       errno = EINVAL;
+                       return -1;
+       }/*
        if(file_flag & O_APPEND){ //flags contained invalid values
                 errno = EINVAL;
                 return -1;
-        }
+        }*/
 	struct vnode* new_file;
 	int ret;
 	if (curproc->open_num < MAX_fd_table){	// fd table is avilable
