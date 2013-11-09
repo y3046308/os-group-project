@@ -50,24 +50,26 @@ static bool valid_address_check(struct addrspace *as, vaddr_t addr){
 	return false;
 }
 int sys_close(int fd){
-        int retval = -1;
-        if (fd < 0 || fd >= MAX_fd_table){
+    int retval = -1;
+    if (fd < 0 || fd >= MAX_fd_table){
                 errno = EBADF;
-        }
-	else if (curproc->fd_table[fd] != NULL) {
+				return -1;
+    }
+	if (curproc->fd_table[fd] != NULL) {
 		vfs_close(curproc->fd_table[fd]->file);
 		kfree(curproc->fd_table[fd]);
 		curproc->fd_table[fd] = NULL;
 		retval = 0;
 	}
 	else{
-		errno = EIO;
+		errno = EBADF;
+		return -1;
 	}
 	return retval; 
 }
 
 int sys_open(const char *filename, int file_flag, mode_t mode){
-	bool create = false, full = true;
+	bool create = false;
         if(filename == NULL || !(valid_address_check(curproc->p_addrspace, (vaddr_t)filename))){ //bad memory reference
                 errno = EFAULT;
                 return -1;
@@ -83,8 +85,7 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
         }*/
 	struct vnode* new_file;
 	int ret;
-	if (curproc->open_num < MAX_fd_table){	// fd table is avilable
-		full = false;
+	if (curproc->open_num < MAX_fd_table){	// fd table is available
 		ret = vfs_open((char *)filename, file_flag, mode , &new_file);	// open file when table has free space
 		curproc->open_num++;
 		if (ret == 0){
@@ -101,7 +102,7 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 			}
 		}
 	}
-	if (full){	// if table is full
+	else{	// if table is full
 		if (create) errno = ENOSPC;
 		else errno = EMFILE;
 		return -1;

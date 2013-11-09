@@ -119,7 +119,7 @@ runprogram(char *progname)
 	
 	for(unsigned int i = 0; i < argc ; i++){
 		char *arg = argv[i]; //arguments
-		size_t len = strlen(arg); //length of arguments
+		size_t len = strlen(arg) + 1; //length of arguments
 		if(len%4){	//make the length a multiple of 4
 			len = len - len % 4 + 4;
 		}
