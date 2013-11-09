@@ -70,6 +70,7 @@ struct fd{       // file descriptor indicating each individual file
 	char *filename;
 	struct vnode* file;
 	off_t offset;
+	struct lock* lock;
 	size_t buflen; //buflength (number of bytes left in the file to write)
 };
 
