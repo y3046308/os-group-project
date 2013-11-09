@@ -36,8 +36,10 @@ For every question, implementation on error cases were omitted.
     -> if the process is running, wait with CV
     -> if the process is NOT running, just find its exitcode from exitcarray and return.
   
-3. First, if id of current process is equal to given pid, just return pid. Else, find process with id = pid. If such process
-   exists, we wait until current process holds id of pid. Here, we use lock_acquire, lock_release and cv_wait to wait for 
-   the designated process. If we find one, we close it using find_exitc and return its pid.
+3. Since we have the process id, we can easily find the process using find_proc function. (It iterates the process array and get the right process using pid)
+  If we found the process in the process array, it means that the process is not terminated yet. We used the CV_WAIT to wait until the process terminates.
+    (We used cv and lock in the process we are waiting for, because the process must signal when exit.)
+  If the process is not found, it means that the process is already terminated. The exitcode might be saved in "codes" array.
+  If the exitcode is not found in "codes" array, it means that the given pid is invalid. we need to return error.
 
 4.
