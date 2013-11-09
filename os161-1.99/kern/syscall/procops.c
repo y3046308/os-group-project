@@ -243,7 +243,14 @@ int sys_execv(userptr_t progname, userptr_t args) {
 		return -1;
 	}
 
-	copyinstr(progname, path, PATH_MAX, NULL);
+	result = copyinstr(progname, path, PATH_MAX, NULL);
+	if(result) {
+		return result;
+	}
+	if(*path == '\0') {
+		errno = EISDIR;
+		return -1;
+	}
 
 	// Open the executable, create a new address space and load the elf into it
 
@@ -280,10 +287,18 @@ int sys_execv(userptr_t progname, userptr_t args) {
 	userptr_t karg, uargs, argbase;
 	char * buffer, * bufend;
 	buffer = kmalloc(sizeof(ARG_MAX));
+	if(buffer == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
 	bufend = buffer;
 	size_t resid, bufsize;
 	size_t alen;
 	size_t *offsets = kmalloc(NARG_MAX * sizeof(size_t));
+	if(offsets == NULL) {
+		errno = ENOMEM;
+		return -1;
+	}
 	int size = 0;
 	userptr_t arg;
 
@@ -291,9 +306,15 @@ int sys_execv(userptr_t progname, userptr_t args) {
 	resid = bufsize = ARG_MAX;
 
 	for(int i = 0 ; i < NARG_MAX ; i++) { // copyin from user.
-		copyin(args, &karg, sizeof(userptr_t)); // copy the pointer.
+		result = copyin(args, &karg, sizeof(userptr_t)); // copy the pointer.
+		if(result) {
+			return result;
+		}
 		if(karg == NULL) break; // if NULL, break.
-		copyinstr(karg, bufend, resid, &alen);
+		result = copyinstr(karg, bufend, resid, &alen);
+		if(result) {
+			return result;
+		}
 		offsets[i] = bufsize - resid;
 		bufend += alen;
 		resid -= alen;
@@ -306,18 +327,27 @@ int sys_execv(userptr_t progname, userptr_t args) {
 	stack -= (stack & (sizeof(void *) - 1)); // alignment
 	argbase = (userptr_t)stack; // argbase.
 
-	copyout(buffer, argbase, buflen); // copy the arguments into stack.
+	result = copyout(buffer, argbase, buflen); // copy the arguments into stack.
+	if(result) {
+		return result;
+	}
 
 	stack -= (size + 1)*sizeof(userptr_t); // go to array pointer (bottom of stack).
 	uargs = (userptr_t)stack; // got stack.
 
 	for(int i = 0 ; i < size ; i++) { // copy the elements
 		arg = argbase + offsets[i];
-		copyout(&arg, uargs, sizeof(userptr_t));
+		result = copyout(&arg, uargs, sizeof(userptr_t));
+		if(result) {
+			return result;
+		}
 		uargs += sizeof(userptr_t); // 4
 	}
 	arg = NULL;
-	copyout(&arg, uargs, sizeof(userptr_t)); // copy the NULL pointer.
+	result = copyout(&arg, uargs, sizeof(userptr_t)); // copy the NULL pointer.
+	if(result) {
+		return result;
+	}
 
 
 

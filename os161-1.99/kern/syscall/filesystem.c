@@ -72,20 +72,11 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
                 errno = EFAULT;
                 return -1;
         }
-       switch(file_flag & O_ACCMODE){
-	       case O_RDONLY: break;
-               case O_WRONLY: break;
-               case O_RDWR:   break;
-               case O_CREAT: break;
-               case O_EXCL: break;
-               case O_TRUNC:   break;
-	       case O_APPEND:
+		if(file_flag > 94 || file_flag % 4 == 3 || file_flag & O_APPEND){
 			errno = EINVAL;
 			return -1;
-               default:
-                       errno = EINVAL;
-                       return -1;
-       }/*
+		}
+		/*
        if(file_flag & O_APPEND){ //flags contained invalid values
                 errno = EINVAL;
                 return -1;
@@ -129,14 +120,14 @@ int sys_open(const char *filename, int file_flag, mode_t mode){
 
 
 int sys_read(int fd, void *buf, size_t buflen) {
-        struct fd* tmp;
-        if (fd < 0 || fd >= MAX_fd_table){       // if fd < 0 || fd > MAX_fd_table or 
-                errno = EBADF;
-                return -1;
-        }
+    struct fd* tmp;
+    if (fd < 0 || fd >= MAX_fd_table){       // if fd < 0 || fd > MAX_fd_table or 
+        errno = EBADF;
+        return -1;
+    }
 	else if (fd == STDOUT_FILENO || fd == STDERR_FILENO){      // fd == STDOUT_FILENO || STDERR_FILENO
-                errno = EIO;
-                return -1;
+            errno = EIO;
+            return -1;
         }
         else if (fd >= 3 && fd < MAX_fd_table){
             tmp = curproc->fd_table[fd];
@@ -146,8 +137,8 @@ int sys_read(int fd, void *buf, size_t buflen) {
             }
         }
         if (!buf || buf == NULL || !valid_address_check(curproc->p_addrspace, (vaddr_t)buf)){      // else if invalid buffer
-                errno = EFAULT;
-                return -1;
+            errno = EFAULT;
+            return -1;
         }
 
         struct uio u;
@@ -169,48 +160,45 @@ int sys_read(int fd, void *buf, size_t buflen) {
 	if (fd == STDIN_FILENO){
 		struct vnode *vn;
 		char *console = NULL; // console string ("con:")
-                console = kstrdup("con:"); // set to console
-                vfs_open(console,O_RDONLY,0,&vn); // open the console vnode
-                kfree(console); // free the console
-                int result = VOP_READ(vn,&u);
-                if(result < 0){
-                        errno = EIO; //A hardware I/O error occurred writing the data
-                        return -1;
-                }
-	}
-	else{
+            console = kstrdup("con:"); // set to console
+            vfs_open(console,O_RDONLY,0,&vn); // open the console vnode
+            kfree(console); // free the console
+            int result = VOP_READ(vn,&u);
+            if(result < 0){
+                    errno = EIO; //A hardware I/O error occurred writing the data
+                    return -1;
+            }
+	} else{
 	        int retval = VOP_READ(tmp->file, &u);
 		if (retval < 0){
 			errno = EIO;
 			return -1;
 		}
 	}
-        return buflen - u.uio_resid ;
+	return buflen - u.uio_resid ;
 }
 
 int sys_write(int fd, const void *buf, size_t nbytes) {
-        if (!buf || buf == NULL || !valid_address_check(curproc->p_addrspace, (vaddr_t)buf)){      // invalid buffer OR buffer out of range
-                errno = EFAULT;
-                return -1;
-        }
-        if(fd < 0 || fd >= MAX_fd_table){
-                errno = EBADF;
-                return -1;
-        }
-	else if (fd == STDIN_FILENO){	// fd == STDIN_FILENO
+	if (!buf || buf == NULL || !valid_address_check(curproc->p_addrspace, (vaddr_t)buf)){      // invalid buffer OR buffer out of range
+	        errno = EFAULT;
+	        return -1;
+	}
+	if(fd < 0 || fd >= MAX_fd_table){
+	        errno = EBADF;
+	        return -1;
+	} else if (fd == STDIN_FILENO){	// fd == STDIN_FILENO
 		errno = EIO;
 		return -1;
-	}
-	else if (fd >= 3 && fd < MAX_fd_table){		// have valid fd
+	} else if (fd >= 3 && fd < MAX_fd_table){		// have valid fd
 		struct fd* tmp = curproc->fd_table[fd];
 //                if (tmp == NULL || (tmp->file_flag & O_RDONLY)){	// but have no file at fd OR file at fd is RDONLY
 		if (tmp == NULL){ 
-                         errno = EBADF;
-                         return -1;
-                }
+			errno = EBADF;
+			return -1;
+		}
 		switch(tmp->file_flag & O_ACCMODE){
 			case O_WRONLY: break;
-		        case O_RDWR:   break;
+			case O_RDWR:   break;
 			default:
 				errno = EBADF;
 				return -1;
@@ -229,9 +217,9 @@ int sys_write(int fd, const void *buf, size_t nbytes) {
 
 	u.uio_iov = &iov;
 	u.uio_resid = nbytes;
-        u.uio_rw = UIO_WRITE;
-        u.uio_segflg = UIO_USERSPACE;
-        u.uio_space = curproc_getas();
+    u.uio_rw = UIO_WRITE;
+    u.uio_segflg = UIO_USERSPACE;
+    u.uio_space = curproc_getas();
 
 	if(fd == STDOUT_FILENO || fd == STDERR_FILENO){
 		char *console = NULL; // console string ("con:")
