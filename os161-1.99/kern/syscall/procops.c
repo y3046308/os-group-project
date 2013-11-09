@@ -22,6 +22,7 @@
 #include <copyinout.h>
 
 #define DUMBVM_STACKPAGES 12
+#define NARG_MAX 1024
 
 int errno;
 
@@ -57,7 +58,7 @@ pid_t sys_fork(struct trapframe *tf) {
 	newproc->open_num = 0;
 
 	// files field
-	newproc->fd_table = kmalloc(sizeof(struct fd) * MAX_fd_table);
+	newproc->fd_table = kmalloc(sizeof(struct fd *) * MAX_fd_table);
 	for(unsigned i = 0 ; i < MAX_fd_table ; i++) {
 		newproc->fd_table[i] = curproc->fd_table[i];
 	}
@@ -223,17 +224,30 @@ void sys__exit(int exitcode) {
 	// curthread->t_proc = NULL;
 }
 
-int sys_execv(const char *progname, char **args) {
+int sys_execv(userptr_t progname, userptr_t args) {
 	struct addrspace *as;
 	struct vnode *v;
 	vaddr_t entrypoint, stackptr;
-	int result, argc;
+	int result;
+	
+	char * path = kmalloc(PATH_MAX);
 
-// Copy arguments into kernel buffer
+	as = curproc_getas();
+
+	if (as != NULL && !valid_address_check(as, (vaddr_t)args)) { // out of vaddr boundary for this proc
+		errno = EFAULT;
+		return -1;
+	}
+	if (as != NULL && !valid_address_check(as, (vaddr_t)progname)) { // out of vaddr boundary for this proc
+		errno = EFAULT;
+		return -1;
+	}
+
+	copyinstr(progname, path, PATH_MAX, NULL);
 
 // Open the executable, create a new address space and load the elf into it
 
-	result = vfs_open((char *)progname, O_RDONLY, 0, &v);
+	result = vfs_open((char *)path, O_RDONLY, 0, &v);
 	if (result) {
 		return result;
 	}
@@ -266,30 +280,98 @@ int sys_execv(const char *progname, char **args) {
 
 	curproc_setas(newas);
 	as_activate();
+	kfree(path);
 
 // Copy the arguments into user stack
 
-	char **copyargs = args;	
-	size_t *temp;
-	argc = 0;
-	while(*copyargs != NULL) {
-		argc = argc + 1;
-		copyargs++;
-	}
+	//userptr_t kargs = (userptr_t)stackptr;
+	/*int size = 0;
+	int totallen = 0;
+	size_t *got;
 	userptr_t uargs = (userptr_t)stackptr;
-	for(int i = 0 ; i < argc ; i++) {
-		int len = 0;
-		for(int j = 0 ; args[i][j] != '\0' ; j++) {
-			len++;
+	while(args[size] != NULL) { // get args size
+		int temp = (strlen(args[size]) + 1) / 4;
+		if((strlen(args[size]) + 1) % 4 > 0) {
+			temp += 1;
 		}
-		copyoutstr(args[i], (userptr_t)(stackptr - (4 * i)), ARG_MAX, temp);
+		totallen += temp*4;
+		size++;
 	}
-	stackptr -= argc * 4;
+	KASSERT(totallen % 4 == 0);
+	int totaloffset = 0;
+	vaddr_t *ptrs = kmalloc(sizeof(vaddr_t) * size);
+	for(int i = 0 ; i < size ; i++) { // args set
+		int temp = (strlen(args[i]) + 1) / 4;
+		if((strlen(args[i]) + 1) % 4 > 0) {
+			temp += 1;
+		}
+		ptrs[i] = (stackptr - totallen + totaloffset);
+		copyinstr((userptr_t)args[i], (char *)ptrs[i],
+					temp*4, got);
+		totaloffset += (temp * 4);	
+	}
+	stackptr -= totaloffset;
+	stackptr -= ((size + 1) * 4);
+	char ** userargs = (char **) stackptr;
+	for(int i = 0 ; i <= size ; i++) {
+		if(i != size) {
+			*char * temp = (char *)(stackptr - ((size + 1) * 4) + (i * 4));
+			*temp = (char)ptrs[i];*
+			userargs[i] = (char *)ptrs[i];
+		} else {
+			userargs[i] = NULL;
+		}
+	}*/
 
-// Return user mode using 
+	userptr_t karg, uargs, argbase;
+	char * buffer, * bufend;
+	buffer = kmalloc(sizeof(ARG_MAX));
+	bufend = buffer;
+	size_t resid, bufsize;
+	size_t alen;
+	size_t *offsets = kmalloc(NARG_MAX * sizeof(size_t));
+	int size = 0;
+	userptr_t arg;
 
-	enter_new_process(argc /*argc*/, uargs /*userspace addr of argv*/,
-			  stackptr, entrypoint);
+
+	resid = bufsize = ARG_MAX;
+
+	for(int i = 0 ; i < NARG_MAX ; i++) { // copyin from user.
+		copyin(args, karg, sizeof(userptr_t)); // copy the pointer.
+		if(karg == NULL) break; // if NULL, break.
+		copyinstr(karg, bufend, resid, &alen);
+		offsets[i] = bufsize - resid;
+		bufend += alen;
+		resid -= alen;
+		args += sizeof(userptr_t);
+		size++;
+	}
+
+	size_t buflen = bufend - buffer; // length of buffer.
+	vaddr_t stack = stackptr - buflen; // current stack position.
+	stack -= (stack & (sizeof(void *) - 1)); // alignment
+	argbase = (userptr_t)stack; // argbase.
+
+	copyout(buffer, argbase, buflen); // copy the arguments into stack.
+
+	stack -= (size + 1)*sizeof(userptr_t); // go to array pointer (bottom of stack).
+	uargs = (userptr_t)stack; // got stack.
+
+	for(int i = 0 ; i < size ; i++) { // copy the elements
+		arg = argbase + offsets[i];
+		copyout(&arg, uargs, sizeof(userptr_t));
+		uargs += sizeof(userptr_t); // 4
+	}
+	arg = NULL;
+	copyout(&arg, uargs, sizeof(userptr_t)); // copy the NULL pointer.
+
+
+
+	kfree(buffer);
+	kfree(offsets);
+
+	enter_new_process(size /*argc*/, (userptr_t)stack /*userspace addr of argv*/,
+			  stack, entrypoint);
 
 	return 0;
 
