@@ -307,6 +307,10 @@ int sys_execv(userptr_t progname, userptr_t args) {
 
 	for(int i = 0 ; i < NARG_MAX ; i++) { // copyin from user.
 		result = copyin(args, &karg, sizeof(userptr_t)); // copy the pointer.
+		if (as != NULL && !valid_address_check(as, (vaddr_t)args)) { // out of vaddr boundary for this proc
+			errno = EFAULT;
+			return -1;
+		}
 		if(result) {
 			return result;
 		}
