@@ -245,15 +245,13 @@ int sys_execv(userptr_t progname, userptr_t args) {
 
 	copyinstr(progname, path, PATH_MAX, NULL);
 
-// Open the executable, create a new address space and load the elf into it
+	// Open the executable, create a new address space and load the elf into it
 
 	result = vfs_open((char *)path, O_RDONLY, 0, &v);
 	if (result) {
 		return result;
 	}
 	// KASSERT(curproc_getas() == NULL);
-
-	struct addrspace * newas = curproc_getas();
 
 	as = as_create();
 	if (as == NULL) {
@@ -277,51 +275,7 @@ int sys_execv(userptr_t progname, userptr_t args) {
 		/* p_addrspace will go away when curproc is destroyed */
 		return result;
 	}
-
-	curproc_setas(newas);
-	as_activate();
 	kfree(path);
-
-// Copy the arguments into user stack
-
-	//userptr_t kargs = (userptr_t)stackptr;
-	/*int size = 0;
-	int totallen = 0;
-	size_t *got;
-	userptr_t uargs = (userptr_t)stackptr;
-	while(args[size] != NULL) { // get args size
-		int temp = (strlen(args[size]) + 1) / 4;
-		if((strlen(args[size]) + 1) % 4 > 0) {
-			temp += 1;
-		}
-		totallen += temp*4;
-		size++;
-	}
-	KASSERT(totallen % 4 == 0);
-	int totaloffset = 0;
-	vaddr_t *ptrs = kmalloc(sizeof(vaddr_t) * size);
-	for(int i = 0 ; i < size ; i++) { // args set
-		int temp = (strlen(args[i]) + 1) / 4;
-		if((strlen(args[i]) + 1) % 4 > 0) {
-			temp += 1;
-		}
-		ptrs[i] = (stackptr - totallen + totaloffset);
-		copyinstr((userptr_t)args[i], (char *)ptrs[i],
-					temp*4, got);
-		totaloffset += (temp * 4);	
-	}
-	stackptr -= totaloffset;
-	stackptr -= ((size + 1) * 4);
-	char ** userargs = (char **) stackptr;
-	for(int i = 0 ; i <= size ; i++) {
-		if(i != size) {
-			*char * temp = (char *)(stackptr - ((size + 1) * 4) + (i * 4));
-			*temp = (char)ptrs[i];*
-			userargs[i] = (char *)ptrs[i];
-		} else {
-			userargs[i] = NULL;
-		}
-	}*/
 
 	userptr_t karg, uargs, argbase;
 	char * buffer, * bufend;
@@ -337,7 +291,7 @@ int sys_execv(userptr_t progname, userptr_t args) {
 	resid = bufsize = ARG_MAX;
 
 	for(int i = 0 ; i < NARG_MAX ; i++) { // copyin from user.
-		copyin(args, karg, sizeof(userptr_t)); // copy the pointer.
+		copyin(args, &karg, sizeof(userptr_t)); // copy the pointer.
 		if(karg == NULL) break; // if NULL, break.
 		copyinstr(karg, bufend, resid, &alen);
 		offsets[i] = bufsize - resid;
