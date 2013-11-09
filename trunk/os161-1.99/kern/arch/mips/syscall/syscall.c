@@ -139,6 +139,7 @@ syscall(struct trapframe *tf)
 			break;
 		case SYS_fork:
 			retval = sys_fork(tf); // actually, do not need to set retval. it always return 0.
+			if (retval < 0) err = errno;
 			break;
 		case SYS_waitpid:
 			retval = sys_waitpid(tf->tf_a0, (int *)tf->tf_a1, tf->tf_a2);
@@ -152,6 +153,7 @@ syscall(struct trapframe *tf)
 			break;
 		case SYS_execv:
 			retval = sys_execv((userptr_t)tf->tf_a0, (userptr_t)tf->tf_a1);
+			if (retval < 0) err = errno;
 			break;
 #endif
 
