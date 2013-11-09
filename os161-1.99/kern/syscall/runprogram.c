@@ -44,6 +44,9 @@
 #include <vfs.h>
 #include <syscall.h>
 #include <test.h>
+#include "opt-A2.h"
+#include "limits.h"
+#include "copyinout.h"
 
 /*
  * Load program "progname" and start running it in usermode.
@@ -51,16 +54,27 @@
  *
  * Calls vfs_open on progname and thus may destroy it.
  */
+#if OPT_A2
+#define NARG_MAX 1024
+
+int
+runprogram(char** argv, unsigned long argc)
+{
+#else
 int
 runprogram(char *progname)
 {
+#endif
 	struct addrspace *as;
 	struct vnode *v;
 	vaddr_t entrypoint, stackptr;
 	int result;
-
+#if OPT_A2
+	result = vfs_open(argv[0], O_RDONLY, 0, &v);
+#else
 	/* Open the file. */
 	result = vfs_open(progname, O_RDONLY, 0, &v);
+#endif
 	if (result) {
 		return result;
 	}
@@ -96,11 +110,52 @@ runprogram(char *progname)
 		/* p_addrspace will go away when curproc is destroyed */
 		return result;
 	}
+#if OPT_A2
 
+	size_t *offsets = kmalloc(NARG_MAX * sizeof(size_t)); //array to store offsets
+	size_t *length = kmalloc(NARG_MAX * sizeof(size_t)); //store length of each string
+	size_t offval = 0;	//accumulative offset values 
+	userptr_t argbase = (userptr_t)stackptr; //points to the base of each argument
+	
+	for(unsigned int i = 0; i < argc ; i++){
+		char *arg = argv[i]; //arguments
+		size_t len = strlen(arg); //length of arguments
+		if(len%4){	//make the length a multiple of 4
+			len = len - len % 4 + 4;
+		}
+		offsets[i] = offval;
+		offval += len;	//add new length to offset
+		length[i] = len;
+	}
+	argbase -= offval;
+	for(unsigned int i = 0; i < argc ; i++){
+		char *arg = argv[i];
+		copyoutstr(arg, argbase, length[i], NULL); //copy argument to user space
+		argbase += length[i];
+	}
+	argbase -= offval;
+	userptr_t uargs = argbase - (sizeof(userptr_t) * (argc + 1));
+	userptr_t stack = uargs;
+	userptr_t arg;
+    for(unsigned int i = 0 ; i < argc ; i++) { // copy the elements
+        arg = argbase + offsets[i];
+        copyout(&arg, uargs, sizeof(userptr_t));
+        uargs += sizeof(userptr_t); // 4
+    }
+    arg = NULL;
+    copyout(&arg, uargs, sizeof(userptr_t)); // copy the NULL pointer.
+
+    kfree(offsets);
+
+
+
+    /* Warp to user mode. */
+    enter_new_process((int)argc, stack, (vaddr_t)stack, entrypoint);
+#else
 	/* Warp to user mode. */
 	enter_new_process(0 /*argc*/, NULL /*userspace addr of argv*/,
 			  stackptr, entrypoint);
-	
+#endif
 	/* enter_new_process does not return. */
 	panic("enter_new_process returned\n");
 	return EINVAL;
