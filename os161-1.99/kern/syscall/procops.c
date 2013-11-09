@@ -216,7 +216,7 @@ void sys__exit(int exitcode) {
 
 	cv_broadcast(curproc->p_cv,curproc->p_lk);
 
-	proc_remthread(curthread);
+	//proc_remthread(curthread);
 	thread_exit();
 	// curthread->t_proc = NULL; //what is this??? you removed it at the bottom and then added it here?
 	// code below is removed. Since the process is destroyed, there is no "curthread" now.
