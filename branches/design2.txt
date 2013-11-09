@@ -22,10 +22,19 @@ For every question, implementation on error cases were omitted.
     -> spinlock p_lock
     -> array of threads, p_threads
     -> virtual address space, p_addrspace
-    -> 
+    -> copy the trapframe.
+    -> thread_fork the function "enter_forked_process"
+    -> create new trapframe.
     
   - getpid just reads id of current process. (we have pid declared inside process structure so getting pid of current process is piece of cake).
-  - _exit
+  - _exit simply ends he current process.
+    -> saves pid/exitcode pair into exitcarray.
+    -> remove thread
+    -> thread_exit
+    -> signal the waiting processes.
+  - waitpid waits for the given process to terminate.
+    -> if the process is running, wait with CV
+    -> if the process is NOT running, just find its exitcode from exitcarray and return.
   
 3. First, if id of current process is equal to given pid, just return pid. Else, find process with id = pid. If such process
    exists, we wait until current process holds id of pid. Here, we use lock_acquire, lock_release and cv_wait to wait for 
