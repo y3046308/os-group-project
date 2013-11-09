@@ -27,7 +27,7 @@ For every question, implementation on error cases were omitted.
     -> create new trapframe.
     
   - getpid just reads id of current process. (we have pid declared inside process structure so getting pid of current process is piece of cake).
-  - _exit simply ends he current process.
+  - _exit simply ends current process.
     -> saves pid/exitcode pair into exitcarray.
     -> remove thread
     -> thread_exit
