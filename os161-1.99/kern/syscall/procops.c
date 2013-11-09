@@ -311,10 +311,6 @@ int sys_execv(userptr_t progname, userptr_t args) {
 			errno = EFAULT;
 			return -1;
 		}
-		if((vaddr_t)karg > stackptr) {
-			errno = EFAULT;
-			return -1;
-		}
 		if(result) {
 			return result;
 		}
