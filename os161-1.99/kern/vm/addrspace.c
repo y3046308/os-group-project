@@ -35,12 +35,44 @@
 #ifdef UW
 #include <proc.h>
 #endif
+#include "opt-A3.h"
 
 /*
  * Note! If OPT_DUMBVM is set, as is the case until you start the VM
  * assignment, this file is not compiled or linked or in any way
  * used. The cheesy hack versions in dumbvm.c are used instead.
  */
+
+#if OPT_A3
+#include <spl.h>
+#include <mips/tlb.h>
+
+#define DUMBVM_STACKPAGES    12
+
+static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
+
+static
+paddr_t
+getppages(unsigned long npages)
+{
+	paddr_t addr;
+
+	spinlock_acquire(&stealmem_lock);
+
+	addr = ram_stealmem(npages);
+	
+	spinlock_release(&stealmem_lock);
+	return addr;
+}
+
+static
+void
+as_zero_region(paddr_t paddr, unsigned npages)
+{
+	bzero((void *)PADDR_TO_KVADDR(paddr), npages * PAGE_SIZE);
+}
+
+#endif
 
 struct addrspace *
 as_create(void)
@@ -55,6 +87,17 @@ as_create(void)
 	/*
 	 * Initialize as needed.
 	 */
+	#if OPT_A3
+
+	as->as_vbase1 = 0;
+	as->as_pbase1 = 0;
+	as->as_npages1 = 0;
+	as->as_vbase2 = 0;
+	as->as_pbase2 = 0;
+	as->as_npages2 = 0;
+	as->as_stackpbase = 0;
+
+	#endif
 
 	return as;
 }
@@ -62,6 +105,50 @@ as_create(void)
 int
 as_copy(struct addrspace *old, struct addrspace **ret)
 {
+
+	/*
+	 * Write this.
+	 */
+	#if OPT_A3
+
+	struct addrspace *new;
+
+	new = as_create();
+	if (new==NULL) {
+		return ENOMEM;
+	}
+
+	new->as_vbase1 = old->as_vbase1;
+	new->as_npages1 = old->as_npages1;
+	new->as_vbase2 = old->as_vbase2;
+	new->as_npages2 = old->as_npages2;
+
+	/* (Mis)use as_prepare_load to allocate some physical memory. */
+	if (as_prepare_load(new)) {
+		as_destroy(new);
+		return ENOMEM;
+	}
+
+	KASSERT(new->as_pbase1 != 0);
+	KASSERT(new->as_pbase2 != 0);
+	KASSERT(new->as_stackpbase != 0);
+
+	memmove((void *)PADDR_TO_KVADDR(new->as_pbase1),
+		(const void *)PADDR_TO_KVADDR(old->as_pbase1),
+		old->as_npages1*PAGE_SIZE);
+
+	memmove((void *)PADDR_TO_KVADDR(new->as_pbase2),
+		(const void *)PADDR_TO_KVADDR(old->as_pbase2),
+		old->as_npages2*PAGE_SIZE);
+
+	memmove((void *)PADDR_TO_KVADDR(new->as_stackpbase),
+		(const void *)PADDR_TO_KVADDR(old->as_stackpbase),
+		DUMBVM_STACKPAGES*PAGE_SIZE);
+	
+	*ret = new;
+
+	#else
+
 	struct addrspace *newas;
 
 	newas = as_create();
@@ -69,13 +156,12 @@ as_copy(struct addrspace *old, struct addrspace **ret)
 		return ENOMEM;
 	}
 
-	/*
-	 * Write this.
-	 */
-
 	(void)old;
 	
 	*ret = newas;
+
+	#endif
+
 	return 0;
 }
 
@@ -92,6 +178,30 @@ as_destroy(struct addrspace *as)
 void
 as_activate(void)
 {
+	#if OPT_A3
+	
+	int i, spl;
+	struct addrspace *as;
+
+	as = curproc_getas();
+#ifdef UW
+        /* Kernel threads don't have an address spaces to activate */
+#endif
+	if (as == NULL) {
+		return;
+	}
+
+	/* Disable interrupts on this CPU while frobbing the TLB. */
+	spl = splhigh();
+
+	for (i=0; i<NUM_TLB; i++) {
+		tlb_write(TLBHI_INVALID(i), TLBLO_INVALID(), i);
+	}
+
+	splx(spl);
+
+	#else
+	
 	struct addrspace *as;
 
 	as = curproc_getas();
@@ -102,6 +212,8 @@ as_activate(void)
 		 */
 		return;
 	}
+	
+	#endif
 
 	/*
 	 * Write this.
@@ -138,6 +250,43 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 	/*
 	 * Write this.
 	 */
+	#if OPT_A3
+
+	size_t npages; 
+
+	/* Align the region. First, the base... */
+	sz += vaddr & ~(vaddr_t)PAGE_FRAME;
+	vaddr &= PAGE_FRAME;
+
+	/* ...and now the length. */
+	sz = (sz + PAGE_SIZE - 1) & PAGE_FRAME;
+
+	npages = sz / PAGE_SIZE;
+
+	/* We don't use these - all pages are read-write */
+	(void)readable;
+	(void)writeable;
+	(void)executable;
+
+	if (as->as_vbase1 == 0) {
+		as->as_vbase1 = vaddr;
+		as->as_npages1 = npages;
+		return 0;
+	}
+
+	if (as->as_vbase2 == 0) {
+		as->as_vbase2 = vaddr;
+		as->as_npages2 = npages;
+		return 0;
+	}
+
+	/*
+	 * Support for more than two regions is not available.
+	 */
+	kprintf("dumbvm: Warning: too many regions\n");
+	return EUNIMP;
+
+	#else
 
 	(void)as;
 	(void)vaddr;
@@ -146,6 +295,8 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 	(void)writeable;
 	(void)executable;
 	return EUNIMP;
+
+	#endif
 }
 
 int
@@ -155,8 +306,39 @@ as_prepare_load(struct addrspace *as)
 	 * Write this.
 	 */
 
+	#if OPT_A3
+
+	KASSERT(as->as_pbase1 == 0);
+	KASSERT(as->as_pbase2 == 0);
+	KASSERT(as->as_stackpbase == 0);
+
+	as->as_pbase1 = getppages(as->as_npages1);
+	if (as->as_pbase1 == 0) {
+		return ENOMEM;
+	}
+
+	as->as_pbase2 = getppages(as->as_npages2);
+	if (as->as_pbase2 == 0) {
+		return ENOMEM;
+	}
+
+	as->as_stackpbase = getppages(DUMBVM_STACKPAGES);
+	if (as->as_stackpbase == 0) {
+		return ENOMEM;
+	}
+	
+	as_zero_region(as->as_pbase1, as->as_npages1);
+	as_zero_region(as->as_pbase2, as->as_npages2);
+	as_zero_region(as->as_stackpbase, DUMBVM_STACKPAGES);
+
+	return 0;
+
+	#else
+
 	(void)as;
 	return 0;
+
+	#endif
 }
 
 int
@@ -177,7 +359,11 @@ as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 	 * Write this.
 	 */
 
+	#if OPT_A3
+	KASSERT(as->as_stackpbase != 0);
+	#else
 	(void)as;
+	#endif
 
 	/* Initial user-level stack pointer */
 	*stackptr = USERSTACK;
