@@ -95,6 +95,21 @@ vm_tlbshootdown(const struct tlbshootdown *ts)
 	panic("Not implemented yet.\n");
 }
 
+#if OPT_A3
+static
+int
+tlb_get_rr_victim()
+{
+	int victim;
+	static unsigned int next_victim = 0;
+
+	victim = next_victim;
+	next_victim = (next_victim + 1) % NUM_TLB;
+	
+	return victim;
+}
+#endif
+
 int
 vm_fault(int faulttype, vaddr_t faultaddress)
 {
@@ -194,9 +209,18 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		return 0;
 	}
 
-	kprintf("dumbvm: Ran out of TLB entries - cannot handle page fault\n");
+
+
+	// kprintf("dumbvm: Ran out of TLB entries - cannot handle page fault\n");
+
+	int victim = tlb_get_rr_victim();
+	ehi = faultaddress;
+	elo = paddr | TLBLO_DIRTY | TLBLO_VALID;
+	DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
+	tlb_write(ehi, elo, victim);
 	splx(spl);
-	return EFAULT;
+	
+	return 0;
 	
 	#else
 	
