@@ -46,6 +46,7 @@
 #if OPT_A3
 #include <spl.h>
 #include <mips/tlb.h>
+#include <uw-vmstats.h>
 
 #define DUMBVM_STACKPAGES    12
 
@@ -195,6 +196,7 @@ as_activate(void)
 	spl = splhigh();
 
 	for (i=0; i<NUM_TLB; i++) {
+		vmstats_inc(3);
 		tlb_write(TLBHI_INVALID(i), TLBLO_INVALID(), i);
 	}
 

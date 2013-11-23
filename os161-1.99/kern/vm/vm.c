@@ -12,12 +12,6 @@
 #include <vm.h>
 #include "opt-A3.h"
 
-void
-vm_bootstrap(void)
-{
-	/* May need to add code. */
-}
-
 #if OPT_A3
 /* You will need to call this at some point */
 #include <mips/tlb.h>
@@ -25,6 +19,7 @@ vm_bootstrap(void)
 #include <current.h>
 #include <spl.h>
 #include <proc.h>
+#include <uw-vmstats.h>
 
 #define DUMBVM_STACKPAGES    12
 static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
@@ -50,6 +45,17 @@ getppages(unsigned long npages)
    #endif
 }
 #endif
+
+void
+vm_bootstrap(void)
+{
+	#if OPT_A3
+	int spl = splhigh();
+	vmstats_init();
+	splx(spl);
+	#endif
+	/* May need to add code. */
+}
 
 /* Allocate/free some kernel-space virtual pages */
 vaddr_t 
@@ -108,6 +114,11 @@ tlb_get_rr_victim()
 	
 	return victim;
 }
+
+void vm_shutdown() {
+	vmstats_print();
+}
+
 #endif
 
 int
@@ -122,6 +133,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	uint32_t ehi, elo;
 	struct addrspace *as;
 	int spl;
+	bool readonly = false;
 
 	faultaddress &= PAGE_FRAME;
 
@@ -129,8 +141,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
 	switch (faulttype) {
 	    case VM_FAULT_READONLY:
-		/* We always create pages read-write, so we can't get this */
-		panic("dumbvm: got VM_FAULT_READONLY\n");
+			readonly = true;
 	    case VM_FAULT_READ:
 	    case VM_FAULT_WRITE:
 		break;
@@ -199,8 +210,21 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	for (i=0; i<NUM_TLB; i++) {
 		tlb_read(&ehi, &elo, i);
 		if (elo & TLBLO_VALID) {
+			if (ehi == faultaddress) {
+				vmstats_inc(4);
+				if (readonly) {
+					elo = paddr | TLBLO_VALID;
+					tlb_write(ehi, elo, i);
+					splx(spl);
+				}
+				return 0;	
+			}
 			continue;
 		}
+
+		vmstats_inc(0);
+		vmstats_inc(1);
+
 		ehi = faultaddress;
 		elo = paddr | TLBLO_DIRTY | TLBLO_VALID;
 		DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
@@ -213,6 +237,8 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
 	// kprintf("dumbvm: Ran out of TLB entries - cannot handle page fault\n");
 
+	vmstats_inc(0);
+	vmstats_inc(2);
 	int victim = tlb_get_rr_victim();
 	ehi = faultaddress;
 	elo = paddr | TLBLO_DIRTY | TLBLO_VALID;
@@ -221,7 +247,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	splx(spl);
 	
 	return 0;
-	
+		
 	#else
 	
 	(void)faulttype;

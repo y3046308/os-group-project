@@ -51,6 +51,10 @@
 #include <version.h>
 #include "autoconf.h"  // for pseudoconfig
 #include "opt-A0.h"
+#include "opt-A3.h"
+#if OPT_A3
+#include <vm.h>
+#endif
 
 
 /*
@@ -156,6 +160,10 @@ shutdown(void)
 	vfs_unmountall();
 
 	thread_shutdown();
+
+	#if OPT_A3
+	vm_shutdown();
+	#endif
 
 	splhigh();
 }
