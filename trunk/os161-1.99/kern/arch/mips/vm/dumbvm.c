@@ -59,6 +59,7 @@ vm_bootstrap(void)
 	/* Do nothing. */
 }
 
+/*
 static
 paddr_t
 getppages(unsigned long npages)
@@ -71,7 +72,7 @@ getppages(unsigned long npages)
 	
 	spinlock_release(&stealmem_lock);
 	return addr;
-}
+}*/
 
 /* Allocate/free some kernel-space virtual pages */
 vaddr_t 
@@ -300,13 +301,13 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 	kprintf("dumbvm: Warning: too many regions\n");
 	return EUNIMP;
 }
-
+/*
 static
 void
 as_zero_region(paddr_t paddr, unsigned npages)
 {
 	bzero((void *)PADDR_TO_KVADDR(paddr), npages * PAGE_SIZE);
-}
+}*/
 
 int
 as_prepare_load(struct addrspace *as)
