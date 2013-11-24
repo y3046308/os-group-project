@@ -270,15 +270,19 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 	(void)writeable;
 	(void)executable;
 
+	kprintf("R: %d\nW: %d\nE: %d\n", readable, writeable, executable);
+
 	if (as->as_vbase1 == 0) {
 		as->as_vbase1 = vaddr;
 		as->as_npages1 = npages;
+		as->as_flag1 = readable | writeable | executable;
 		return 0;
 	}
 
 	if (as->as_vbase2 == 0) {
 		as->as_vbase2 = vaddr;
 		as->as_npages2 = npages;
+		as->as_flag2 = readable | writeable | executable;
 		return 0;
 	}
 
@@ -313,6 +317,8 @@ as_prepare_load(struct addrspace *as)
 	KASSERT(as->as_pbase1 == 0);
 	KASSERT(as->as_pbase2 == 0);
 	KASSERT(as->as_stackpbase == 0);
+	as->as_complete_load1 = false;
+	as->as_complete_load2 = false;
 
 	as->as_pbase1 = getppages(as->as_npages1);
 	if (as->as_pbase1 == 0) {
@@ -349,9 +355,15 @@ as_complete_load(struct addrspace *as)
 	/*
 	 * Write this.
 	 */
+	#if OPT_A3
+	as->as_complete_load1 = true;
+	as->as_complete_load2 = true;
+	return 0;
+	#else
 
 	(void)as;
 	return 0;
+	#endif
 }
 
 int
