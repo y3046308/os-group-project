@@ -17,6 +17,7 @@
 #include <mips/tlb.h>
 #include <kern/errno.h>
 #include <current.h>
+#include <elf.h>
 #include <spl.h>
 #include <proc.h>
 #include <uw-vmstats.h>
@@ -133,7 +134,10 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	uint32_t ehi, elo;
 	struct addrspace *as;
 	int spl;
-	bool readonly = false;
+	// bool readonly = false;
+	//bool write = false;
+	bool cl;
+	int flag;
 
 	faultaddress &= PAGE_FRAME;
 
@@ -141,7 +145,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
 	switch (faulttype) {
 	    case VM_FAULT_READONLY:
-			readonly = true;
+			return EINVAL;
 	    case VM_FAULT_READ:
 	    case VM_FAULT_WRITE:
 		break;
@@ -189,9 +193,13 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	stacktop = USERSTACK;
 
 	if (faultaddress >= vbase1 && faultaddress < vtop1) {
+		flag = as->as_flag1;
+		cl = as->as_complete_load1;
 		paddr = (faultaddress - vbase1) + as->as_pbase1;
 	}
 	else if (faultaddress >= vbase2 && faultaddress < vtop2) {
+		flag = as->as_flag2;
+		cl = as->as_complete_load2;
 		paddr = (faultaddress - vbase2) + as->as_pbase2;
 	}
 	else if (faultaddress >= stackbase && faultaddress < stacktop) {
@@ -212,12 +220,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		if (elo & TLBLO_VALID) {
 			if (ehi == faultaddress) {
 				vmstats_inc(4);
-				if (readonly) {
-					elo = paddr | TLBLO_VALID;
-					tlb_write(ehi, elo, i);
-					splx(spl);
-				}
-				return 0;	
+				return 0;
 			}
 			continue;
 		}
@@ -226,7 +229,12 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		vmstats_inc(1);
 
 		ehi = faultaddress;
-		elo = paddr | TLBLO_DIRTY | TLBLO_VALID;
+		if(!(flag & 2) && cl) { // no write flag (readonly) and code load done
+			// kprintf("this TLB(%d) is set to readonly. (dirty==0)\n",flag);
+			elo = paddr | TLBLO_VALID;	
+		} else {
+			elo = paddr | TLBLO_DIRTY | TLBLO_VALID;
+		}
 		DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
 		tlb_write(ehi, elo, i);
 		splx(spl);
@@ -241,7 +249,12 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	vmstats_inc(2);
 	int victim = tlb_get_rr_victim();
 	ehi = faultaddress;
-	elo = paddr | TLBLO_DIRTY | TLBLO_VALID;
+	if(!(flag & 2) && cl) { // no write flag (readonly) and code load done
+		// kprintf("this TLB(%d) is set to readonly. (dirty==0)\n",flag);
+		elo = paddr | TLBLO_VALID;	
+	} else {
+		elo = paddr | TLBLO_DIRTY | TLBLO_VALID;
+	}
 	DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
 	tlb_write(ehi, elo, victim);
 	splx(spl);
