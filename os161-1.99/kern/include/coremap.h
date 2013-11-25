@@ -7,8 +7,7 @@ enum page_state{
 };
 
 struct page{
-//	vaddr_t va;
-	paddr_t pa;	// physical address of page
+	vaddr_t va;
 	struct addrspace *as;
 	enum page_state state;	// dirty, valid, use bit etc
 };
@@ -16,5 +15,4 @@ struct page{
 int coremap_size;
 struct page **page_table;	// table of pages
 
-//void init_coremap(void);
 #endif

@@ -49,6 +49,13 @@ struct vnode;
  *
  * You write this.
  */
+/*
+struct pte{
+	vaddr_t va;
+	paddr_t pa;
+	int valid;	// valid/invalid
+	int npages;
+}*/
 
 struct addrspace {
 #if OPT_A3
