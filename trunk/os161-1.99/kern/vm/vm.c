@@ -54,19 +54,21 @@ vm_bootstrap(void)
 	#if OPT_A3
 	int spl = splhigh();
 	vmstats_init();
-
+/*
 	// initialize coremap
         paddr_t a1 = 0, a2 = 0;
         ram_getsize(&a1, &a2);   // get number of physical pages
-	coremap_size = (a2 - a1) / PAGE_SIZE;
-	page_table = kmalloc(sizeof(struct page*) * coremap_size);
+	coremap_size = ROUNDDOWN(a2, PAGE_SIZE) / PAGE_SIZE;
+	//page_table = kmalloc(sizeof(struct page*) * coremap_size);
+	page_table = (struct page*)PADDR_TO_KVADDR(a1);
 	
 	for (int i = 0 ; i < coremap_size ; i++){	// assign right value to each entry in page table
-		page_table[i] = kmalloc(sizeof(struct page));
-		page_table[i]->pa = a1 + i * PAGE_SIZE;
+//		page_table[i] = kmalloc(sizeof(struct page));
+		page_table[i] = (struct page)PADDR_TO_KVADDR(a1 + i * page_size);
+		page_table[i]->va = a1 + i * PAGE_SIZE;
 		page_table[i]->state = FREE;	// state of page initially free
 	}
-
+*/
 	splx(spl);
 	#endif
 	/* May need to add code. */
