@@ -20,6 +20,7 @@
 #include <elf.h>
 #include <spl.h>
 #include <proc.h>
+#include <coremap.h>
 #include <uw-vmstats.h>
 
 #define DUMBVM_STACKPAGES    12
@@ -53,6 +54,19 @@ vm_bootstrap(void)
 	#if OPT_A3
 	int spl = splhigh();
 	vmstats_init();
+
+	// initialize coremap
+        paddr_t a1 = 0, a2 = 0;
+        ram_getsize(&a1, &a2);   // get number of physical pages
+	coremap_size = (a2 - a1) / PAGE_SIZE;
+	page_table = kmalloc(sizeof(struct page*) * coremap_size);
+	
+	for (int i = 0 ; i < coremap_size ; i++){	// assign right value to each entry in page table
+		page_table[i] = kmalloc(sizeof(struct page));
+		page_table[i]->pa = a1 + i * PAGE_SIZE;
+		page_table[i]->state = FREE;	// state of page initially free
+	}
+
 	splx(spl);
 	#endif
 	/* May need to add code. */
