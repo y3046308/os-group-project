@@ -12,6 +12,12 @@ struct page{
 	enum page_state state;	// dirty, valid, use bit etc
 };
 
+struct coremap {
+	paddr_t pa; // physical address
+	unsigned int fnum; // frame number
+	unsigned int pagenum;
+};
+
 int coremap_size;
 struct page **page_table;	// table of pages
 
