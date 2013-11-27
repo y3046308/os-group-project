@@ -306,19 +306,9 @@ int sys_execv(userptr_t progname, userptr_t args) {
 	resid = bufsize = ARG_MAX;
 
 	for(int i = 0 ; i < NARG_MAX ; i++) { // copyin from user.
-		result = copyin(args, &karg, sizeof(userptr_t)); // copy the pointer.
-		if (as != NULL && !valid_address_check(as, (vaddr_t)args)) { // out of vaddr boundary for this proc
-			errno = EFAULT;
-			return -1;
-		}
-		if(result) {
-			return result;
-		}
+		copyin(args, &karg, sizeof(userptr_t)); // copy the pointer.
 		if(karg == NULL) break; // if NULL, break.
-		result = copyinstr(karg, bufend, resid, &alen);
-		if(result) {
-			return result;
-		}
+		copyinstr(karg, bufend, resid, &alen);
 		offsets[i] = bufsize - resid;
 		bufend += alen;
 		resid -= alen;
@@ -331,27 +321,18 @@ int sys_execv(userptr_t progname, userptr_t args) {
 	stack -= (stack & (sizeof(void *) - 1)); // alignment
 	argbase = (userptr_t)stack; // argbase.
 
-	result = copyout(buffer, argbase, buflen); // copy the arguments into stack.
-	if(result) {
-		return result;
-	}
+	copyout(buffer, argbase, buflen); // copy the arguments into stack.
 
 	stack -= (size + 1)*sizeof(userptr_t); // go to array pointer (bottom of stack).
 	uargs = (userptr_t)stack; // got stack.
 
 	for(int i = 0 ; i < size ; i++) { // copy the elements
 		arg = argbase + offsets[i];
-		result = copyout(&arg, uargs, sizeof(userptr_t));
-		if(result) {
-			return result;
-		}
+		copyout(&arg, uargs, sizeof(userptr_t));
 		uargs += sizeof(userptr_t); // 4
 	}
 	arg = NULL;
-	result = copyout(&arg, uargs, sizeof(userptr_t)); // copy the NULL pointer.
-	if(result) {
-		return result;
-	}
+	copyout(&arg, uargs, sizeof(userptr_t)); // copy the NULL pointer.
 
 
 
