@@ -320,7 +320,7 @@ as_prepare_load(struct addrspace *as)
 	as->as_complete_load1 = false;
 	as->as_complete_load2 = false;
 
-	as->as_pbase1 = getppages(as->as_npages1);
+	/*as->as_pbase1 = getppages(as->as_npages1);
 	if (as->as_pbase1 == 0) {
 		return ENOMEM;
 	}
@@ -328,15 +328,15 @@ as_prepare_load(struct addrspace *as)
 	as->as_pbase2 = getppages(as->as_npages2);
 	if (as->as_pbase2 == 0) {
 		return ENOMEM;
-	}
+	}*/
 
 	as->as_stackpbase = getppages(DUMBVM_STACKPAGES);
 	if (as->as_stackpbase == 0) {
 		return ENOMEM;
 	}
 	
-	as_zero_region(as->as_pbase1, as->as_npages1);
-	as_zero_region(as->as_pbase2, as->as_npages2);
+	// as_zero_region(as->as_pbase1, as->as_npages1);
+	// as_zero_region(as->as_pbase2, as->as_npages2);
 	as_zero_region(as->as_stackpbase, DUMBVM_STACKPAGES);
 
 	return 0;

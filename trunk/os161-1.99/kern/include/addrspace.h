@@ -39,6 +39,7 @@
 #include "opt-dumbvm.h"
 #if OPT_A3
 #include <segments.h>
+#include <array.h>
 #endif
 
 struct vnode;
@@ -65,13 +66,15 @@ struct addrspace {
         size_t as_npages1;
         int as_flag1;
         bool as_complete_load1;
+        // struct vnode as_vn1;
         vaddr_t as_vbase2;
         paddr_t as_pbase2;
         size_t as_npages2;
         int as_flag2;
         bool as_complete_load2;
+        // struct vnode as_vn2;
         paddr_t as_stackpbase;
-		    struct segment seg[3];	// each for code, data, and stack
+		struct segment seg[3];	// each for code, data, and stack
 #else
         vaddr_t as_vbase1;
         paddr_t as_pbase1;
@@ -82,6 +85,24 @@ struct addrspace {
         paddr_t as_stackpbase;
 #endif
 };
+
+#if OPT_A3
+
+struct pagearray *pagearr;
+
+struct page {
+    struct addrspace *as;
+    vaddr_t vaddr;
+};
+
+#ifndef PAGEINLINE
+#define PAGEINLINE INLINE
+#endif
+
+DECLARRAY(page);
+DEFARRAY(page, PAGEINLINE);
+
+#endif
 
 /*
  * Functions in addrspace.c:
