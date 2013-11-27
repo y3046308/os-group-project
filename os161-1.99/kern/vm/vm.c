@@ -5,12 +5,15 @@
 
 #include "opt-vm.h"
 #if OPT_VM
+#include "opt-A3.h"
 
 #include <types.h>
 #include <lib.h>
+#if OPT_A3
+#define PAGEINLINE
+#endif
 #include <addrspace.h>
 #include <vm.h>
-#include "opt-A3.h"
 
 #if OPT_A3
 /* You will need to call this at some point */
@@ -20,7 +23,6 @@
 #include <elf.h>
 #include <spl.h>
 #include <proc.h>
-#include <coremap.h>
 #include <uw-vmstats.h>
 
 #define DUMBVM_STACKPAGES    12
@@ -46,13 +48,21 @@ getppages(unsigned long npages)
    return (paddr_t) NULL;
    #endif
 }
+
+static
+void
+as_zero_region(paddr_t paddr, unsigned npages)
+{
+	bzero((void *)PADDR_TO_KVADDR(paddr), npages * PAGE_SIZE);
+}
 #endif
 
 void
 vm_bootstrap(void)
 {
 	#if OPT_A3
-	int spl = splhigh();
+	
+	// int spl = splhigh();
 	vmstats_init();
 /*
 	// initialize coremap
@@ -69,7 +79,6 @@ vm_bootstrap(void)
 		page_table[i]->state = FREE;	// state of page initially free
 	}
 */
-	splx(spl);
 	#endif
 	/* May need to add code. */
 }
@@ -189,16 +198,16 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
 	/* Assert that the address space has been set up properly. */
 	KASSERT(as->as_vbase1 != 0);
-	KASSERT(as->as_pbase1 != 0);
+	// KASSERT(as->as_pbase1 != 0);
 	KASSERT(as->as_npages1 != 0);
 	KASSERT(as->as_vbase2 != 0);
-	KASSERT(as->as_pbase2 != 0);
+	// KASSERT(as->as_pbase2 != 0);
 	KASSERT(as->as_npages2 != 0);
 	KASSERT(as->as_stackpbase != 0);
 	KASSERT((as->as_vbase1 & PAGE_FRAME) == as->as_vbase1);
-	KASSERT((as->as_pbase1 & PAGE_FRAME) == as->as_pbase1);
+	// KASSERT((as->as_pbase1 & PAGE_FRAME) == as->as_pbase1);
 	KASSERT((as->as_vbase2 & PAGE_FRAME) == as->as_vbase2);
-	KASSERT((as->as_pbase2 & PAGE_FRAME) == as->as_pbase2);
+	// KASSERT((as->as_pbase2 & PAGE_FRAME) == as->as_pbase2);
 	KASSERT((as->as_stackpbase & PAGE_FRAME) == as->as_stackpbase);
 
 	vbase1 = as->as_vbase1;
@@ -211,11 +220,27 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	if (faultaddress >= vbase1 && faultaddress < vtop1) {
 		flag = as->as_flag1;
 		cl = as->as_complete_load1;
+		if(as->as_pbase1 == 0) {
+			as->as_pbase1 = getppages(as->as_npages1);
+			if (as->as_pbase1 == 0) {
+				return ENOMEM;
+			}
+			as_zero_region(as->as_pbase1, as->as_npages1);
+
+
+		}
 		paddr = (faultaddress - vbase1) + as->as_pbase1;
 	}
 	else if (faultaddress >= vbase2 && faultaddress < vtop2) {
 		flag = as->as_flag2;
 		cl = as->as_complete_load2;
+		if(as->as_pbase2 == 0) {
+			as->as_pbase2 = getppages(as->as_npages2);
+			if (as->as_pbase2 == 0) {
+				return ENOMEM;
+			}
+			as_zero_region(as->as_pbase2, as->as_npages2);
+		}
 		paddr = (faultaddress - vbase2) + as->as_pbase2;
 	}
 	else if (faultaddress >= stackbase && faultaddress < stacktop) {
