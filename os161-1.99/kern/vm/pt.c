@@ -1,18 +1,30 @@
-enum _pstate_t {
-	free,
-	dirty,
-	fixed,
-	clean
-};
-typedef enum _pstate_t pstate_t;
-	 
+#include "pt.h"
 
-struct page{
-	struct addrspace* as;
-	vaddr_t vaddr;
-	pstate_t state;
-};
+struct pte*
+pte_create(void){
+	struct pte *pte = kmalloc(sizeof(struct pte));
+	if (pte == NULL){
+		return NULL;
+	}
+	
+	pte->pfn = 0;
+	pte->valid = 0;
+	pte->dirty = 0;
+	
+	return pte;
+}
 
-struct page *pagearr;
+struct pte* 
+pte_create(paddr_t pfn, int valid, int dirty){
+	struct pte *pte = kmalloc(sizeof(struct pte));
+	if (pte == NULL){
+		return NULL;
+	}
+	
+	pte->pfn = pfn;
+	pte->valid = valid;
+	pte->dirty = dirty;
 
+	return pte;
+}
 
