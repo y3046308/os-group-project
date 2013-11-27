@@ -36,7 +36,7 @@ getppages(unsigned long npages)
 	#if OPT_A3
 	paddr_t addr;
 
-	spinlock_acquire(&stealmem_lock);
+	ispinlock_acquire(&stealmem_lock);
 
 	addr = ram_stealmem(npages);
 	
@@ -65,6 +65,13 @@ vm_bootstrap(void)
 	int spl = splhigh();
 	vmstats_init();
 	splx(spl);
+	/* initialize coremap */
+/*	paddr_t first, last;
+	ram_getsize(&first, &last); //get first and last address of ram
+	pgnum = (last - first)/PAGE_SIZE; // number of pages that fit
+	page_array = (struct page*)PADDR_TO_KVADDR(first); //convert paddr to kvaddr
+	avail_addr = first + pgnum * sizeof(struct page); */
+		
 	#endif
 	/* May need to add code. */
 }
@@ -206,30 +213,71 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	if (faultaddress >= vbase1 && faultaddress < vtop1) {
 		flag = as->as_flag1;
 		cl = as->as_complete_load1;
-		if(as->as_pbase1 == 0) {
+		/*if(as->as_pbase1 == 0) {
 			as->as_pbase1 = getppages(as->as_npages1);
 			if (as->as_pbase1 == 0) {
 				return ENOMEM;
-			}
-			as_zero_region(as->as_pbase1, as->as_npages1);
-
-
+			}*/
+		as_zero_region(as->as_pbase1, as->as_npages1);
+		int vpn = faultaddress >> 12; //shift by size of offset to get vpn
+		vaddr_t PTEAddr = as->pt1 + (vpn * sizeof(pte*)); //finding pte address for specified vpn
+		if(*PTEAddr == NULL){ // page is not yet created ? question: why do we need the valid bit if we can just check for NULL
+			paddr_t paddr = getppage(1);
+			struct pte* entry = pte_create(paddr, 1, 0); // first segment so text segment? is this asserted?
+			PTEAddr = &entry; //insert pte into pt
 		}
-		paddr = (faultaddress - vbase1) + as->as_pbase1;
+		
+		struct pte* entry = *PTEAddr; //fetch the PTE
+			
+		if(entry->valid == 0){ //page is not yet created 
+			paddr_t paddr = getppage(1);
+            struct pte* entry = pte_create(paddr, 1, 0); // first segment so text segment? is this asserted?
+            PTEAddr = &entry; //insert pte into pt
+		}
+		else if(entry->dirty == 0){ //segment is readonly
+			//raise exception
+		}
+		else{
+			// Access is allowed; fetch physical address
+			int offset = faultaddress << 20; 
+			paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
+		}
+
 	}
 	else if (faultaddress >= vbase2 && faultaddress < vtop2) {
 		flag = as->as_flag2;
 		cl = as->as_complete_load2;
-		if(as->as_pbase2 == 0) {
+		/*if(as->as_pbase2 == 0) {
 			as->as_pbase2 = getppages(as->as_npages2);
 			if (as->as_pbase2 == 0) {
 				return ENOMEM;
-			}
-			as_zero_region(as->as_pbase2, as->as_npages2);
+			}*/
+		as_zero_region(as->as_pbase2, as->as_npages2);
+		int vpn = (faultaddress & /*VPN_MASK*/) >> 12;  
+		vaddr_t PTEAddr = as->pt2 + (vpn * sizeof(pte*));
+		if(*PTEAddr == NULL){
+			paddr_t paddr = getppage(1);
+			struct pte* entry = pte_create(paddr, 1, 1); //not sure about the dirty bit
+			PTEADdr = &entry;
 		}
-		paddr = (faultaddress - vbase2) + as->as_pbase2;
+		
+		struct pte* entry = *PTEAddr;
+		
+		if(entry->valid == 0){
+			paddr_t paddr = getppage(1);
+			struct pte* entry = pte_create(paddr, 1, 1);
+			PTEAddr = &entry;
+		}
+		else if(entry->dirty == 0){
+			//raise exception
+		}
+		else{
+			int offset = faultaddress << 20;
+			paddr = (PTEAddr->pfn << 12) | offset;
+		}
 	}
 	else if (faultaddress >= stackbase && faultaddress < stacktop) {
+		
 		paddr = (faultaddress - stackbase) + as->as_stackpbase;
 	}
 	else {
@@ -246,14 +294,14 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		tlb_read(&ehi, &elo, i);
 		if (elo & TLBLO_VALID) {
 			if (ehi == faultaddress) {
-				vmstats_inc(4);
+				vmstats_inc(4); //TLB Faults with Replace
 				return 0;
 			}
 			continue;
 		}
 
-		vmstats_inc(0);
-		vmstats_inc(1);
+		vmstats_inc(0); //TLB Faults
+		vmstats_inc(1); //TLB Faults with Free
 
 		ehi = faultaddress;
 		if(!(flag & 2) && cl) { // no write flag (readonly) and code load done
@@ -272,8 +320,8 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
 	// kprintf("dumbvm: Ran out of TLB entries - cannot handle page fault\n");
 
-	vmstats_inc(0);
-	vmstats_inc(2);
+	vmstats_inc(0); //TLB Faults
+	vmstats_inc(2); //TLB Faults with Replace
 	int victim = tlb_get_rr_victim();
 	ehi = faultaddress;
 	if(!(flag & 2) && cl) { // no write flag (readonly) and code load done

@@ -42,6 +42,11 @@
 #include <array.h>
 #endif
 
+#if OPT_A3
+/* under dumbvm, always have 48k of user stack */
+#define STACKPAGES 12
+#endif
+
 struct vnode;
 
 /* 
@@ -75,6 +80,12 @@ struct addrspace {
         // struct vnode as_vn2;
         paddr_t as_stackpbase;
 		struct segment seg[3];	// each for code, data, and stack
+
+		/* declare stack pages */
+		struct pte* pt1, pt2, pt3; // 3 pagetables one for each segment
+		pt1 = kmalloc(npages1 * sizeof(struct pte*)); 
+		pt2 = kmalloc(npages2 * sizeof(struct pte*));
+		pt3 = kmalloc(STACKPAGES * sizeof(struct pte*));
 #else
         vaddr_t as_vbase1;
         paddr_t as_pbase1;
@@ -86,23 +97,6 @@ struct addrspace {
 #endif
 };
 
-#if OPT_A3
-
-struct pagearray *pagearr;
-
-struct page {
-    struct addrspace *as;
-    vaddr_t vaddr;
-};
-
-#ifndef PAGEINLINE
-#define PAGEINLINE INLINE
-#endif
-
-DECLARRAY(page);
-DEFARRAY(page, PAGEINLINE);
-
-#endif
 
 /*
  * Functions in addrspace.c:
