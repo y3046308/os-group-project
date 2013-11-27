@@ -2,7 +2,6 @@
 #ifdef UW
 /* This was added just to see if we can get things to compile properly and
  * to provide a bit of guidance for assignment 3 */
-
 #include "opt-vm.h"
 #if OPT_VM
 #include "opt-A3.h"
@@ -17,6 +16,7 @@
 
 #if OPT_A3
 /* You will need to call this at some point */
+//#include <coremap.h>
 #include <mips/tlb.h>
 #include <kern/errno.h>
 #include <current.h>
@@ -32,7 +32,7 @@ static
 paddr_t
 getppages(unsigned long npages)
 {
-   /* Adapt code form dumbvm or implement something new */
+   // Adapt code form dumbvm or implement something new 
 	#if OPT_A3
 	paddr_t addr;
 
@@ -62,23 +62,9 @@ vm_bootstrap(void)
 {
 	#if OPT_A3
 	
-	// int spl = splhigh();
+	int spl = splhigh();
 	vmstats_init();
-/*
-	// initialize coremap
-        paddr_t a1 = 0, a2 = 0;
-        ram_getsize(&a1, &a2);   // get number of physical pages
-	coremap_size = ROUNDDOWN(a2, PAGE_SIZE) / PAGE_SIZE;
-	//page_table = kmalloc(sizeof(struct page*) * coremap_size);
-	page_table = (struct page*)PADDR_TO_KVADDR(a1);
-	
-	for (int i = 0 ; i < coremap_size ; i++){	// assign right value to each entry in page table
-//		page_table[i] = kmalloc(sizeof(struct page));
-		page_table[i] = (struct page)PADDR_TO_KVADDR(a1 + i * page_size);
-		page_table[i]->va = a1 + i * PAGE_SIZE;
-		page_table[i]->state = FREE;	// state of page initially free
-	}
-*/
+	splx(spl);
 	#endif
 	/* May need to add code. */
 }
