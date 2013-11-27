@@ -2,23 +2,23 @@
 #include <addrspace.h>
 #if OPT_A3
 
-enum page_state{
-	FREE, DIRTY, FIXED, CLEAN,
-};
-
-struct page{
-	vaddr_t va;
-	struct addrspace *as;
-	enum page_state state;	// dirty, valid, use bit etc
-};
+typedef enum _frame_state{
+//	FREE, DIRTY, FIXED, CLEAN,
+	FREE, USED,
+} frame_state;
 
 struct coremap {
 	paddr_t pa; // physical address
+	size_t size;	// size
+	frame_state state;
 	unsigned int fnum; // frame number
 	unsigned int pagenum;
 };
 
 int coremap_size;
-struct page **page_table;	// table of pages
+struct coremap **core_table;	// table of pages
 
+void init_coremap(void);
+paddr_t getppages(unsigned long npages);
+void free_pages(paddr_t paddr);
 #endif
