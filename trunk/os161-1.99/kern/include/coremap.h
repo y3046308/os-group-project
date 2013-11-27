@@ -7,7 +7,7 @@ typedef enum _frame_state{
 	FREE, USED,
 } frame_state;
 
-struct coremap {
+struct entry {
 	paddr_t pa; // physical address
 	size_t size;	// size
 	frame_state state;
@@ -16,7 +16,7 @@ struct coremap {
 };
 
 int coremap_size;
-struct coremap **core_table;	// table of pages
+struct entry **coremap;	// table of pages
 
 void init_coremap(void);
 paddr_t getppages(unsigned long npages);
