@@ -24,6 +24,7 @@
 #include <spl.h>
 #include <proc.h>
 #include <uw-vmstats.h>
+#include "pt.h"
 
 #define DUMBVM_STACKPAGES    12
 #define PAGE_FRAME 0xfffff000   /* mask for getting page number from addr */
@@ -230,8 +231,18 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		//check page accessablilty 
 		if(entry.valid == 0){ 
 			paddr_t paddr = getppages(1); //create a page
-            struct pte entry = pte_create(paddr, 1, 0); // first segment so text segment? is this asserted?	
+			struct pte entry;
+			if(flag & 2){ //write permitted
+            entry = pte_create(paddr, 1, 1); 
+			}
+			else{
+			entry = pte_create(paddr, 1, 0);
+			}
 			*PTEAddr = entry; 
+		
+			//fetch physical address
+			int offset = faultaddress << 20;
+			paddr = (PTEAddr->pfn << 12) | offset;
 		}
 		else if(entry.dirty == 0){ //segment is readonly
 			//raise exception
@@ -261,8 +272,18 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         //check page accessablilty 
         if(entry.valid == 0){ 
             paddr_t paddr = getppages(1); //create a page
-            struct pte entry = pte_create(paddr, 1, 1);  
+			struct pte entry;
+			if(flag & 2){ //write permitted
+            entry = pte_create(paddr, 1, 1);  
+			}
+			else{
+			entry = pte_create(paddr, 1, 0);
+			}
             *PTEAddr = entry;
+
+			//fetch physical address
+			int offset = faultaddress << 20;
+			paddr = (PTEAddr->pfn << 12) | offset;
         }
         else if(entry.dirty == 0){ //segment is readonly
             //raise exception
@@ -290,6 +311,10 @@ vm_fault(int faulttype, vaddr_t faultaddress)
             paddr_t paddr = getppages(1); //create a page
             struct pte entry = pte_create(paddr, 1, 1); 
             *PTEAddr = entry;
+	
+			//fetch physical address
+			int offset = faultaddress << 20;
+			paddr = (PTEAddr->pfn << 12) | offset;
         }
         else if(entry.dirty == 0){ //segment is readonly
             //raise exception
