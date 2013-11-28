@@ -83,9 +83,9 @@ struct addrspace {
 
 		/* declare stack pages */
 		struct pte* pt1, pt2, pt3; // 3 pagetables one for each segment
-		pt1 = kmalloc(npages1 * sizeof(struct pte*)); 
-		pt2 = kmalloc(npages2 * sizeof(struct pte*));
-		pt3 = kmalloc(STACKPAGES * sizeof(struct pte*));
+		pt1 = kmalloc(npages1 * sizeof(struct pte)); 
+		pt2 = kmalloc(npages2 * sizeof(struct pte));
+		pt3 = kmalloc(STACKPAGES * sizeof(struct pte));
 #else
         vaddr_t as_vbase1;
         paddr_t as_pbase1;

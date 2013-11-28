@@ -26,6 +26,8 @@
 #include <uw-vmstats.h>
 
 #define DUMBVM_STACKPAGES    12
+#define PAGE_FRAME 0xfffff000   /* mask for getting page number from addr */
+
 static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
 static
@@ -213,26 +215,23 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	if (faultaddress >= vbase1 && faultaddress < vtop1) {
 		flag = as->as_flag1;
 		cl = as->as_complete_load1;
-		/*if(as->as_pbase1 == 0) {
-			as->as_pbase1 = getppages(as->as_npages1);
-			if (as->as_pbase1 == 0) {
-				return ENOMEM;
-			}*/
-		as_zero_region(as->as_pbase1, as->as_npages1);
-		int vpn = faultaddress >> 12; //shift by size of offset to get vpn
-		vaddr_t PTEAddr = as->pt1 + (vpn * sizeof(pte*)); //finding pte address for specified vpn
-		if(*PTEAddr == NULL){ // page is not yet created ? question: why do we need the valid bit if we can just check for NULL
-			paddr_t paddr = getppage(1);
-			struct pte* entry = pte_create(paddr, 1, 0); // first segment so text segment? is this asserted?
-			PTEAddr = &entry; //insert pte into pt
-		}
 		
-		struct pte* entry = *PTEAddr; //fetch the PTE
+		as_zero_region(as->as_pbase1, as->as_npages1);
+		
+		//Get VPN from faultaddress
+		int vpn = (faultaddress & PAGE_FRAME) >> 12;
+
+		//find pte address for the VPN 
+		vaddr_t PTEAddr = as->pt1 + (vpn * sizeof(pte)); 
+		
+		//fetch the PTE
+		struct pte entry = *PTEAddr; 
 			
-		if(entry->valid == 0){ //page is not yet created 
-			paddr_t paddr = getppage(1);
-            struct pte* entry = pte_create(paddr, 1, 0); // first segment so text segment? is this asserted?
-            PTEAddr = &entry; //insert pte into pt
+		//check page accessablilty 
+		if(entry->valid == 0){ 
+			paddr_t paddr = getppage(1); //create a page
+            struct pte entry = pte_create(paddr, 1, 0); // first segment so text segment? is this asserted?	
+			PTEAddr = &entry; 
 		}
 		else if(entry->dirty == 0){ //segment is readonly
 			//raise exception
@@ -245,41 +244,63 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
 	}
 	else if (faultaddress >= vbase2 && faultaddress < vtop2) {
-		flag = as->as_flag2;
-		cl = as->as_complete_load2;
-		/*if(as->as_pbase2 == 0) {
-			as->as_pbase2 = getppages(as->as_npages2);
-			if (as->as_pbase2 == 0) {
-				return ENOMEM;
-			}*/
-		as_zero_region(as->as_pbase2, as->as_npages2);
-		int vpn = (faultaddress & /*VPN_MASK*/) >> 12;  
-		vaddr_t PTEAddr = as->pt2 + (vpn * sizeof(pte*));
-		if(*PTEAddr == NULL){
-			paddr_t paddr = getppage(1);
-			struct pte* entry = pte_create(paddr, 1, 1); //not sure about the dirty bit
-			PTEADdr = &entry;
-		}
-		
-		struct pte* entry = *PTEAddr;
-		
-		if(entry->valid == 0){
-			paddr_t paddr = getppage(1);
-			struct pte* entry = pte_create(paddr, 1, 1);
-			PTEAddr = &entry;
-		}
-		else if(entry->dirty == 0){
-			//raise exception
-		}
-		else{
-			int offset = faultaddress << 20;
-			paddr = (PTEAddr->pfn << 12) | offset;
-		}
-	}
+        flag = as->as_flag2;
+        cl = as->as_complete_load2;
+
+        as_zero_region(as->as_pbase2, as->as_npages2);
+
+        //Get VPN from faultaddress
+        int vpn = (faultaddress & PAGE_FRAME) >> 12;
+
+        //find pte address for the VPN 
+        vaddr_t PTEAddr = as->pt2 + (vpn * sizeof(pte));
+
+        //fetch the PTE
+        struct pte entry = *PTEAddr;
+
+        //check page accessablilty 
+        if(entry->valid == 0){ 
+            paddr_t paddr = getppage(1); //create a page
+            struct pte entry = pte_create(paddr, 1, 1);  
+            PTEAddr = &entry;
+        }
+        else if(entry->dirty == 0){ //segment is readonly
+            //raise exception
+        }
+        else{
+            // Access is allowed; fetch physical address
+            int offset = faultaddress << 20;
+            paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
+        }
+
+    }
 	else if (faultaddress >= stackbase && faultaddress < stacktop) {
-		
-		paddr = (faultaddress - stackbase) + as->as_stackpbase;
-	}
+
+        //Get VPN from faultaddress
+        int vpn = (faultaddress & PAGE_FRAME) >> 12;
+
+        //find pte address for the VPN 
+        vaddr_t PTEAddr = as->pt3 + (vpn * sizeof(pte));
+
+        //fetch the PTE
+        struct pte entry = *PTEAddr;
+
+        //check page accessablilty 
+        if(entry->valid == 0){ 
+            paddr_t paddr = getppage(1); //create a page
+            struct pte entry = pte_create(paddr, 1, 1); 
+            PTEAddr = &entry;
+        }
+        else if(entry->dirty == 0){ //segment is readonly
+            //raise exception
+        }
+        else{
+            // Access is allowed; fetch physical address
+            int offset = faultaddress << 20;
+            paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
+        }
+
+    }
 	else {
 		return EFAULT;
 	}
