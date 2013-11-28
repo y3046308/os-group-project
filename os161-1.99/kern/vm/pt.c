@@ -1,16 +1,21 @@
 #include "pt.h"
+#include "opt-A3.h"
+#include <lib.h>
+
+#if OPT_A3
 
 struct pte 
 pte_create(paddr_t pfn, int valid, int dirty){
-	struct pte pte = kmalloc(sizeof(struct pte));
-	if (pte == NULL){
+	struct pte *p = kmalloc(sizeof(struct pte));
+	if (p == NULL){
 		return NULL;
 	}
 	
-	pte->pfn = pfn;
-	pte->valid = valid;
-	pte->dirty = dirty;
+	p->pfn = pfn;
+	p->valid = valid;
+	p->dirty = dirty;
 
-	return pte;
+	return *p;
 }
 
+#endif
