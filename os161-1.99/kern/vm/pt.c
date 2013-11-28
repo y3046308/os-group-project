@@ -1,8 +1,8 @@
 #include "pt.h"
 
-struct pte*
+struct pte
 pte_create(void){
-	struct pte *pte = kmalloc(sizeof(struct pte));
+	struct pte pte = kmalloc(sizeof(struct pte));
 	if (pte == NULL){
 		return NULL;
 	}
@@ -14,9 +14,9 @@ pte_create(void){
 	return pte;
 }
 
-struct pte* 
+struct pte 
 pte_create(paddr_t pfn, int valid, int dirty){
-	struct pte *pte = kmalloc(sizeof(struct pte));
+	struct pte pte = kmalloc(sizeof(struct pte));
 	if (pte == NULL){
 		return NULL;
 	}

@@ -97,6 +97,9 @@ as_create(void)
 	as->as_pbase2 = 0;
 	as->as_npages2 = 0;
 	as->as_stackpbase = 0;
+	as->pt1 = NULL;
+	as->pt2 = NULL;
+	as->pt3 = NULL;
 
 	#endif
 
@@ -276,6 +279,9 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 		as->as_vbase1 = vaddr;
 		as->as_npages1 = npages;
 		as->as_flag1 = readable | writeable | executable;
+		for(int i = 0; i < npages1; i++){ //initialize pt1
+			as->pt1[i] = pte_create();
+		}
 		return 0;
 	}
 
@@ -283,6 +289,9 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 		as->as_vbase2 = vaddr;
 		as->as_npages2 = npages;
 		as->as_flag2 = readable | writeable | executable;
+		for(int i = 0; i < napages2; i++){ //initialize pt2
+			as->pt2[i] = pte_create();
+		}
 		return 0;
 	}
 
