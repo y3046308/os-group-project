@@ -38,7 +38,7 @@ getppages(unsigned long npages)
 	#if OPT_A3
 	paddr_t addr;
 
-	ispinlock_acquire(&stealmem_lock);
+	spinlock_acquire(&stealmem_lock);
 
 	addr = ram_stealmem(npages);
 	
@@ -222,18 +222,18 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		int vpn = (faultaddress & PAGE_FRAME) >> 12;
 
 		//find pte address for the VPN 
-		vaddr_t PTEAddr = as->pt1 + (vpn * sizeof(pte)); 
+		struct pte* PTEAddr = as->pt1 + (vpn * sizeof(struct pte)); 
 		
 		//fetch the PTE
 		struct pte entry = *PTEAddr; 
 			
 		//check page accessablilty 
-		if(entry->valid == 0){ 
-			paddr_t paddr = getppage(1); //create a page
+		if(entry.valid == 0){ 
+			paddr_t paddr = getppages(1); //create a page
             struct pte entry = pte_create(paddr, 1, 0); // first segment so text segment? is this asserted?	
-			PTEAddr = &entry; 
+			*PTEAddr = entry; 
 		}
-		else if(entry->dirty == 0){ //segment is readonly
+		else if(entry.dirty == 0){ //segment is readonly
 			//raise exception
 		}
 		else{
@@ -253,18 +253,18 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         int vpn = (faultaddress & PAGE_FRAME) >> 12;
 
         //find pte address for the VPN 
-        vaddr_t PTEAddr = as->pt2 + (vpn * sizeof(pte));
+        struct pte *PTEAddr = as->pt2 + (vpn * sizeof(struct pte));
 
         //fetch the PTE
         struct pte entry = *PTEAddr;
 
         //check page accessablilty 
-        if(entry->valid == 0){ 
-            paddr_t paddr = getppage(1); //create a page
+        if(entry.valid == 0){ 
+            paddr_t paddr = getppages(1); //create a page
             struct pte entry = pte_create(paddr, 1, 1);  
-            PTEAddr = &entry;
+            *PTEAddr = entry;
         }
-        else if(entry->dirty == 0){ //segment is readonly
+        else if(entry.dirty == 0){ //segment is readonly
             //raise exception
         }
         else{
@@ -280,18 +280,18 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         int vpn = (faultaddress & PAGE_FRAME) >> 12;
 
         //find pte address for the VPN 
-        vaddr_t PTEAddr = as->pt3 + (vpn * sizeof(pte));
+        struct pte *PTEAddr = as->pt3 + (vpn * sizeof(struct pte));
 
         //fetch the PTE
         struct pte entry = *PTEAddr;
 
         //check page accessablilty 
-        if(entry->valid == 0){ 
-            paddr_t paddr = getppage(1); //create a page
+        if(entry.valid == 0){ 
+            paddr_t paddr = getppages(1); //create a page
             struct pte entry = pte_create(paddr, 1, 1); 
-            PTEAddr = &entry;
+            *PTEAddr = entry;
         }
-        else if(entry->dirty == 0){ //segment is readonly
+        else if(entry.dirty == 0){ //segment is readonly
             //raise exception
         }
         else{

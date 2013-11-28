@@ -37,9 +37,11 @@
 
 #include <vm.h>
 #include "opt-dumbvm.h"
+#include "opt-A3.h"
 #if OPT_A3
 #include <segments.h>
 #include <array.h>
+#include "pt.h"
 #endif
 
 #if OPT_A3
@@ -55,13 +57,7 @@ struct vnode;
  *
  * You write this.
  */
-/*
-struct pte{
-	vaddr_t va;
-	paddr_t pa;
-	int valid;	// valid/invalid
-	int npages;
-}*/
+
 
 struct addrspace {
 #if OPT_A3
@@ -82,10 +78,7 @@ struct addrspace {
 		struct segment seg[3];	// each for code, data, and stack
 
 		/* declare stack pages */
-		struct pte* pt1, pt2, pt3; // 3 pagetables one for each segment
-		pt1 = kmalloc(npages1 * sizeof(struct pte)); 
-		pt2 = kmalloc(npages2 * sizeof(struct pte));
-		pt3 = kmalloc(STACKPAGES * sizeof(struct pte));
+		struct pte *pt1, *pt2, *pt3; // 3 pagetables one for each segment
 #else
         vaddr_t as_vbase1;
         paddr_t as_pbase1;
