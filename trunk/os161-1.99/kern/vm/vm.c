@@ -24,11 +24,12 @@
 #include <spl.h>
 #include <proc.h>
 #include <uw-vmstats.h>
+#include <coremap.h>
 #include "pt.h"
 
 #define DUMBVM_STACKPAGES    12
 #define PAGE_FRAME 0xfffff000   /* mask for getting page number from addr */
-
+/*
 static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
 static
@@ -51,7 +52,7 @@ getppages(unsigned long npages)
    return (paddr_t) NULL;
    #endif
 }
-
+*/
 static
 void
 as_zero_region(paddr_t paddr, unsigned npages)
