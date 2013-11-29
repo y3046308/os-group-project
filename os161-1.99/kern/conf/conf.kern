@@ -330,7 +330,7 @@ file      thread/thread.c
 file      thread/threadlist.c
 file	  vm/coremap.c
 file 	  vm/pt.c
-
+file 	  vm/swapfile.c
 #
 # Virtual memory system
 # (you will probably want to add stuff here while doing the VM assignment)
