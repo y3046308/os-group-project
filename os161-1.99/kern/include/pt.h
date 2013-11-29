@@ -1,7 +1,9 @@
 
+
 #ifndef _PT_H_
 #define _PT_H_
 #include "opt-A3.h"
+#include <types.h>
 
 #if OPT_A3
 enum _pstate_t {
