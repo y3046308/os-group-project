@@ -1,4 +1,3 @@
-
 #ifdef UW
 /* This was added just to see if we can get things to compile properly and
  * to provide a bit of guidance for assignment 3 */
@@ -53,12 +52,12 @@ getppages(unsigned long npages)
    #endif
 }
 */
-static
+/*static
 void
 as_zero_region(paddr_t paddr, unsigned npages)
 {
 	bzero((void *)PADDR_TO_KVADDR(paddr), npages * PAGE_SIZE);
-}
+} */
 #endif
 
 void
@@ -156,8 +155,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	uint32_t ehi, elo;
 	struct addrspace *as;
 	int spl;
-	// bool readonly = false;
-	//bool write = false;
 	bool cl;
 	int flag;
 
@@ -215,13 +212,14 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	stacktop = USERSTACK;
 
 	if (faultaddress >= vbase1 && faultaddress < vtop1) {
+	
 		flag = as->as_flag1;
 		cl = as->as_complete_load1;
-		
-		as_zero_region(as->as_pbase1, as->as_npages1);
-		
+	
 		//Get VPN from faultaddress
-		int vpn = (faultaddress & PAGE_FRAME) >> 12;
+		int vpn = (faultaddress - vbase1) / PAGE_SIZE;
+	
+		kprintf("vpn: %d\n", vpn);
 
 		//find pte address for the VPN 
 		struct pte* PTEAddr = as->pt1 + (vpn * sizeof(struct pte)); 
@@ -231,38 +229,45 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			
 		//check page accessablilty 
 		if(entry.valid == 0){ 
-			paddr_t paddr = getppages(1); //create a page
-			struct pte entry;
+			paddr = getppages(1); //create a page
+			struct pte p;
 			if(flag & 2){ //write permitted
             entry = pte_create(paddr, 1, 1); 
 			}
 			else{
 			entry = pte_create(paddr, 1, 0);
 			}
-			*PTEAddr = entry; 
+			*PTEAddr = p; 
 		
 			//fetch physical address
-			int offset = faultaddress << 20;
-			paddr = (PTEAddr->pfn << 12) | offset;
+//			int offset = (faultaddress & OFFSET_MASK) << 20;
+//			paddr = (PTEAddr->pfn << 12) | offset;
 		}
-		else if(entry.dirty == 0){ //segment is readonly
-			//raise exception
+		else if(entry.dirty == 0 && faulttype == VM_FAULT_WRITE){ //segment is readonly
+			//exception
+			kprintf("dirty write");
+			return EPERM;
 		}
 		else{
+			paddr = entry.pfn;
 			// Access is allowed; fetch physical address
-			int offset = faultaddress << 20; 
-			paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
+//			int offset = (faultaddress & OFFSET_MASK) << 20; 
+//			paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
 		}
 
 	}
 	else if (faultaddress >= vbase2 && faultaddress < vtop2) {
-        flag = as->as_flag2;
+        
+		kprintf("fault on segment 2");
+		
+		flag = as->as_flag2;
         cl = as->as_complete_load2;
 
-        as_zero_region(as->as_pbase2, as->as_npages2);
 
         //Get VPN from faultaddress
-        int vpn = (faultaddress & PAGE_FRAME) >> 12;
+        int vpn = (faultaddress - vbase2) / PAGE_SIZE;
+
+		kprintf("vpn: %d\n", vpn);
 
         //find pte address for the VPN 
         struct pte *PTEAddr = as->pt2 + (vpn * sizeof(struct pte));
@@ -272,35 +277,41 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
         //check page accessablilty 
         if(entry.valid == 0){ 
-            paddr_t paddr = getppages(1); //create a page
-			struct pte entry;
+            paddr = getppages(1); //create a page
+			struct pte p;
 			if(flag & 2){ //write permitted
             entry = pte_create(paddr, 1, 1);  
 			}
 			else{
 			entry = pte_create(paddr, 1, 0);
 			}
-            *PTEAddr = entry;
+            *PTEAddr = p;
 
 			//fetch physical address
-			int offset = faultaddress << 20;
-			paddr = (PTEAddr->pfn << 12) | offset;
+//			int offset = (faultaddress & OFFSET_MASK) << 20;
+//			paddr = (PTEAddr->pfn << 12) | offset;
         }
-        else if(entry.dirty == 0){ //segment is readonly
+        else if(entry.dirty == 0 && faulttype == VM_FAULT_WRITE){ //segment is readonly
             //raise exception
+			return EPERM;
         }
         else{
             // Access is allowed; fetch physical address
-            int offset = faultaddress << 20;
-            paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
+//            int offset = (faultaddress & OFFSET_MASK) << 20;
+//            paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
+			paddr = entry.pfn;
         }
 
     }
 	else if (faultaddress >= stackbase && faultaddress < stacktop) {
 
+		kprintf("fault on segment 3");
+		
         //Get VPN from faultaddress
-        int vpn = (faultaddress & PAGE_FRAME) >> 12;
+        int vpn = (faultaddress - stackbase) / PAGE_SIZE;
 
+		kprintf("vpn: %d\n", vpn);
+	
         //find pte address for the VPN 
         struct pte *PTEAddr = as->pt3 + (vpn * sizeof(struct pte));
 
@@ -309,21 +320,23 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
         //check page accessablilty 
         if(entry.valid == 0){ 
-            paddr_t paddr = getppages(1); //create a page
-            struct pte entry = pte_create(paddr, 1, 1); 
-            *PTEAddr = entry;
+            paddr = getppages(1); //create a page
+            struct pte p = pte_create(paddr, 1, 1); 
+            *PTEAddr = p;
 	
 			//fetch physical address
-			int offset = faultaddress << 20;
-			paddr = (PTEAddr->pfn << 12) | offset;
+//			int offset = (faultaddress & OFFSET_MASK) << 20;
+//			paddr = (PTEAddr->pfn << 12) | offset;
         }
-        else if(entry.dirty == 0){ //segment is readonly
+        else if(entry.dirty == 0 && faulttype == VM_FAULT_WRITE){ //segment is readonly
             //raise exception
+			return EPERM;
         }
         else{
             // Access is allowed; fetch physical address
-            int offset = faultaddress << 20;
-            paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
+//            int offset = (faultaddress & OFFSET_MASK) << 20;
+//            paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
+  			paddr = entry.pfn;
         }
 
     }

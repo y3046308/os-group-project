@@ -48,7 +48,7 @@
 #include <mips/tlb.h>
 #include <uw-vmstats.h>
 #include "pt.h"
-
+/as
 #define DUMBVM_STACKPAGES    12
 
 static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
@@ -330,8 +330,8 @@ as_prepare_load(struct addrspace *as)
 	KASSERT(as->as_pbase1 == 0);
 	KASSERT(as->as_pbase2 == 0);
 	KASSERT(as->as_stackpbase == 0);
-	as->as_complete_load1 = false;
-	as->as_complete_load2 = false;
+//	as->as_complete_load1 = false;
+//	as->as_complete_load2 = false;
 
 	/*as->as_pbase1 = getppages(as->as_npages1);
 	if (as->as_pbase1 == 0) {
@@ -343,14 +343,14 @@ as_prepare_load(struct addrspace *as)
 		return ENOMEM;
 	}*/
 
-	as->as_stackpbase = getppages(DUMBVM_STACKPAGES);
+	/*as->as_stackpbase = getppages(DUMBVM_STACKPAGES);
 	if (as->as_stackpbase == 0) {
 		return ENOMEM;
-	}
+	}*/
 	
-	// as_zero_region(as->as_pbase1, as->as_npages1);
-	// as_zero_region(as->as_pbase2, as->as_npages2);
-	as_zero_region(as->as_stackpbase, DUMBVM_STACKPAGES);
+	//as_zero_region(as->as_pbase1, as->as_npages1);
+	//as_zero_region(as->as_pbase2, as->as_npages2);
+//	as_zero_region(as->as_stackpbase, DUMBVM_STACKPAGES);
 
 	return 0;
 
@@ -369,8 +369,8 @@ as_complete_load(struct addrspace *as)
 	 * Write this.
 	 */
 	#if OPT_A3
-	as->as_complete_load1 = true;
-	as->as_complete_load2 = true;
+//	as->as_complete_load1 = true;
+//	as->as_complete_load2 = true;
 	return 0;
 	#else
 
