@@ -373,11 +373,11 @@ as_define_stack(struct addrspace *as, vaddr_t *stackptr)
 	 * Write this.
 	 */
 
-	#if OPT_A3
-	KASSERT(as->as_stackpbase != 0);
-	#else
+	//#if OPT_A3
+	//KASSERT(as->as_stackpbase != 0);
+	//#else
 	(void)as;
-	#endif
+	//#endif
 
 	/* Initial user-level stack pointer */
 	*stackptr = USERSTACK;

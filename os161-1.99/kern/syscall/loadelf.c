@@ -298,10 +298,15 @@ load_elf(struct vnode *v, vaddr_t *entrypoint)
 			return ENOEXEC;
 		}
 		#if OPT_A3
-		as->offset = ph.p_offset;
+		if(i == 0) {
+			as->offset1 = ph.p_offset;
+		} else {
+			as->offset2 = ph.p_offset;
+		}
 		as->memsz = ph.p_memsz;	
 		as->filesz = ph.p_filesz;
 		as->is_exec = ph.p_flags & PF_X;
+		as->vn = v;
 		#else
 		result = load_segment(as, v, ph.p_offset, ph.p_vaddr,
                       ph.p_memsz, ph.p_filesz,

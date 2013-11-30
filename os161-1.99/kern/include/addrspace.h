@@ -79,7 +79,8 @@ struct addrspace {
 		
 		/*for load segment */
 		struct vnode *vn;
-		off_t offset;
+		off_t offset1;
+		off_t offset2;
 		size_t memsz;
 		size_t filesz;
 		int is_exec;
