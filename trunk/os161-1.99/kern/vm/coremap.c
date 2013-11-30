@@ -61,11 +61,14 @@ find_free_frame(int npages) {
 
 static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
+
+// free the physical address.
 void
 freeppages(paddr_t paddr) {
-	int index = (paddr - page_start) / PAGE_SIZE;
-	int psize = coremaps[index].page_num;
-	for(int i = 0 ; i < psize ; i++) {
+	int index = (paddr - page_start) / PAGE_SIZE; // index calc.
+	int psize = coremaps[index].page_num; // get pagesize.
+	for(int i = 0 ; i < psize ; i++) { // loop through pagesize
+
 		coremaps[i+index].state = FREE;
 		coremaps[i+index].size = 0;
 		coremaps[i+index].page_num = 0;
@@ -76,13 +79,17 @@ freeppages(paddr_t paddr) {
 paddr_t
 getppages(unsigned long npages)
 {
-   // Adapt code form dumbvm or implement something new 
+	// Adapt code form dumbvm or implement something new 
 	#if OPT_A3
 	kprintf("requested %d pages\n",(int)npages);
 	paddr_t addr;
 
 	spinlock_acquire(&stealmem_lock);
-	addr = find_free_frame(npages);
+	if(npages > 0) {
+		addr = find_free_frame(npages);
+	} else {
+		addr = 0;
+	}
 	if(addr == 0) {
 		addr = ram_stealmem(npages);
 	}

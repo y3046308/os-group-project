@@ -34,8 +34,6 @@
 
 //static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
-
-#if OPT_A3
 static
 int
 load_segment(struct addrspace *as, struct vnode *v,
@@ -108,7 +106,7 @@ as_zero_region(paddr_t paddr, unsigned npages)
 {
 	bzero((void *)PADDR_TO_KVADDR(paddr), npages * PAGE_SIZE);
 } */
-#endif
+
 
 void
 vm_bootstrap(void)
@@ -118,8 +116,8 @@ vm_bootstrap(void)
 	int spl = splhigh();
 	vmstats_init();
 	paddr_t lo, hi, freeaddr;
-    freeaddr = 0;
     ram_getsize(&lo,&hi);
+    freeaddr = lo;
     int page_num = hi / PAGE_SIZE;
     coremap_size = page_num;
     coremaps = (struct coremap*)PADDR_TO_KVADDR(lo);
