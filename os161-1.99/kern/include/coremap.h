@@ -1,3 +1,6 @@
+
+#ifndef _COREMAP_H_
+#define _COREMAP_H_
 #include "opt-A3.h"
 #include <addrspace.h>
 #if OPT_A3
@@ -7,18 +10,18 @@ typedef enum _frame_state{
 	FREE, USED,
 } frame_state;
 
-struct entry {
+struct coremap {
 	paddr_t pa; // physical address
 	size_t size;	// size
 	frame_state state;
-	unsigned int fnum; // frame number
-	unsigned int pagenum;
+	int page_num;
 };
 
 int coremap_size;
-struct entry **coremap;	// table of pages
+struct coremap *coremaps;
 
-void init_coremap(void);
+void init_coremap(paddr_t freeaddr);
 paddr_t getppages(unsigned long npages);
-void free_pages(paddr_t paddr);
+void freeppages(paddr_t paddr);
+#endif
 #endif

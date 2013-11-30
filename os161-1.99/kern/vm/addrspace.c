@@ -46,33 +46,19 @@
 #if OPT_A3
 #include <spl.h>
 #include <mips/tlb.h>
+#include <coremap.h>
 #include <uw-vmstats.h>
 #include "pt.h"
-/as
+
 #define DUMBVM_STACKPAGES    12
 
-static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
-static
-paddr_t
-getppages(unsigned long npages)
-{
-	paddr_t addr;
-
-	spinlock_acquire(&stealmem_lock);
-
-	addr = ram_stealmem(npages);
-	
-	spinlock_release(&stealmem_lock);
-	return addr;
-}
-
-static
+/*static
 void
 as_zero_region(paddr_t paddr, unsigned npages)
 {
 	bzero((void *)PADDR_TO_KVADDR(paddr), npages * PAGE_SIZE);
-}
+}*/
 
 #endif
 
@@ -371,6 +357,7 @@ as_complete_load(struct addrspace *as)
 	#if OPT_A3
 //	as->as_complete_load1 = true;
 //	as->as_complete_load2 = true;
+	 (void) as;
 	return 0;
 	#else
 
