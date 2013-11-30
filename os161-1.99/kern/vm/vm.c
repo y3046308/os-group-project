@@ -387,7 +387,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	}
 
 	/* make sure it's page-aligned */
-	KASSERT((paddr & PAGE_FRAME) == paddr);
+	// KASSERT((paddr & PAGE_FRAME) == paddr);
 
 	/* Disable interrupts on this CPU while frobbing the TLB. */
 	spl = splhigh();
