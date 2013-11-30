@@ -16,7 +16,8 @@ pte_create(paddr_t pfn, int valid, int dirty){
         p->pfn = pfn;
         p->valid = valid;
         p->dirty = dirty;
-        p->ref = 0;     
+        p->ref = 0;    
+	p->sw = -1;
         return *p;
 }
 
