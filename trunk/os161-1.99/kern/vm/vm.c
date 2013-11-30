@@ -21,8 +21,8 @@
 #include <current.h>
 #include <elf.h>
 #include <spl.h>
-#include <coremap.h>
 #include <proc.h>
+#include <coremap.h>
 #include <uw-vmstats.h>
 #include "pt.h"
 #include <kern/iovec.h>
@@ -30,9 +30,12 @@
 
 #define DUMBVM_STACKPAGES    12
 #define PAGE_FRAME 0xfffff000   /* mask for getting page number from addr */
+//#define OFFSET_MASK 0x00000fff  /* mask for getting offset */
 
-/*static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
+//static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
+
+#if OPT_A3
 static
 int
 load_segment(struct addrspace *as, struct vnode *v,
@@ -78,9 +81,9 @@ load_segment(struct addrspace *as, struct vnode *v,
 }
 #endif
 
-static
+/*static
 paddr_t
-getppages2(unsigned long npages)
+getppages(unsigned long npages)
 {
    // Adapt code form dumbvm or implement something new 
 	#if OPT_A3
@@ -114,17 +117,14 @@ vm_bootstrap(void)
 	
 	int spl = splhigh();
 	vmstats_init();
-	// coremaps = (struct coremap **)PADDR_TO_KVADDR(ram_stealmem(20));
-	paddr_t lo, hi, freeaddr;
-	freeaddr = 0;
-	ram_getsize(&lo,&hi);
-	int page_num = hi / PAGE_SIZE;
-	coremap_size = page_num;
-	coremaps = (struct coremap*)PADDR_TO_KVADDR(lo);
-	freeaddr += page_num * sizeof(struct coremap);
-	init_coremap(freeaddr);
-	alloc_kpages(freeaddr / PAGE_SIZE);
 	splx(spl);
+	/* initialize coremap */
+/*	paddr_t first, last;
+	ram_getsize(&first, &last); //get first and last address of ram
+	pgnum = (last - first)/PAGE_SIZE; // number of pages that fit
+	page_array = (struct page*)PADDR_TO_KVADDR(first); //convert paddr to kvaddr
+	avail_addr = first + pgnum * sizeof(struct page); */
+		
 	#endif
 	/* May need to add code. */
 }
@@ -141,9 +141,6 @@ alloc_kpages(int npages)
 	if (pa==0) {
 		return 0;
 	}
-
-	
-
 	return PADDR_TO_KVADDR(pa);
 	
 	#else
@@ -158,37 +155,9 @@ alloc_kpages(int npages)
 void 
 free_kpages(vaddr_t addr)
 {
-	#if OPT_A3
-
-	int vpn;
-	vaddr_t vbase1, vbase2, vtop1, vtop2;
-	struct pte* PTEAddr;
-	struct addrspace *as = curproc_getas();
-
-	vbase1 = as->as_vbase1;
-	vtop1 = vbase1 + as->as_npages1 * PAGE_SIZE;
-	vbase2 = as->as_vbase2;
-	vtop2 = vbase2 + as->as_npages2 * PAGE_SIZE;
-
-	if(vbase1 <= addr && addr < vtop1) {
-		vpn = (addr - vbase1) / PAGE_SIZE;
-		PTEAddr = as->pt1 + (vpn * sizeof(struct pte)); 
-	} else if(vbase2 <= addr && addr < vtop2) {
-		vpn = (addr - vbase2) / PAGE_SIZE;
-		PTEAddr = as->pt1 + (vpn * sizeof(struct pte)); 
-	}
-	//fetch the PTE
-	struct pte entry = *PTEAddr; 
-
-	freeppages(entry.pfn);
-
-	#else
-
 	/* nothing - leak the memory. */
 
 	(void)addr;
-	
-	#endif
 }
 
 void
@@ -237,8 +206,10 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	struct addrspace *as;
 	int spl;
 	bool cl;
+	int seg = 0;
 	int flag;
-
+	struct pte* PTEAddr;
+	
 	faultaddress &= PAGE_FRAME;
 
 	DEBUG(DB_VM, "dumbvm: fault: 0x%x\n", faultaddress);
@@ -290,29 +261,36 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	
 		flag = as->as_flag1;
 		cl = as->as_complete_load1;
+		seg = 1;
 	
 		//Get VPN from faultaddress
 		int vpn = (faultaddress - vbase1) / PAGE_SIZE;
-	
+		
+		kprintf("fault on segment 1");	
 		kprintf("vpn: %d\n", vpn);
 
 		//find pte address for the VPN 
-		struct pte* PTEAddr = as->pt1 + (vpn * sizeof(struct pte)); 
+		PTEAddr = as->pt1 + (vpn * sizeof(struct pte)); 
+	
 		
 		//fetch the PTE
 		struct pte entry = *PTEAddr; 
-			
+		
 		//check page accessablilty 
 		if(entry.valid == 0){ 
 			paddr = getppages(1); //create a page
-			struct pte p;
+			kprintf("paddr: 0x%08x\n", paddr);
 			if(flag & 2){ //write permitted
-            entry = pte_create(paddr, 1, 1); 
+				PTEAddr->pfn = paddr;
+				PTEAddr->valid = 1;
+				PTEAddr->dirty = 1; 
 			}
 			else{
-			entry = pte_create(paddr, 1, 0);
+				PTEAddr->pfn = paddr;
+                PTEAddr->valid = 1;
+                PTEAddr->dirty = 0;
 			}
-			*PTEAddr = p; 
+			kprintf("pa: 0x%08x\n", PTEAddr->pfn); 
 		
 		}
 		else if(entry.dirty == 0 && faulttype == VM_FAULT_WRITE){ //segment is readonly
@@ -332,15 +310,16 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		
 		flag = as->as_flag2;
         cl = as->as_complete_load2;
-
+		seg = 2;
 
         //Get VPN from faultaddress
         int vpn = (faultaddress - vbase2) / PAGE_SIZE;
-
+	
+		kprintf("fault on segment 2");
 		kprintf("vpn: %d\n", vpn);
 
         //find pte address for the VPN 
-        struct pte *PTEAddr = as->pt2 + (vpn * sizeof(struct pte));
+        PTEAddr = as->pt2 + (vpn * sizeof(struct pte));
 
         //fetch the PTE
         struct pte entry = *PTEAddr;
@@ -348,14 +327,16 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         //check page accessablilty 
         if(entry.valid == 0){ 
             paddr = getppages(1); //create a page
-			struct pte p;
 			if(flag & 2){ //write permitted
-            entry = pte_create(paddr, 1, 1);  
+				PTEAddr->pfn = paddr;
+                PTEAddr->valid = 1;
+                PTEAddr->dirty = 1;
 			}
 			else{
-			entry = pte_create(paddr, 1, 0);
+				PTEAddr->pfn = paddr;
+                PTEAddr->valid = 1;
+                PTEAddr->dirty = 0;
 			}
-            *PTEAddr = p;
 
         }
         else if(entry.dirty == 0 && faulttype == VM_FAULT_WRITE){ //segment is readonly
@@ -371,14 +352,14 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	else if (faultaddress >= stackbase && faultaddress < stacktop) {
 
 		kprintf("fault on segment 3");
-		
+		seg = 3;
         //Get VPN from faultaddress
         int vpn = (faultaddress - stackbase) / PAGE_SIZE;
 
 		kprintf("vpn: %d\n", vpn);
 	
         //find pte address for the VPN 
-        struct pte *PTEAddr = as->pt3 + (vpn * sizeof(struct pte));
+        PTEAddr = as->pt3 + (vpn * sizeof(struct pte));
 
         //fetch the PTE
         struct pte entry = *PTEAddr;
@@ -386,8 +367,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         //check page accessablilty 
         if(entry.valid == 0){ 
             paddr = getppages(1); //create a page
-            struct pte p = pte_create(paddr, 1, 1); 
-            *PTEAddr = p;
+            PTEAddr->pfn = paddr;
+            PTEAddr->valid = 1;
+            PTEAddr->dirty = 1;
 	
         }
         else if(entry.dirty == 0 && faulttype == VM_FAULT_WRITE){ //segment is readonly
@@ -433,12 +415,33 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
 		tlb_write(ehi, elo, i);
 		/* load segment from elf */
-		off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset;
-		int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
-        if (result) {
-            return result;
-        }
+		if(seg == 1){
+			int d = PTEAddr->dirty;
+			PTEAddr->dirty = 1;
+			off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset1;
+			kprintf("off: %d, faultaddress: 0x%08x, vbase: 0x%08x\n", (int)off, faultaddress, vbase1);
+			int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
+        	PTEAddr->dirty = d;
+			if (result) {
+            	return result;
+        	}
+		}
+		if(seg == 2){
+			int d = PTEAddr->dirty;
+			PTEAddr->dirty = 1;
+			off_t off = (off_t)faultaddress - (off_t)vbase2 + as->offset2;
+            int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
+            PTEAddr->dirty = d;
+			if (result) {
+                return result;
+            }
+		}
+		if(seg == 3) {
+			bzero((void *)faultaddress, PAGE_SIZE);
+		}
 		splx(spl);
+		kprintf("faultaddr: 0x%08x\n", faultaddress);
+		kprintf("ehi: 0x%08x, elo: 0x%08x\n", ehi, elo);
 		return 0;
 	}
 
@@ -459,11 +462,30 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
 	tlb_write(ehi, elo, victim);
 	/* load segment from elf */
-    off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset;
-    int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
-    if (result) {
-    	return result;
+    if(seg == 1){
+		int d = PTEAddr->dirty;
+		PTEAddr->dirty = 1;
+    	off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset1;
+    	int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
+    	PTEAddr->dirty = d;
+		kprintf("result: %di\n", result);
+		if (result) {
+        	return result;
+        }
     }
+   	if(seg == 2){
+		int d = PTEAddr->dirty;
+		PTEAddr->dirty = 1;
+    	off_t off = (off_t)faultaddress - (off_t)vbase2 + as->offset2;
+    	int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
+      	PTEAddr->dirty = d;
+		if (result) {
+       		return result;
+     	}
+   	}
+	if(seg == 3) {
+		bzero((void *)faultaddress, PAGE_SIZE);
+	}
 	splx(spl);
 	
 	return 0;
