@@ -1,3 +1,7 @@
+Design Recipe
+
+Group #14
+
 1.
 2.
 3.
@@ -6,5 +10,11 @@
 6.
 7.
 8.
-9.
+
+9. No structure is used to manage swap file. We used an array of boolean that checks if sectors in swap file
+  are occupied or not by page table entries. Since each page table entries hold unique index of swap file, no
+  other info is required. We also applied synchronization since swap file is a shared resource. It's located
+  in physical memory and only one swap file exists. Hence, we need sychronization when reading from swap file or
+  write to swap file to prevent any possible errors over the shared resource.
+
 10.
