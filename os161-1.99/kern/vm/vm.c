@@ -32,7 +32,7 @@
 #define PAGE_FRAME 0xfffff000   /* mask for getting page number from addr */
 //#define OFFSET_MASK 0x00000fff  /* mask for getting offset */
 
-static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
+// static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
 static
 int
@@ -75,11 +75,12 @@ load_segment(struct addrspace *as, struct vnode *v,
         kprintf("ELF: short read on segment - file truncated?\n");
         return ENOEXEC;
     }
+    
 	return result;
 }
 #endif
 
-static
+/*static
 paddr_t
 getppages2(unsigned long npages)
 {
@@ -98,7 +99,7 @@ getppages2(unsigned long npages)
 	 panic("Not implemented yet.\n");
    return (paddr_t) NULL;
    #endif
-}
+}*/
 
 /*static
 void
@@ -199,7 +200,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 {
   /* Adapt code form dumbvm or implement something new */
 	#if OPT_A3
-
 	vaddr_t vbase1, vtop1, vbase2, vtop2, stackbase, stacktop;
 	paddr_t paddr;
 	int i, vpn;
@@ -210,8 +210,10 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	int seg = 0;
 	int flag;
 	struct pte* PTEAddr;
-	
+
 	faultaddress &= PAGE_FRAME;
+
+	kprintf("faultaddr: 0x%08x\n", faultaddress);
 
 	DEBUG(DB_VM, "dumbvm: fault: 0x%x\n", faultaddress);
 
@@ -352,7 +354,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
     }
 	else if (faultaddress >= stackbase && faultaddress < stacktop) {
 
-		kprintf("fault on segment 3");
+		kprintf("fault on segment 3\n");
 		seg = 3;
         //Get VPN from faultaddress
         vpn = (faultaddress - stackbase) / PAGE_SIZE;
@@ -367,7 +369,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
         //check page accessablilty 
         if(entry.valid == 0){ 
-            paddr = getppages2(1); //create a page
+            paddr = getppages(1); //create a page
             PTEAddr->pfn = paddr;
             PTEAddr->valid = 1;
             PTEAddr->dirty = 1;
@@ -414,13 +416,15 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		/* load segment from elf */
 		if(seg == 1){
 			int d = PTEAddr->dirty;
+			int result = 0;
 			PTEAddr->dirty = 1;
 			off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset1;
 			kprintf("off: %d, faultaddress: 0x%08x, vbase: 0x%08x\n", (int)off, faultaddress, vbase1);
-			if(as->filesz1 / PAGE_SIZE < (unsigned int)vpn){
+			if(((PAGE_SIZE + (as->filesz1 & 0xfffff000)) / PAGE_SIZE) <= (unsigned int)vpn){
             	bzero((void *) paddr, PAGE_SIZE);
-        	}
-			int result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec1);
+        	} else {
+				result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec1);
+			}
         	PTEAddr->dirty = d;
 			if (result) {
             	return result;
@@ -428,12 +432,14 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		}
 		if(seg == 2){
 			int d = PTEAddr->dirty;
+			int result = 0;
 			PTEAddr->dirty = 1;
 			off_t off = (off_t)faultaddress - (off_t)vbase2 + as->offset2;
-			if(as->filesz2 / PAGE_SIZE < (unsigned int)vpn){
+			if(((PAGE_SIZE + (as->filesz2 & 0xfffff000)) / PAGE_SIZE) <= (unsigned int)vpn){
             	bzero((void *) paddr, PAGE_SIZE);
-        	}
-            int result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec2);
+        	} else {
+            	result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec2);
+            }
             PTEAddr->dirty = d;
 			if (result) {
                 return result;
@@ -441,10 +447,11 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		}
 		if(seg == 3) {
 			bzero((void *)faultaddress, PAGE_SIZE);
+			//kprintf("asd\n");
 		}
 		splx(spl);
-		kprintf("faultaddr: 0x%08x\n", faultaddress);
-		kprintf("ehi: 0x%08x, elo: 0x%08x\n", ehi, elo);
+		//kprintf("faultaddr: 0x%08x\n", faultaddress);
+		//kprintf("ehi: 0x%08x, elo: 0x%08x\n", ehi, elo);
 		return 0;
 	}
 
