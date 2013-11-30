@@ -420,15 +420,16 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			PTEAddr->dirty = 1;
 			off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset1;
 			kprintf("off: %d, faultaddress: 0x%08x, vbase: 0x%08x\n", (int)off, faultaddress, vbase1);
-			if((as->filesz1 / PAGE_SIZE) < (unsigned int)vpn){
-            	bzero((void *) paddr, PAGE_SIZE);
-        	}
-			if(as->filesz1 >= PAGE_SIZE){
+			int index = as->filesz1 / PAGE_SIZE;
+			size_t r = as->filesz1 % PAGE_SIZE;
+			if(index > vpn){
 				result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec1);
-				as->filesz1 -= PAGE_SIZE;
+			}
+			else if(index == vpn && r != 0){
+				result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, r, as->is_exec1);
 			}
 			else{
-				result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, as->filesz1, as->is_exec1);
+				bzero((void *) paddr, PAGE_SIZE);
 			}
         		PTEAddr->dirty = d;
 			if (result) {
@@ -440,16 +441,17 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			int result = 0;
 			PTEAddr->dirty = 1;
 			off_t off = (off_t)faultaddress - (off_t)vbase2 + as->offset2;
-			if((as->filesz2 / PAGE_SIZE) < (unsigned int)vpn){
-            	bzero((void *) paddr, PAGE_SIZE);
-        	}
-            if(as->filesz2 >= PAGE_SIZE){
+			int index = as->filesz2 / PAGE_SIZE;
+			size_t r = as->filesz2 % PAGE_SIZE;
+            if(index > vpn){
                 result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec2);
-                as->filesz2 -= PAGE_SIZE;
             }
-            else{
-                result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, as->filesz2, as->is_exec2);
+            else if(index == vpn && r != 0){
+                result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, r, as->is_exec2);
             }
+			else{
+				bzero((void *) paddr, PAGE_SIZE);
+			}
             PTEAddr->dirty = d;
 			if (result) {
                 return result;
