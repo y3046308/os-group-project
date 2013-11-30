@@ -12,7 +12,7 @@
 static paddr_t page_start = 0;
 
 void init_coremap(paddr_t freeaddr){
-	// kprintf("initializing...\n");
+	kprintf("initializing %d coremaps...\n", coremap_size);
 	page_start = freeaddr;
     for (int i = 0 ; i < coremap_size ; i++){
     	// kprintf(" %d", i);
