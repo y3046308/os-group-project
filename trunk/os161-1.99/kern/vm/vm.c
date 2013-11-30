@@ -21,6 +21,7 @@
 #include <current.h>
 #include <elf.h>
 #include <spl.h>
+#include <coremap.h>
 #include <proc.h>
 #include <uw-vmstats.h>
 #include <coremap.h>
@@ -28,12 +29,12 @@
 
 #define DUMBVM_STACKPAGES    12
 #define PAGE_FRAME 0xfffff000   /* mask for getting page number from addr */
-/*
-static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
+
+/*static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
 static
 paddr_t
-getppages(unsigned long npages)
+getppages2(unsigned long npages)
 {
    // Adapt code form dumbvm or implement something new 
 	#if OPT_A3
@@ -50,8 +51,8 @@ getppages(unsigned long npages)
 	 panic("Not implemented yet.\n");
    return (paddr_t) NULL;
    #endif
-}
-*/
+}*/
+
 /*static
 void
 as_zero_region(paddr_t paddr, unsigned npages)
@@ -67,14 +68,17 @@ vm_bootstrap(void)
 	
 	int spl = splhigh();
 	vmstats_init();
+	// coremaps = (struct coremap **)PADDR_TO_KVADDR(ram_stealmem(20));
+	paddr_t lo, hi, freeaddr;
+	freeaddr = 0;
+	ram_getsize(&lo,&hi);
+	int page_num = hi / PAGE_SIZE;
+	coremap_size = page_num;
+	coremaps = (struct coremap*)PADDR_TO_KVADDR(lo);
+	freeaddr += page_num * sizeof(struct coremap);
+	init_coremap(freeaddr);
+	alloc_kpages(freeaddr / PAGE_SIZE);
 	splx(spl);
-	/* initialize coremap */
-/*	paddr_t first, last;
-	ram_getsize(&first, &last); //get first and last address of ram
-	pgnum = (last - first)/PAGE_SIZE; // number of pages that fit
-	page_array = (struct page*)PADDR_TO_KVADDR(first); //convert paddr to kvaddr
-	avail_addr = first + pgnum * sizeof(struct page); */
-		
 	#endif
 	/* May need to add code. */
 }
@@ -91,6 +95,9 @@ alloc_kpages(int npages)
 	if (pa==0) {
 		return 0;
 	}
+
+	
+
 	return PADDR_TO_KVADDR(pa);
 	
 	#else
@@ -105,9 +112,37 @@ alloc_kpages(int npages)
 void 
 free_kpages(vaddr_t addr)
 {
+	#if OPT_A3
+
+	int vpn;
+	vaddr_t vbase1, vbase2, vtop1, vtop2;
+	struct pte* PTEAddr;
+	struct addrspace *as = curproc_getas();
+
+	vbase1 = as->as_vbase1;
+	vtop1 = vbase1 + as->as_npages1 * PAGE_SIZE;
+	vbase2 = as->as_vbase2;
+	vtop2 = vbase2 + as->as_npages2 * PAGE_SIZE;
+
+	if(vbase1 <= addr && addr < vtop1) {
+		vpn = (addr - vbase1) / PAGE_SIZE;
+		PTEAddr = as->pt1 + (vpn * sizeof(struct pte)); 
+	} else if(vbase2 <= addr && addr < vtop2) {
+		vpn = (addr - vbase2) / PAGE_SIZE;
+		PTEAddr = as->pt1 + (vpn * sizeof(struct pte)); 
+	}
+	//fetch the PTE
+	struct pte entry = *PTEAddr; 
+
+	freeppages(entry.pfn);
+
+	#else
+
 	/* nothing - leak the memory. */
 
 	(void)addr;
+	
+	#endif
 }
 
 void
