@@ -59,6 +59,7 @@
 #include <addrspace.h>
 #include <vnode.h>
 #include <elf.h>
+#include "opt-A3.h"
 
 /*
  * Load a segment at virtual address VADDR. The segment in memory
@@ -74,6 +75,8 @@
  * change this code to not use uiomove, be sure to check for this case
  * explicitly.
  */
+#if OPT_A3
+#else
 static
 int
 load_segment(struct addrspace *as, struct vnode *v,
@@ -84,6 +87,8 @@ load_segment(struct addrspace *as, struct vnode *v,
 	struct iovec iov;
 	struct uio u;
 	int result;
+
+
 
 	if (filesize > memsize) {
 		kprintf("ELF: warning: segment filesize > segment memsize\n");
@@ -144,6 +149,7 @@ load_segment(struct addrspace *as, struct vnode *v,
 	
 	return result;
 }
+#endif
 
 /*
  * Load an ELF executable user program into the current address space.
@@ -161,7 +167,11 @@ load_elf(struct vnode *v, vaddr_t *entrypoint)
 	struct addrspace *as;
 
 	as = curproc_getas();
-
+	
+	#if OPT_A3
+	as->vn = v;
+	#endif
+	
 	/*
 	 * Read the executable header from offset 0 in the file.
 	 */
@@ -287,13 +297,19 @@ load_elf(struct vnode *v, vaddr_t *entrypoint)
 				ph.p_type);
 			return ENOEXEC;
 		}
-
-		result = load_segment(as, v, ph.p_offset, ph.p_vaddr, 
-				      ph.p_memsz, ph.p_filesz,
-				      ph.p_flags & PF_X);
-		if (result) {
-			return result;
-		}
+		#if OPT_A3
+		as->offset = ph.p_offset;
+		as->memsz = ph.p_memsz;	
+		as->filesz = ph.p_filesz;
+		as->is_exec = ph.p_flags & PF_X;
+		#else
+		result = load_segment(as, v, ph.p_offset, ph.p_vaddr,
+                      ph.p_memsz, ph.p_filesz,
+                      ph.p_flags & PF_X);
+        if (result) {
+            return result;
+        }
+		#endif
 	}
 
 	result = as_complete_load(as);
