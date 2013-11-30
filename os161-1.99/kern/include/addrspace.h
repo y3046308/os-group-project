@@ -82,8 +82,10 @@ struct addrspace {
 		off_t offset1;
 		off_t offset2;
 		size_t memsz;
-		size_t filesz;
-		int is_exec;
+		size_t filesz1;
+        size_t filesz2;
+		int is_exec1;
+        int is_exec2;
 		
 
 		/* declare stack pages */

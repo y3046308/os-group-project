@@ -32,7 +32,7 @@
 #define PAGE_FRAME 0xfffff000   /* mask for getting page number from addr */
 //#define OFFSET_MASK 0x00000fff  /* mask for getting offset */
 
-//static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
+static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
 static
 int
@@ -79,9 +79,9 @@ load_segment(struct addrspace *as, struct vnode *v,
 }
 #endif
 
-/*static
+static
 paddr_t
-getppages(unsigned long npages)
+getppages2(unsigned long npages)
 {
    // Adapt code form dumbvm or implement something new 
 	#if OPT_A3
@@ -98,7 +98,7 @@ getppages(unsigned long npages)
 	 panic("Not implemented yet.\n");
    return (paddr_t) NULL;
    #endif
-}*/
+}
 
 /*static
 void
@@ -121,7 +121,7 @@ vm_bootstrap(void)
     int page_num = hi / PAGE_SIZE;
     coremap_size = page_num;
     coremaps = (struct coremap*)PADDR_TO_KVADDR(lo);
-    freeaddr += page_num * sizeof(struct coremap);
+    freeaddr += PAGE_SIZE + ((page_num * sizeof(struct coremap)) & 0xfffff000);
     init_coremap(freeaddr);
     alloc_kpages(freeaddr / PAGE_SIZE);
 	splx(spl);
@@ -141,6 +141,7 @@ alloc_kpages(int npages)
 	if (pa==0) {
 		return 0;
 	}
+	kprintf("kvaddr: 0x%08x\n", PADDR_TO_KVADDR(pa));
 	return PADDR_TO_KVADDR(pa);
 	
 	#else
@@ -366,7 +367,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
         //check page accessablilty 
         if(entry.valid == 0){ 
-            paddr = getppages(1); //create a page
+            paddr = getppages2(1); //create a page
             PTEAddr->pfn = paddr;
             PTEAddr->valid = 1;
             PTEAddr->dirty = 1;
@@ -387,7 +388,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	}
 
 	/* make sure it's page-aligned */
-	// KASSERT((paddr & PAGE_FRAME) == paddr);
+	KASSERT((paddr & PAGE_FRAME) == paddr);
 
 	/* Disable interrupts on this CPU while frobbing the TLB. */
 	spl = splhigh();
@@ -420,7 +421,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			PTEAddr->dirty = 1;
 			off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset1;
 			kprintf("off: %d, faultaddress: 0x%08x, vbase: 0x%08x\n", (int)off, faultaddress, vbase1);
-			int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
+			int result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec1);
         	PTEAddr->dirty = d;
 			if (result) {
             	return result;
@@ -430,7 +431,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			int d = PTEAddr->dirty;
 			PTEAddr->dirty = 1;
 			off_t off = (off_t)faultaddress - (off_t)vbase2 + as->offset2;
-            int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
+            int result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec2);
             PTEAddr->dirty = d;
 			if (result) {
                 return result;
@@ -466,7 +467,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		int d = PTEAddr->dirty;
 		PTEAddr->dirty = 1;
     	off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset1;
-    	int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
+    	int result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec1);
     	PTEAddr->dirty = d;
 		kprintf("result: %di\n", result);
 		if (result) {
@@ -477,7 +478,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		int d = PTEAddr->dirty;
 		PTEAddr->dirty = 1;
     	off_t off = (off_t)faultaddress - (off_t)vbase2 + as->offset2;
-    	int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
+    	int result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec2);
       	PTEAddr->dirty = d;
 		if (result) {
        		return result;
