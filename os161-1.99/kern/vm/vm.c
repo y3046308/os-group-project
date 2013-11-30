@@ -117,14 +117,16 @@ vm_bootstrap(void)
 	
 	int spl = splhigh();
 	vmstats_init();
+	paddr_t lo, hi, freeaddr;
+    freeaddr = 0;
+    ram_getsize(&lo,&hi);
+    int page_num = hi / PAGE_SIZE;
+    coremap_size = page_num;
+    coremaps = (struct coremap*)PADDR_TO_KVADDR(lo);
+    freeaddr += page_num * sizeof(struct coremap);
+    init_coremap(freeaddr);
+    alloc_kpages(freeaddr / PAGE_SIZE);
 	splx(spl);
-	/* initialize coremap */
-/*	paddr_t first, last;
-	ram_getsize(&first, &last); //get first and last address of ram
-	pgnum = (last - first)/PAGE_SIZE; // number of pages that fit
-	page_array = (struct page*)PADDR_TO_KVADDR(first); //convert paddr to kvaddr
-	avail_addr = first + pgnum * sizeof(struct page); */
-		
 	#endif
 	/* May need to add code. */
 }
