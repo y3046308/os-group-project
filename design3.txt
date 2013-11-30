@@ -17,17 +17,62 @@ struct coremap {
 
 struct coremap *coremaps;
 
-Each frame is represented as 'struct coremap' and entire physical memory is represented as a list of coremaps.
-When VM system is initialized, coremap is initialized in vm_bootstrap() in vm.c. In vm_bootstrap(), all coremap
-in 'coremaps' are assigned with appropriate physical address, FREE states, and size=page_num=0
+  Each frame is represented as 'struct coremap' and entire physical memory is represented as a list of coremaps.
+  When VM system is initialized, coremap is initialized in vm_bootstrap() in vm.c. In vm_bootstrap(), all coremap
+  in 'coremaps' are assigned with appropriate physical address, FREE states, and size=page_num=0
 
-2.
-3.
-4.
+2. We for-loop 'coremaps' to find 'FREE'-state coremap. When we find empty slot, we set state=USED and save physical
+  address to the coremap. When we want a certain frame to be freed, function 'freeppages'
+  iterate 'coremaps' to find appropriate physical address with a given physical address and when we find right one, we 
+  set its state to FREE and pa=size=page_num=0
+
+3. Yes. In case when we wish to allocate space that is larger than PAGE_SIZE, we just look for contiguous coremaps in 
+  'coremaps' and if we find right 'chunk', we allocate/free the chunk. The rest of the step is described in #2.
+
+4. Using a synchronization is essential when dealing with a shared resource like coremap. Coremap resides at physical
+  memory and only one copy of coremap exists. Hence, to avoid conflicts by multiple processors who try to access coremap
+  at the same time, implementing synchronization is must-do work.
+
 5.
-6.
-7.
-8.
+
+struct addrspace {
+	// code segment info
+        vaddr_t as_vbase1;	// indictes virtual address
+        paddr_t as_pbase1;	// indicates mapped physical address (initially set to 0)
+        size_t as_npages1;	// number of pages
+        int as_flag1;		// readable/writeable/executable
+        bool as_complete_load1; // not being used????????????????????????
+
+	// data segment info
+        vaddr_t as_vbase2;	// indictes virtual address
+        paddr_t as_pbase2;	// indicates mapped physical address (initially set to 0)
+        size_t as_npages2;	// number of pages
+        int as_flag2;		// readable/writeable/executable
+        bool as_complete_load2; // not being used????????????????????????
+
+	// stack segment info
+        paddr_t as_stackpbase;  // physical addr (initially 0)
+        struct segment seg[3];  // each for code, data, and stack
+                
+        /*for load segment */
+        struct vnode *vn;
+        off_t offset1;
+        off_t offset2;
+        size_t memsz;
+        size_t filesz;
+        int is_exec;
+    
+        /* declare stack pages */
+        struct pte *pt1, *pt2, *pt3; // 3 pagetables one for each segment
+
+6. We look into valid bit to see if valid mapping of virtual page we are looking for is set. If not set, 
+  fault occurs.
+
+7. We check swapfile to see designated page is avilable. Loading invalid page is done by loading appropriate data
+  from swapfiles.
+
+8. vm_fault in vm.c checks the access to read-only pages. vm_fault looks into dirty bit, which in a3, is used to
+  check read-only status of pages. Attempts to manage read-only page illegally will result EPERM, which is an exception.
 
 9. No structure is used to manage swap file. We used an array of boolean that checks if sectors in swap file
   are occupied or not by page table entries. Since each page table entries hold unique index of swap file, no
@@ -35,4 +80,7 @@ in 'coremaps' are assigned with appropriate physical address, FREE states, and s
   in physical memory and only one swap file exists. Hence, we need sychronization when reading from swap file or
   write to swap file to prevent any possible errors over the shared resource.
 
-10.
+10. We use FIFO algorithm throughout this assignment. The reason we use FIFO is that it's nodoubtfully the easiest
+   algorithm to implement compared to optimal or LRU or other page replacement algorithms we learned. Since the
+   assignment specification did not require us to focus on efficiency on the algorithm, we just picked the simplest
+   algorithm.
