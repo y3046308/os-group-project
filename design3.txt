@@ -2,7 +2,25 @@ Design Recipe
 
 Group #14
 
-1.
+1. We use coremap to efficienly manage physical memory. Coremap structure looks like this:
+
+typedef enum _frame_state{
+        FREE, USED,		// FREE(Frame currently not used), USED(Frame mapped by page)
+} frame_state;
+
+struct coremap {
+        paddr_t pa;             // physical address
+        size_t size;    	// size of frame
+        frame_state state;      // status of frame
+        int page_num;		// number of frames associated with one another
+};
+
+struct coremap *coremaps;
+
+Each frame is represented as 'struct coremap' and entire physical memory is represented as a list of coremaps.
+When VM system is initialized, coremap is initialized in vm_bootstrap() in vm.c. In vm_bootstrap(), all coremap
+in 'coremaps' are assigned with appropriate physical address, FREE states, and size=page_num=0
+
 2.
 3.
 4.
