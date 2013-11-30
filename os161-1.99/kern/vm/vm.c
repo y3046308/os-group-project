@@ -24,13 +24,59 @@
 #include <coremap.h>
 #include <proc.h>
 #include <uw-vmstats.h>
-#include <coremap.h>
 #include "pt.h"
+#include <kern/iovec.h>
+#include <uio.h>
 
 #define DUMBVM_STACKPAGES    12
 #define PAGE_FRAME 0xfffff000   /* mask for getting page number from addr */
 
 /*static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
+
+static
+int
+load_segment(struct addrspace *as, struct vnode *v,
+         off_t offset, vaddr_t vaddr,
+         size_t memsize, size_t filesize,
+         int is_executable)
+{
+    struct iovec iov;
+    struct uio u;
+    int result;
+
+
+
+    if (filesize > memsize) {
+        kprintf("ELF: warning: segment filesize > segment memsize\n");
+        filesize = memsize;
+    }
+
+    DEBUG(DB_EXEC, "ELF: Loading %lu bytes to 0x%lx\n",
+          (unsigned long) filesize, (unsigned long) vaddr);
+
+    iov.iov_ubase = (userptr_t)vaddr;
+    iov.iov_len = memsize;       // length of the memory space
+    u.uio_iov = &iov;
+    u.uio_iovcnt = 1;
+    u.uio_resid = filesize;          // amount to read from the file
+    u.uio_offset = offset;
+    u.uio_segflg = is_executable ? UIO_USERISPACE : UIO_USERSPACE;
+    u.uio_rw = UIO_READ;
+    u.uio_space = as;
+
+    result = VOP_READ(v, &u);
+    if (result) {
+        return result;
+    }
+
+    if (u.uio_resid != 0) {
+        /* short read; problem with executable? */
+        kprintf("ELF: short read on segment - file truncated?\n");
+        return ENOEXEC;
+    }
+	return result;
+}
+#endif
 
 static
 paddr_t
@@ -227,17 +273,11 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
 	/* Assert that the address space has been set up properly. */
 	KASSERT(as->as_vbase1 != 0);
-	// KASSERT(as->as_pbase1 != 0);
 	KASSERT(as->as_npages1 != 0);
 	KASSERT(as->as_vbase2 != 0);
-	// KASSERT(as->as_pbase2 != 0);
 	KASSERT(as->as_npages2 != 0);
-	KASSERT(as->as_stackpbase != 0);
 	KASSERT((as->as_vbase1 & PAGE_FRAME) == as->as_vbase1);
-	// KASSERT((as->as_pbase1 & PAGE_FRAME) == as->as_pbase1);
 	KASSERT((as->as_vbase2 & PAGE_FRAME) == as->as_vbase2);
-	// KASSERT((as->as_pbase2 & PAGE_FRAME) == as->as_pbase2);
-	KASSERT((as->as_stackpbase & PAGE_FRAME) == as->as_stackpbase);
 
 	vbase1 = as->as_vbase1;
 	vtop1 = vbase1 + as->as_npages1 * PAGE_SIZE;
@@ -274,9 +314,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			}
 			*PTEAddr = p; 
 		
-			//fetch physical address
-//			int offset = (faultaddress & OFFSET_MASK) << 20;
-//			paddr = (PTEAddr->pfn << 12) | offset;
 		}
 		else if(entry.dirty == 0 && faulttype == VM_FAULT_WRITE){ //segment is readonly
 			//exception
@@ -284,10 +321,8 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			return EPERM;
 		}
 		else{
+			//Access is allowed; fetch physical address
 			paddr = entry.pfn;
-			// Access is allowed; fetch physical address
-//			int offset = (faultaddress & OFFSET_MASK) << 20; 
-//			paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
 		}
 
 	}
@@ -322,9 +357,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			}
             *PTEAddr = p;
 
-			//fetch physical address
-//			int offset = (faultaddress & OFFSET_MASK) << 20;
-//			paddr = (PTEAddr->pfn << 12) | offset;
         }
         else if(entry.dirty == 0 && faulttype == VM_FAULT_WRITE){ //segment is readonly
             //raise exception
@@ -332,8 +364,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         }
         else{
             // Access is allowed; fetch physical address
-//            int offset = (faultaddress & OFFSET_MASK) << 20;
-//            paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
 			paddr = entry.pfn;
         }
 
@@ -359,9 +389,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
             struct pte p = pte_create(paddr, 1, 1); 
             *PTEAddr = p;
 	
-			//fetch physical address
-//			int offset = (faultaddress & OFFSET_MASK) << 20;
-//			paddr = (PTEAddr->pfn << 12) | offset;
         }
         else if(entry.dirty == 0 && faulttype == VM_FAULT_WRITE){ //segment is readonly
             //raise exception
@@ -369,8 +396,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         }
         else{
             // Access is allowed; fetch physical address
-//            int offset = (faultaddress & OFFSET_MASK) << 20;
-//            paddr = (PTEAddr->pfn << 12) | offset; //concatenating offset to pfn
   			paddr = entry.pfn;
         }
 
@@ -407,6 +432,12 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		}
 		DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
 		tlb_write(ehi, elo, i);
+		/* load segment from elf */
+		off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset;
+		int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
+        if (result) {
+            return result;
+        }
 		splx(spl);
 		return 0;
 	}
@@ -427,6 +458,12 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	}
 	DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
 	tlb_write(ehi, elo, victim);
+	/* load segment from elf */
+    off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset;
+    int result = load_segment(as, as->vn, off, faultaddress, as->memsz, as->filesz, as->is_exec);
+    if (result) {
+    	return result;
+    }
 	splx(spl);
 	
 	return 0;

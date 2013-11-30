@@ -76,6 +76,14 @@ struct addrspace {
         // struct vnode as_vn2;
         paddr_t as_stackpbase;
 		struct segment seg[3];	// each for code, data, and stack
+		
+		/*for load segment */
+		struct vnode *vn;
+		off_t offset;
+		size_t memsz;
+		size_t filesz;
+		int is_exec;
+		
 
 		/* declare stack pages */
 		struct pte *pt1, *pt2, *pt3; // 3 pagetables one for each segment
