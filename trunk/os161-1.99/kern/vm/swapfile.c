@@ -7,7 +7,7 @@
 #include <vm.h>
 #include <kern/fcntl.h>
 #include <swapfile.h>
-
+#include <uw-vmstats.h>
 #if OPT_A3
 
 void swap_initialize(){
@@ -75,6 +75,7 @@ int write_to_swap(){
 			break;		// leave for-loop
 		}
 	}
+	vmstats_inc(9);		// swapfile_writes
 	return i;
 }
 
