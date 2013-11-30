@@ -45,6 +45,7 @@ void read_from_swap(int index){
 //        swap_partition[index]->occupied = false;
 	swap_partition[index] = false;
 //        swap_partition[index]->entry = NULL;
+	vmstats_inc(8);	// "Page Faults from Swapfile"
 }
 
 //int write_to_swap(struct pte* entry){
