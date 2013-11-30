@@ -202,7 +202,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
 	vaddr_t vbase1, vtop1, vbase2, vtop2, stackbase, stacktop;
 	paddr_t paddr;
-	int i;
+	int i, vpn;
 	uint32_t ehi, elo;
 	struct addrspace *as;
 	int spl;
@@ -265,7 +265,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		seg = 1;
 	
 		//Get VPN from faultaddress
-		int vpn = (faultaddress - vbase1) / PAGE_SIZE;
+		vpn = (faultaddress - vbase1) / PAGE_SIZE;
 		
 		kprintf("fault on segment 1");	
 		kprintf("vpn: %d\n", vpn);
@@ -314,7 +314,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		seg = 2;
 
         //Get VPN from faultaddress
-        int vpn = (faultaddress - vbase2) / PAGE_SIZE;
+        vpn = (faultaddress - vbase2) / PAGE_SIZE;
 	
 		kprintf("fault on segment 2");
 		kprintf("vpn: %d\n", vpn);
@@ -355,7 +355,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		kprintf("fault on segment 3");
 		seg = 3;
         //Get VPN from faultaddress
-        int vpn = (faultaddress - stackbase) / PAGE_SIZE;
+        vpn = (faultaddress - stackbase) / PAGE_SIZE;
 
 		kprintf("vpn: %d\n", vpn);
 	
@@ -372,10 +372,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
             PTEAddr->valid = 1;
             PTEAddr->dirty = 1;
 	
-        }
-        else if(entry.dirty == 0 && faulttype == VM_FAULT_WRITE){ //segment is readonly
-            //raise exception
-			return EPERM;
         }
         else{
             // Access is allowed; fetch physical address
@@ -421,6 +417,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			PTEAddr->dirty = 1;
 			off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset1;
 			kprintf("off: %d, faultaddress: 0x%08x, vbase: 0x%08x\n", (int)off, faultaddress, vbase1);
+			if(as->filesz1 / PAGE_SIZE < (unsigned int)vpn){
+            	bzero((void *) paddr, PAGE_SIZE);
+        	}
 			int result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec1);
         	PTEAddr->dirty = d;
 			if (result) {
@@ -431,6 +430,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			int d = PTEAddr->dirty;
 			PTEAddr->dirty = 1;
 			off_t off = (off_t)faultaddress - (off_t)vbase2 + as->offset2;
+			if(as->filesz2 / PAGE_SIZE < (unsigned int)vpn){
+            	bzero((void *) paddr, PAGE_SIZE);
+        	}
             int result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec2);
             PTEAddr->dirty = d;
 			if (result) {
