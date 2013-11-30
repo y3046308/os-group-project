@@ -34,7 +34,7 @@ find_free_frame(int npages) {
 	int current_size = 0;
 	paddr_t rpa = 0;
 	for(int i = 0 ; i < coremap_size ; i++) { // loop through 
-		kprintf("checking: %d\n", i);
+		// kprintf("checking: %d\n", i);
 		if(coremaps[i].state == FREE) {
 			if (current_size == 0) {
 				rpa = coremaps[i].pa;
