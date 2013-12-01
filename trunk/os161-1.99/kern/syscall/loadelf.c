@@ -272,6 +272,8 @@ load_elf(struct vnode *v, vaddr_t *entrypoint)
 	 * Now actually load each segment.
 	 */
 
+	 kprintf("load_elf: %d\n", eh.e_phnum);
+
 	for (i=0; i<eh.e_phnum; i++) {
 		off_t offset = eh.e_phoff + i*eh.e_phentsize;
 		uio_kinit(&iov, &ku, &ph, sizeof(ph), offset, UIO_READ);
@@ -302,13 +304,15 @@ load_elf(struct vnode *v, vaddr_t *entrypoint)
 			as->offset1 = ph.p_offset;
 			as->is_exec1 = ph.p_flags & PF_X;
 			as->filesz1 = ph.p_filesz;
-		} else {
+			kprintf("first segment: %d\n", ph.p_offset);
+		} else if(i==2){
 			as->offset2 = ph.p_offset;
 			as->is_exec2 = ph.p_flags & PF_X;
 			as->filesz2 = ph.p_filesz;
+			kprintf("second segment: %d\n", ph.p_offset);
 		}
 		as->memsz = ph.p_memsz;	
-		as->vn = v;
+		// as->vn = v;
 		#else
 		result = load_segment(as, v, ph.p_offset, ph.p_vaddr,
                       ph.p_memsz, ph.p_filesz,
