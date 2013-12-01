@@ -206,14 +206,13 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	uint32_t ehi, elo;
 	struct addrspace *as;
 	int spl;
-	bool cl;
 	int seg = 0;
 	int flag;
 	struct pte* PTEAddr;
 
 	faultaddress &= PAGE_FRAME;
 
-	kprintf("faultaddr: 0x%08x\n", faultaddress);
+	// kprintf("faultaddr: 0x%08x\n", faultaddress);
 
 	DEBUG(DB_VM, "dumbvm: fault: 0x%x\n", faultaddress);
 
@@ -263,7 +262,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	if (faultaddress >= vbase1 && faultaddress < vtop1) {
 	
 		flag = as->as_flag1;
-		cl = as->as_complete_load1;
 		seg = 1;
 	
 		//Get VPN from faultaddress
@@ -312,7 +310,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		kprintf("fault on segment 2");
 		
 		flag = as->as_flag2;
-        cl = as->as_complete_load2;
 		seg = 2;
 
         //Get VPN from faultaddress
@@ -386,6 +383,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	}
 
 	/* make sure it's page-aligned */
+	KASSERT(paddr != 0);
 	KASSERT((paddr & PAGE_FRAME) == paddr);
 
 	/* Disable interrupts on this CPU while frobbing the TLB. */
@@ -405,7 +403,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		vmstats_inc(1); //TLB Faults with Free
 
 		ehi = faultaddress;
-		if(!(flag & 2) && cl) { // no write flag (readonly) and code load done
+		if(!(flag & 2)) { // no write flag (readonly) and code load done
 			// kprintf("this TLB(%d) is set to readonly. (dirty==0)\n",flag);
 			elo = paddr | TLBLO_VALID;	
 		} else {
@@ -413,6 +411,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		}
 		DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
 		tlb_write(ehi, elo, i);
+		splx(spl);
 		/* load segment from elf */
 		if(seg == 1){
 			int d = PTEAddr->dirty;
@@ -420,18 +419,19 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			PTEAddr->dirty = 1;
 			off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset1;
 			kprintf("off: %d, faultaddress: 0x%08x, vbase: 0x%08x\n", (int)off, faultaddress, vbase1);
+			kprintf("physical address: 0x%08x\n", paddr);
 			int index = as->filesz1 / PAGE_SIZE;
 			size_t r = as->filesz1 % PAGE_SIZE;
 			if(index > vpn){
-				result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec1);
+				result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, PAGE_SIZE, as->is_exec1);
 			}
 			else if(index == vpn && r != 0){
-				result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, r, as->is_exec1);
+				result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec1);
 			}
 			else{
-				bzero((void *) paddr, PAGE_SIZE);
+				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			}
-        		PTEAddr->dirty = d;
+        	PTEAddr->dirty = d;
 			if (result) {
             	return result;
         	}
@@ -444,13 +444,13 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			int index = as->filesz2 / PAGE_SIZE;
 			size_t r = as->filesz2 % PAGE_SIZE;
             if(index > vpn){
-                result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec2);
+                result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, PAGE_SIZE, as->is_exec2);
             }
             else if(index == vpn && r != 0){
-                result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, r, as->is_exec2);
+                result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec2);
             }
 			else{
-				bzero((void *) paddr, PAGE_SIZE);
+				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			}
             PTEAddr->dirty = d;
 			if (result) {
@@ -458,10 +458,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
             }
 		}
 		if(seg == 3) {
-			bzero((void *)faultaddress, PAGE_SIZE);
+			bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			//kprintf("asd\n");
 		}
-		splx(spl);
 		//kprintf("faultaddr: 0x%08x\n", faultaddress);
 		//kprintf("ehi: 0x%08x, elo: 0x%08x\n", ehi, elo);
 		return 0;
@@ -475,7 +474,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	vmstats_inc(2); //TLB Faults with Replace
 	int victim = tlb_get_rr_victim();
 	ehi = faultaddress;
-	if(!(flag & 2) && cl) { // no write flag (readonly) and code load done
+	if(!(flag & 2)) { // no write flag (readonly) and code load done
 		// kprintf("this TLB(%d) is set to readonly. (dirty==0)\n",flag);
 		elo = paddr | TLBLO_VALID;	
 	} else {
@@ -484,20 +483,22 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
 	tlb_write(ehi, elo, victim);
 	/* load segment from elf */
+	splx(spl);
     if(seg == 1){
 		int d = PTEAddr->dirty;
 		PTEAddr->dirty = 1;
 		int result = 0;
     	off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset1;
-    	if((as->filesz1 / PAGE_SIZE) < (unsigned int)vpn){
-        	bzero((void *) paddr, PAGE_SIZE);
-    	}
-    	if(as->filesz1 >= PAGE_SIZE){
-			result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec1);
-			as->filesz1 -= PAGE_SIZE;
-		}
+    	int index = as->filesz1 / PAGE_SIZE;
+		size_t r = as->filesz1 % PAGE_SIZE;
+        if(index > vpn){
+            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, PAGE_SIZE, as->is_exec1);
+        }
+        else if(index == vpn && r != 0){
+            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec1);
+        }
 		else{
-			result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, as->filesz1, as->is_exec1);
+			bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 		}
     	PTEAddr->dirty = d;
 		kprintf("result: %di\n", result);
@@ -510,15 +511,16 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		PTEAddr->dirty = 1;
 		int result = 0;
     	off_t off = (off_t)faultaddress - (off_t)vbase2 + as->offset2;
-    	if((as->filesz2 / PAGE_SIZE) < (unsigned int)vpn){
-        	bzero((void *) paddr, PAGE_SIZE);
-    	}
-    	if(as->filesz2 >= PAGE_SIZE){
-			result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, PAGE_SIZE, as->is_exec2);
-			as->filesz2 -= PAGE_SIZE;
-		}
+    	int index = as->filesz2 / PAGE_SIZE;
+		size_t r = as->filesz2 % PAGE_SIZE;
+        if(index > vpn){
+            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, PAGE_SIZE, as->is_exec2);
+        }
+        else if(index == vpn && r != 0){
+            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec2);
+        }
 		else{
-			result = load_segment(as, as->vn, off, faultaddress, PAGE_SIZE, as->filesz2, as->is_exec2);
+			bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 		}
       	PTEAddr->dirty = d;
 		if (result) {
@@ -526,9 +528,8 @@ vm_fault(int faulttype, vaddr_t faultaddress)
      	}
    	}
 	if(seg == 3) {
-		bzero((void *)faultaddress, PAGE_SIZE);
+		bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 	}
-	splx(spl);
 	
 	return 0;
 		
