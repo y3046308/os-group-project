@@ -522,6 +522,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	            }
 			}
 			if(seg == 3) {
+				kprintf("LOLc");
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 				//kprintf("asd\n");
 			}
@@ -568,6 +569,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec1);
 	        }
 			else{
+				kprintf("LOLd");
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			}
 	    	PTEAddr->dirty = d;
@@ -590,6 +592,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec2);
 	        }
 			else{
+				kprintf("LOLe");
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			}
 	      	PTEAddr->dirty = d;
@@ -598,6 +601,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	     	}
 	   	}
 		if(seg == 3) {
+			kprintf("LOLf");
 			bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 		}
 		tlb_write(ehi, elo, victim);
