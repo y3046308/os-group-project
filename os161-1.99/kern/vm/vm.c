@@ -126,9 +126,15 @@ vm_bootstrap(void)
     ram_getsize(&lo,&hi);
     freeaddr = lo;
     int page_num = (hi - lo) / PAGE_SIZE;
+    page_num -= 2;
     coremap_size = page_num;
     coremaps = (struct coremap*)PADDR_TO_KVADDR(lo);
-    freeaddr += PAGE_SIZE + ((page_num * sizeof(struct coremap)) & 0xfffff000);
+    int remainder = (page_num * sizeof(struct coremap)) % PAGE_SIZE;
+    if(remainder) {
+    	freeaddr += PAGE_SIZE + ((page_num * sizeof(struct coremap)) & 0xfffff000);
+    } else {
+    	freeaddr += ((page_num * sizeof(struct coremap)) & 0xfffff000);
+    }
     init_coremap(freeaddr);
 	splx(spl);
 	#endif
@@ -202,6 +208,7 @@ free_kpages(vaddr_t addr)
 	
 	freeppages(entry.pfn);*/
 	paddr_t paddr = addr - 0x80000000;
+	//kprintf("freeing paddr: 0x%08x\n",paddr);
 	freeppages(paddr);
 
 
@@ -238,6 +245,8 @@ tlb_get_rr_victim()
 void vm_shutdown() {
 	vmstats_print();
 }
+
+static unsigned int counter = 0;
 
 #endif
 
@@ -328,6 +337,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		if(entry.valid == 0){ 
 			//kprintf("a");
 			paddr = getppages(1); //create a page
+			if(paddr == 0) {
+				return ENOMEM;
+			}
 			//kprintf("paddr: 0x%08x\n", paddr);
 			if(flag & 2){ //write permitted
 				PTEAddr->pfn = paddr;
@@ -374,6 +386,10 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         //check page accessablilty 
         if(entry.valid == 0){ 
             paddr = getppages(1); //create a page
+            if(paddr == 0) {
+            	//kprintf("out of memory. %d\n",counter);
+				return ENOMEM;
+			}
             //kprintf("paddr: 0x%08x\nindex:%d\n", paddr,vpn);
 			if(flag & 2){ //write permitted
 				PTEAddr->pfn = paddr;
@@ -419,6 +435,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         //check page accessablilty 
         if(entry.valid == 0){ 
             paddr = getppages(1); //create a page
+            if(paddr == 0) {
+				return ENOMEM;
+			}
             // kprintf("page fault");
             PTEAddr->pfn = paddr;
             PTEAddr->valid = 1;
@@ -436,8 +455,8 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	}
 
 	/* make sure it's page-aligned */
+	//kprintf("0x%08x\n0x%08x\nseg:%d\n", faultaddress, paddr,seg);
 	KASSERT(paddr != 0);
-	kprintf("0x%08x\n0x%08x\nseg:%d\n", faultaddress, paddr,seg);
 	KASSERT((paddr & PAGE_FRAME) == paddr);
 
 
@@ -490,7 +509,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 					result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec1);
 				}
 				else{
-					kprintf("LOLa");
+					//kprintf("LOLa");
 					bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 				}
 	        	PTEAddr->dirty = d;
@@ -513,8 +532,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	                result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec2);
 	            }
 				else{
-					kprintf("LOLb");
+					//kprintf("LOLb");
 					bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
+					counter++;
 				}
 	            PTEAddr->dirty = d;
 				if (result) {
@@ -522,7 +542,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	            }
 			}
 			if(seg == 3) {
-				kprintf("LOLc");
+				//kprintf("LOLc");
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 				//kprintf("asd\n");
 			}
@@ -569,7 +589,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec1);
 	        }
 			else{
-				kprintf("LOLd");
+				//kprintf("LOLd");
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			}
 	    	PTEAddr->dirty = d;
@@ -592,7 +612,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec2);
 	        }
 			else{
-				kprintf("LOLe");
+				//kprintf("LOLe: ");
+				//kprintf("paddr: 0x%08x\n", paddr);
+				counter++;
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			}
 	      	PTEAddr->dirty = d;
@@ -601,7 +623,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	     	}
 	   	}
 		if(seg == 3) {
-			kprintf("LOLf");
+			//kprintf("LOLf");
 			bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 		}
 		tlb_write(ehi, elo, victim);
