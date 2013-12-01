@@ -260,7 +260,7 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 
 	npages = sz / PAGE_SIZE;
 
-
+	kprintf("npages: %d\n", npages);
 	kprintf("R: %d\nW: %d\nE: %d\n", readable, writeable, executable);
 
 	if (as->as_vbase1 == 0) {
