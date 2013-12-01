@@ -61,12 +61,17 @@ load_segment(struct addrspace *as, struct vnode *v,
     u.uio_iovcnt = 1;
     u.uio_resid = filesize;          // amount to read from the file
     u.uio_offset = offset;
-    u.uio_segflg = is_executable ? UIO_USERISPACE : UIO_USERSPACE;
+    u.uio_segflg = UIO_SYSSPACE;
+    //u.uio_segflg = is_executable ? UIO_USERISPACE : UIO_USERSPACE;
     u.uio_rw = UIO_READ;
-    u.uio_space = as;
+    //u.uio_space = as;
+    u.uio_space = NULL;
+    (void)as;
+    (void)is_executable;
 
     result = VOP_READ(v, &u);
     if (result) {
+    	kprintf("result(load_segment): %d\n",result);
         return result;
     }
 
@@ -142,7 +147,7 @@ alloc_kpages(int npages)
 	if (pa==0) {
 		return 0;
 	}
-	kprintf("kvaddr: 0x%08x\n", PADDR_TO_KVADDR(pa));
+	// kprintf("kvaddr: 0x%08x\n", PADDR_TO_KVADDR(pa));
 	return PADDR_TO_KVADDR(pa);
 	
 	#else
@@ -279,6 +284,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		
 		//check page accessablilty 
 		if(entry.valid == 0){ 
+			kprintf("page fault");
 			paddr = getppages(1); //create a page
 			kprintf("paddr: 0x%08x\n", paddr);
 			if(flag & 2){ //write permitted
@@ -327,6 +333,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         //check page accessablilty 
         if(entry.valid == 0){ 
             paddr = getppages(1); //create a page
+            kprintf("page fault");
 			if(flag & 2){ //write permitted
 				PTEAddr->pfn = paddr;
                 PTEAddr->valid = 1;
@@ -367,10 +374,10 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         //check page accessablilty 
         if(entry.valid == 0){ 
             paddr = getppages(1); //create a page
+            kprintf("page fault");
             PTEAddr->pfn = paddr;
             PTEAddr->valid = 1;
             PTEAddr->dirty = 1;
-	
         }
         else{
             // Access is allowed; fetch physical address
@@ -398,10 +405,10 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			}
 			continue;
 		}
-
+		spl = splhigh();
 		vmstats_inc(0); //TLB Faults
 		vmstats_inc(1); //TLB Faults with Free
-
+		splx(spl);
 		ehi = faultaddress;
 		if(!(flag & 2)) { // no write flag (readonly) and code load done
 			// kprintf("this TLB(%d) is set to readonly. (dirty==0)\n",flag);
@@ -411,7 +418,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		}
 		DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
 		tlb_write(ehi, elo, i);
-		splx(spl);
 		/* load segment from elf */
 		if(seg == 1){
 			int d = PTEAddr->dirty;
@@ -423,15 +429,18 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			int index = as->filesz1 / PAGE_SIZE;
 			size_t r = as->filesz1 % PAGE_SIZE;
 			if(index > vpn){
+				kprintf("mid\n");
 				result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, PAGE_SIZE, as->is_exec1);
 			}
 			else if(index == vpn && r != 0){
+				kprintf("end\n");
 				result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec1);
 			}
 			else{
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			}
         	PTEAddr->dirty = d;
+        	kprintf("result: %d\n", result);
 			if (result) {
             	return result;
         	}
@@ -461,6 +470,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			//kprintf("asd\n");
 		}
+		splx(spl);
 		//kprintf("faultaddr: 0x%08x\n", faultaddress);
 		//kprintf("ehi: 0x%08x, elo: 0x%08x\n", ehi, elo);
 		return 0;
@@ -469,9 +479,10 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
 
 	// kprintf("dumbvm: Ran out of TLB entries - cannot handle page fault\n");
-
+	spl = splhigh();
 	vmstats_inc(0); //TLB Faults
 	vmstats_inc(2); //TLB Faults with Replace
+	splx(spl);
 	int victim = tlb_get_rr_victim();
 	ehi = faultaddress;
 	if(!(flag & 2)) { // no write flag (readonly) and code load done
@@ -491,6 +502,8 @@ vm_fault(int faulttype, vaddr_t faultaddress)
     	off_t off = (off_t)faultaddress - (off_t)vbase1 + as->offset1;
     	int index = as->filesz1 / PAGE_SIZE;
 		size_t r = as->filesz1 % PAGE_SIZE;
+		kprintf("off: %d, faultaddress: 0x%08x, vbase: 0x%08x\n", (int)off, faultaddress, vbase1);
+			kprintf("physical address: 0x%08x\n", paddr);
         if(index > vpn){
             result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, PAGE_SIZE, as->is_exec1);
         }

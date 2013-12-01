@@ -34,7 +34,7 @@ find_free_frame(int npages) {
 	int current_size = 0;
 	paddr_t rpa = 0;
 	for(int i = 0 ; i < coremap_size ; i++) { // loop through 
-		// kprintf("checking: %d\n", i);
+		kprintf("checking: %d\n", i);
 		if(coremaps[i].state == FREE) {
 			if (current_size == 0) {
 				rpa = coremaps[i].pa;
@@ -47,7 +47,7 @@ find_free_frame(int npages) {
 					coremaps[i].page_num = npages;
 				}
 				kprintf("page id: %d ~ %d\n", (i-npages+1), i);
-				kprintf("paddr: 0x%08x\n\n", rpa);
+				kprintf("paddr: 0x%08x\n", rpa);
 				return rpa;
 			}
 		} else {
@@ -81,7 +81,7 @@ getppages(unsigned long npages)
 {
 	// Adapt code form dumbvm or implement something new 
 	#if OPT_A3
-	kprintf("requested %d pages\n",(int)npages);
+	//kprintf("requested %d pages\n",(int)npages);
 	paddr_t addr;
 
 	spinlock_acquire(&stealmem_lock);
