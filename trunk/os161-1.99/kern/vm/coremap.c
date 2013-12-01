@@ -34,7 +34,7 @@ find_free_frame(int npages) {
 	int current_size = 0;
 	paddr_t rpa = 0;
 	for(int i = 0 ; i < coremap_size ; i++) { // loop through 
-		kprintf("checking: %d\n", i);
+		// kprintf("checking: %d\n", i);
 		if(coremaps[i].state == FREE) {
 			if (current_size == 0) {
 				rpa = coremaps[i].pa;
@@ -46,8 +46,8 @@ find_free_frame(int npages) {
 					coremaps[i - j].size = npages * PAGE_SIZE;
 					coremaps[i].page_num = npages;
 				}
-				kprintf("page id: %d ~ %d\n", (i-npages+1), i);
-				kprintf("paddr: 0x%08x\n", rpa);
+				// kprintf("page id: %d ~ %d\n", (i-npages+1), i);
+				// kprintf("paddr: 0x%08x\n", rpa);
 				return rpa;
 			}
 		} else {
@@ -68,10 +68,10 @@ freeppages(paddr_t paddr) {
 	int index = (paddr - page_start) / PAGE_SIZE; // index calc.
 	int psize = coremaps[index].page_num; // get pagesize.
 	for(int i = 0 ; i < psize ; i++) { // loop through pagesize
-
 		coremaps[i+index].state = FREE;
 		coremaps[i+index].size = 0;
 		coremaps[i+index].page_num = 0;
+		bzero((void*)PADDR_TO_KVADDR(paddr + (i * PAGE_SIZE)),PAGE_SIZE);
 	}
 }
 
@@ -94,6 +94,7 @@ getppages(unsigned long npages)
 		addr = ram_stealmem(npages);
 	}
 	spinlock_release(&stealmem_lock);
+	////kprintf("return addr: 0x%08x\n", addr);
 	return addr;
 	#else
 	 (void)npages;

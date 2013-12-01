@@ -190,6 +190,7 @@ as_activate(void)
 	/* Disable interrupts on this CPU while frobbing the TLB. */
 	spl = splhigh();
 	vmstats_inc(3);
+	// kprintf("tlb invalid\n");
 	for (i=0; i<NUM_TLB; i++) {
 		tlb_write(TLBHI_INVALID(i), TLBLO_INVALID(), i);
 	}
@@ -264,10 +265,12 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 
 	if (as->as_vbase1 == 0) {
 		as->as_vbase1 = vaddr;
+		//kprintf("vaddr(1): 0x%08x\n", vaddr);
 		as->as_npages1 = npages;
 		as->as_flag1 = readable | writeable | executable;
-		kprintf("npages(1): %d\n", npages * sizeof(struct pte));
-		as->pt1 = kmalloc(npages * sizeof(struct pte));
+		//kprintf("npages(1): %d\n", npages * sizeof(struct pte));
+		//as->pt1 = kmalloc(npages * sizeof(struct pte));
+		as->pt1 = (void *)alloc_kpages(1);
 		kprintf("0x%08x\n",(unsigned int)as->pt1);
 		for(unsigned int i = 0; i < npages; i++){ //initialize pt1
 			as->pt1[i] = pte_create(0,0,0);
@@ -277,10 +280,13 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 
 	if (as->as_vbase2 == 0) {
 		as->as_vbase2 = vaddr;
+		//kprintf("vaddr(2): 0x%08x\n", vaddr);
 		as->as_npages2 = npages;
 		as->as_flag2 = readable | writeable | executable;
-		kprintf("npages(2): %d\n", npages * sizeof(struct pte));
-        as->pt2 = kmalloc(npages * sizeof(struct pte));
+		//kprintf("npages(2): %d\n", npages * sizeof(struct pte));
+        //as->pt2 = kmalloc(npages * sizeof(struct pte));
+        as->pt2 = (void *)alloc_kpages(1);
+        // kprintf("pt2: 0x%08x\n", (unsigned int)as->pt2);
 		for(unsigned int i = 0; i < npages; i++){ //initialize pt2
 			as->pt2[i] = pte_create(0,0,0);
 		}
