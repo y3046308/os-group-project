@@ -1,0 +1,5 @@
+alias rt cd ~/os-group-project/root
+alias kern cd ~/os-group-project/os161-1.99/kern
+alias compile sh ~/compile.sh $1
+alias boot sys161 kernel $1
+alias bootg sys161 -w kernel $1
