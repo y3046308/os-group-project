@@ -463,7 +463,7 @@ subpage_kmalloc(size_t sz)
 	prpage = alloc_kpages(1);
 	if (prpage==0) {
 		/* Out of memory. */
-		kprintf("kmalloc: Subpage allocator couldn't get a page\n"); 
+		//kprintf("kmalloc: Subpage allocator couldn't get a page\n"); 
 		return NULL;
 	}
 	spinlock_acquire(&kmalloc_spinlock);
@@ -473,7 +473,7 @@ subpage_kmalloc(size_t sz)
 		/* Couldn't allocate accounting space for the new page. */
 		spinlock_release(&kmalloc_spinlock);
 		free_kpages(prpage);
-		kprintf("kmalloc: Subpage allocator couldn't get pageref\n"); 
+		//kprintf("kmalloc: Subpage allocator couldn't get pageref\n"); 
 		return NULL;
 	}
 
@@ -624,6 +624,7 @@ kfree(void *ptr)
 	/*
 	 * Try subpage first; if that fails, assume it's a big allocation.
 	 */
+	//kprintf("free memory: 0x%08x\n",(unsigned int)ptr);
 	if (ptr == NULL) {
 		return;
 	} else if (subpage_kfree(ptr)) {
