@@ -5,11 +5,13 @@
 #include <coremap.h>
 #include <spinlock.h>
 #include <addrspace.h>
+#include <spl.h>
 #include <vm.h>
 
 #if OPT_A3
 
 static paddr_t page_start = 0;
+static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
 void init_coremap(paddr_t freeaddr){
 	kprintf("initializing %d coremaps...\n", coremap_size);
@@ -28,6 +30,7 @@ void init_coremap(paddr_t freeaddr){
 }
 
 void reset_coremap() {
+	spinlock_acquire(&stealmem_lock);
 	for(int i = 0 ; i < coremap_size ; i++) {
 		if(coremaps[i].owner == USER) {
 			coremaps[i].state = FREE;
@@ -37,6 +40,7 @@ void reset_coremap() {
 			bzero((void*)PADDR_TO_KVADDR(coremaps[i].pa),PAGE_SIZE);
 		}
 	}
+	spinlock_release(&stealmem_lock);
 }
 
 // checks if there is availble physical memory of size 'npages' available in coremap
@@ -73,14 +77,13 @@ find_free_frame(int npages, frame_owner owner) {
 	return 0;
 }
 
-static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
-
 
 // free the physical address.
 void
 freeppages(paddr_t paddr) {
 	int index = (paddr - page_start) / PAGE_SIZE; // index calc.
 	int psize = coremaps[index].page_num; // get pagesize.
+	spinlock_acquire(&stealmem_lock);
 	for(int i = 0 ; i < psize ; i++) { // loop through pagesize
 		coremaps[i+index].state = FREE;
 		coremaps[i+index].size = 0;
@@ -89,21 +92,22 @@ freeppages(paddr_t paddr) {
 		//kprintf("freed %dth coremap: 0x%08x\n", i+index,coremaps[i+index].pa);
 		bzero((void*)PADDR_TO_KVADDR(coremaps[i+index].pa),PAGE_SIZE);
 	}
+	spinlock_release(&stealmem_lock);
 }
 
 // get next available physical page and return it
 paddr_t
 getppages(unsigned long npages, frame_owner owner)
 {
-	// Adapt code form dumbvm or implement something new 
-	#if OPT_A3
 	//kprintf("requested %d pages\n",(int)npages);
+	//int spl = splhigh();
 	paddr_t addr;
 
 	spinlock_acquire(&stealmem_lock);
 	if(npages > 0) {
 		addr = find_free_frame(npages, owner);
 		if(addr >= paddr_max - 4096){
+			//splx(spl);
 			return 0;
 		}
 	} else {
@@ -114,12 +118,8 @@ getppages(unsigned long npages, frame_owner owner)
 	}
 	spinlock_release(&stealmem_lock);
 	////kprintf("return addr: 0x%08x\n", addr);
+	//splx(spl);
 	return addr;
-	#else
-	 (void)npages;
-	 panic("Not implemented yet.\n");
-   return (paddr_t) NULL;
-   #endif
 }
 
 /*void free_pages(paddr_t paddr){
