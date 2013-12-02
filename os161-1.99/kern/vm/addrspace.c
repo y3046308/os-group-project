@@ -183,6 +183,7 @@ as_activate(void)
 	#else
 	
 	struct addrspace *as;
+	reset_coremap();
 
 	as = curproc_getas();
 	if (as == NULL) {
@@ -284,7 +285,7 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 		kprintf("npages:%d sizeof(pte):%d pnum: %d\n",npages,sizeof(struct pte),pnum);
         as->pt2 = (void *)alloc_kpages(pnum);
         // kprintf("pt2: 0x%08x\n", (unsigned int)as->pt2);
-		for(unsigned int i = 0; i < npages; i++){ //initialize pt2
+		for(unsigned int i = 0; i < npages; i++) { //initialize pt2
 			pte_create(&(as->pt2[i]),0,0,0);
 		}
 		return 0;
@@ -331,8 +332,7 @@ as_complete_load(struct addrspace *as)
 	#if OPT_A3
 //	as->as_complete_load1 = true;
 //	as->as_complete_load2 = true;
-	 (void) as;
-	 reset_coremap();
+	(void) as;
 	return 0;
 	#else
 
