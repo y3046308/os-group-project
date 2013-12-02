@@ -122,9 +122,12 @@ vm_bootstrap(void)
 	
 	int spl = splhigh();
 	vmstats_init();
-	paddr_t lo, hi, freeaddr;
+	paddr_t lo, hi;
     ram_getsize(&lo,&hi);
+    kprintf("top: %d\n",hi);
+    kprintf("bot: %d\n",lo);
     freeaddr = lo;
+    paddr_max = hi;
     int page_num = (hi - lo) / PAGE_SIZE;
     page_num -= 2;
     coremap_size = page_num;
@@ -150,7 +153,7 @@ alloc_kpages(int npages)
 
 	paddr_t pa;
 	//kprintf("d");
-	pa = getppages(npages);
+	pa = getppages(npages, KERNEL);
 	if (pa==0) {
 		return 0;
 	}
@@ -208,7 +211,7 @@ free_kpages(vaddr_t addr)
 	
 	freeppages(entry.pfn);*/
 	paddr_t paddr = addr - 0x80000000;
-	//kprintf("freeing paddr: 0x%08x\n",paddr);
+	kprintf("freeing paddr: 0x%08x\n",paddr);
 	freeppages(paddr);
 
 
@@ -266,6 +269,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	struct pte* PTEAddr;
 	bool load = false;
 
+	kprintf("before align: 0x%08x\n", faultaddress);
 	faultaddress &= PAGE_FRAME;
 
 	// kprintf("faultaddr: 0x%08x\n", faultaddress);
@@ -336,7 +340,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		//check page accessablilty 
 		if(entry.valid == 0){ 
 			//kprintf("a");
-			paddr = getppages(1); //create a page
+			paddr = getppages(1, USER); //create a page
 			if(paddr == 0) {
 				return ENOMEM;
 			}
@@ -385,7 +389,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
         //check page accessablilty 
         if(entry.valid == 0){ 
-            paddr = getppages(1); //create a page
+            paddr = getppages(1, USER); //create a page
             if(paddr == 0) {
             	//kprintf("out of memory. %d\n",counter);
 				return ENOMEM;
@@ -434,7 +438,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
         //check page accessablilty 
         if(entry.valid == 0){ 
-            paddr = getppages(1); //create a page
+            paddr = getppages(1, USER); //create a page
             if(paddr == 0) {
 				return ENOMEM;
 			}
@@ -451,6 +455,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
     }
 	else {
+		kprintf("0x%08x\n", faultaddress);
+		kprintf("???\n");
+		panic("NOOO");
 		return EFAULT;
 	}
 
@@ -509,7 +516,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 					result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec1);
 				}
 				else{
-					//kprintf("LOLa");
+					// kprintf("LOLa");
 					bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 				}
 	        	PTEAddr->dirty = d;
@@ -532,7 +539,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	                result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec2);
 	            }
 				else{
-					//kprintf("LOLb");
+					// kprintf("LOLb");
 					bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 					counter++;
 				}
@@ -542,7 +549,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	            }
 			}
 			if(seg == 3) {
-				//kprintf("LOLc");
+				// kprintf("LOLc");
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 				//kprintf("asd\n");
 			}
@@ -589,7 +596,6 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec1);
 	        }
 			else{
-				//kprintf("LOLd");
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			}
 	    	PTEAddr->dirty = d;
@@ -613,7 +619,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	        }
 			else{
 				//kprintf("LOLe: ");
-				//kprintf("paddr: 0x%08x\n", paddr);
+				// kprintf("paddr: 0x%08x\n", paddr);
 				counter++;
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			}
