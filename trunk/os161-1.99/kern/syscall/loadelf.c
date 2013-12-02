@@ -168,9 +168,6 @@ load_elf(struct vnode *v, vaddr_t *entrypoint)
 
 	as = curproc_getas();
 	
-	#if OPT_A3
-	as->vn = v;
-	#endif
 	
 	/*
 	 * Read the executable header from offset 0 in the file.
@@ -311,8 +308,7 @@ load_elf(struct vnode *v, vaddr_t *entrypoint)
 			as->filesz2 = ph.p_filesz;
 			kprintf("second segment: %d\n", ph.p_offset);
 		}
-		as->memsz = ph.p_memsz;	
-		// as->vn = v;
+		as->vn = v;
 		#else
 		result = load_segment(as, v, ph.p_offset, ph.p_vaddr,
                       ph.p_memsz, ph.p_filesz,
