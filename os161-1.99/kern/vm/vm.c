@@ -271,7 +271,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	struct pte* PTEAddr;
 	bool load = false;
 
-	paddr_t fulladdr = faultaddress;
+	//paddr_t fulladdr = faultaddress;
 
 	faultaddress &= PAGE_FRAME;
 
@@ -503,7 +503,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
     }
 	else {
-		kprintf("faultaddr: 0x%08x\n", faultaddress);
+		//kprintf("faultaddr: 0x%08x\n", faultaddress);
 		return EFAULT;
 	}
 
@@ -555,9 +555,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 				size_t r = as->filesz1 % PAGE_SIZE;
 				if(index > vpn){
 					//kprintf("mid\n");
-					if(faultaddress == (0x474ab8 & 0xfffff000)) {
+					/*if(faultaddress == (0x474ab8 & 0xfffff000)) {
 						kprintf("LOADED(%d, 0x%08x)\n",i, fulladdr);
-					}
+					}*/
 					result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, PAGE_SIZE, as->is_exec1);
 				}
 				else if(index == vpn && r != 0){
@@ -626,9 +626,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		elo = paddr | TLBLO_DIRTY | TLBLO_VALID;
 	}
 	DEBUG(DB_VM, "dumbvm: 0x%x -> 0x%x\n", faultaddress, paddr);
-	if(faultaddress == (0x474ab8 & 0xfffff000)) {
+	/*if(faultaddress == (0x474ab8 & 0xfffff000)) {
 		kprintf("LOADED\n");
-	}
+	}*/
 	if (load) {
 		tlb_write(ehi, paddr | TLBLO_DIRTY | TLBLO_VALID, victim);
 		/* load segment from elf */

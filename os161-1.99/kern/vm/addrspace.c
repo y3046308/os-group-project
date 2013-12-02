@@ -260,7 +260,7 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 		} else {
 			pnum = (npages * sizeof(struct pte)) / PAGE_SIZE;
 		}
-		kprintf("npages:%d sizeof(pte):%d pnum: %d\n",npages,sizeof(struct pte),pnum);
+		//kprintf("npages:%d sizeof(pte):%d pnum: %d\n",npages,sizeof(struct pte),pnum);
 		as->pt1 = (void *)alloc_kpages(pnum);
 		// kprintf("0x%08x\n",(unsigned int)as->pt1);
 		for(unsigned int i = 0; i < npages; i++){ //initialize pt1
@@ -282,7 +282,7 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 		} else {
 			pnum = npages * sizeof(struct pte) / PAGE_SIZE;
 		}
-		kprintf("npages:%d sizeof(pte):%d pnum: %d\n",npages,sizeof(struct pte),pnum);
+		//kprintf("npages:%d sizeof(pte):%d pnum: %d\n",npages,sizeof(struct pte),pnum);
         as->pt2 = (void *)alloc_kpages(pnum);
         // kprintf("pt2: 0x%08x\n", (unsigned int)as->pt2);
 		for(unsigned int i = 0; i < npages; i++) { //initialize pt2
