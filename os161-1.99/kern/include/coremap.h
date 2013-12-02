@@ -14,8 +14,8 @@ typedef enum _frame_owner{
 } frame_owner;
 
 struct coremap {
+	vaddr_t va; // victim
 	paddr_t pa; // physical address
-	size_t size;	// size
 	frame_state state;
 	frame_owner owner;
 	int page_num;
@@ -24,6 +24,7 @@ struct coremap {
 int coremap_size;
 paddr_t paddr_max, freeaddr;
 struct coremap *coremaps;
+bool replaced;
 
 void init_coremap(paddr_t freeaddr);
 void reset_coremap(void);

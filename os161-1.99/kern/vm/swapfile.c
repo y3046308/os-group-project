@@ -26,11 +26,11 @@ void swap_initialize(){
 	}
 }
 
-void read_from_swap(int index){
+void read_from_swap(paddr_t pfn, int index){
         struct uio u;
         struct iovec iov;
 
-        iov.iov_ubase = (void*)PADDR_TO_KVADDR(index * PAGE_SIZE);
+        iov.iov_ubase = (void*)PADDR_TO_KVADDR(pfn * PAGE_SIZE);
 //	iov.iov_ubase = NULL;
         iov.iov_len = PAGE_SIZE;
 

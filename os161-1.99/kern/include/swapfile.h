@@ -13,7 +13,7 @@ struct swap{
 };*/
 typedef bool swap;
 void swap_initialize(void);
-void read_from_swap(int index);
+void read_from_swap(paddr_t pfn, int index);
 int write_to_swap(void);
 
 int swap_num;	// total number of pages in swapfile
