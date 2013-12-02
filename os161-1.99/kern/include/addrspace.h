@@ -63,23 +63,16 @@ struct addrspace {
 #if OPT_A3
         /* Put stuff here for your VM system */
         vaddr_t as_vbase1;
-        paddr_t as_pbase1;
         size_t as_npages1;
         int as_flag1;
-        bool as_complete_load1;
         vaddr_t as_vbase2;
-        paddr_t as_pbase2;
         size_t as_npages2;
         int as_flag2;
-        bool as_complete_load2;
-        paddr_t as_stackpbase;
-		struct segment seg[3];	// each for code, data, and stack
 		
 		/*for load segment */
 		struct vnode *vn;
 		off_t offset1;
 		off_t offset2;
-		size_t memsz;
 		size_t filesz1;
         size_t filesz2;
 		int is_exec1;
