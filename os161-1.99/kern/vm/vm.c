@@ -271,7 +271,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	struct pte* PTEAddr;
 	bool load = false;
 
-	kprintf("before align: 0x%08x\n", faultaddress);
+	//kprintf("before align: 0x%08x\n", faultaddress);
 	faultaddress &= PAGE_FRAME;
 
 	// kprintf("faultaddr: 0x%08x\n", faultaddress);
@@ -502,9 +502,9 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
     }
 	else {
-		//kprintf("0x%08x\n", faultaddress);
-		//kprintf("???\n");
-		panic("NOOO");
+		kprintf("0x%08x\n", faultaddress);
+		kprintf("???\n");
+		//	panic("NOOO");
 		return EFAULT;
 	}
 
