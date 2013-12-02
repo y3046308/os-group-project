@@ -8,10 +8,15 @@ typedef enum _frame_state{
         FREE, USED,		// FREE(Frame currently not used), USED(Frame mapped by page)
 } frame_state;
 
+typedef enum _frame_owner{
+	NO, KERNEL, USER,	// NO(No Owner. Free frame), KERNEL(Kernel frame), USER(User frame)
+} frame_owner;
+
 struct coremap {
         paddr_t pa;             // physical address
         size_t size;    	// size of frame
         frame_state state;      // status of frame
+	frame_owner owner;
         int page_num;		// number of frames associated with one another
 };
 
@@ -21,13 +26,13 @@ struct coremap *coremaps;
   When VM system is initialized, coremap is initialized in vm_bootstrap() in vm.c. In vm_bootstrap(), all coremap
   in 'coremaps' are assigned with appropriate physical address, FREE states, and size=page_num=0
 
-2. We for-loop 'coremaps' to find 'FREE'-state coremap. When we find empty slot, we set state=USED and save physical
-  address to the coremap. When we want a certain frame to be freed, function 'freeppages'
-  iterate 'coremaps' to find appropriate physical address with a given physical address and when we find right one, we 
-  set its state to FREE and pa=size=page_num=0
+2. We for-loop 'coremaps' to find 'FREE'-state coremap. When we find empty slot, we set state=USED and set the owner of that frame. 
+  When we want a certain frame to be freed, we calculate the index of coremap and set state=FREE and bzero the data space.
 
 3. Yes. In case when we wish to allocate space that is larger than PAGE_SIZE, we just look for contiguous coremaps in 
-  'coremaps' and if we find right 'chunk', we allocate/free the chunk. The rest of the step is described in #2.
+  'coremaps' and if we find right 'chunk', we allocate/free the chunk.
+  When there are more than two pages allocated, we save the information of how many pages that coremap have.
+  It is important because when we free the address, we must know how many pages we allocated.
 
 4. Using a synchronization is essential when dealing with a shared resource like coremap. Coremap resides at physical
   memory and only one copy of coremap exists. Hence, to avoid conflicts by multiple processors who try to access coremap
@@ -41,18 +46,15 @@ struct addrspace {
         paddr_t as_pbase1;	// indicates mapped physical address (initially set to 0)
         size_t as_npages1;	// number of pages
         int as_flag1;		// readable/writeable/executable
-        bool as_complete_load1; // not being used????????????????????????
 
 	// data segment info
         vaddr_t as_vbase2;	// indictes virtual address
         paddr_t as_pbase2;	// indicates mapped physical address (initially set to 0)
         size_t as_npages2;	// number of pages
         int as_flag2;		// readable/writeable/executable
-        bool as_complete_load2; // not being used????????????????????????
 
 	// stack segment info
         paddr_t as_stackpbase;  // physical addr (initially 0)
-        struct segment seg[3];  // each for code, data, and stack
                 
         /*for load segment */
         struct vnode *vn;
