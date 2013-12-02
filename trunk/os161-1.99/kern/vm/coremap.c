@@ -36,7 +36,6 @@ void reset_coremap() {
 	for(int i = 0 ; i < coremap_size ; i++) {
 		if(coremaps[i].owner == USER) {
 			coremaps[i].state = FREE;
-//			coremaps[i].size = 0;
 			coremaps[i].page_num = 0;
 			coremaps[i].owner = NO;
 			bzero((void*)PADDR_TO_KVADDR(coremaps[i].pa),PAGE_SIZE);
@@ -67,8 +66,8 @@ find_free_frame(int npages, frame_owner owner) {
 					coremaps[i].owner = owner;
 				}
 				if (ref == -1) ref = i;
-				// kprintf("page id: %d ~ %d\n", (i-npages+1), i);
-				// kprintf("paddr: 0x%08x\n", rpa);
+				kprintf("page id: %d ~ %d\n", (i-npages+1), i);
+				kprintf("paddr: 0x%08x\n", rpa);
 				return rpa;
 			}
 		} else {
@@ -104,7 +103,6 @@ freeppages(paddr_t paddr) {
 	spinlock_acquire(&stealmem_lock);
 	for(int i = 0 ; i < psize ; i++) { // loop through pagesize
 		coremaps[i+index].state = FREE;
-	//	coremaps[i+index].size = 0;
 		coremaps[i+index].page_num = 0;
 		coremaps[i+index].owner = NO;
 		//kprintf("freed %dth coremap: 0x%08x\n", i+index,coremaps[i+index].pa);
