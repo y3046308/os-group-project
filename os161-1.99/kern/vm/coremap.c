@@ -20,17 +20,30 @@ void init_coremap(paddr_t freeaddr){
         coremaps[i].state = FREE;    // state of page initially free
         coremaps[i].size = 0;
         coremaps[i].page_num = 0;
+        coremaps[i].owner = NO;
     }
     // kprintf("\n");
 
     kprintf("start addr: 0x%08x\n", page_start);
 }
 
+void reset_coremap() {
+	for(int i = 0 ; i < coremap_size ; i++) {
+		if(coremaps[i].owner == USER) {
+			coremaps[i].state = FREE;
+			coremaps[i].size = 0;
+			coremaps[i].page_num = 0;
+			coremaps[i].owner = NO;
+			bzero((void*)PADDR_TO_KVADDR(coremaps[i].pa),PAGE_SIZE);
+		}
+	}
+}
+
 // checks if there is availble physical memory of size 'npages' available in coremap
 
 static
 paddr_t
-find_free_frame(int npages) {
+find_free_frame(int npages, frame_owner owner) {
 	int current_size = 0;
 	paddr_t rpa = 0;
 	for(int i = 0 ; i < coremap_size ; i++) { // loop through 
@@ -45,9 +58,10 @@ find_free_frame(int npages) {
 					coremaps[i - j].state = USED;
 					coremaps[i - j].size = npages * PAGE_SIZE;
 					coremaps[i].page_num = npages;
+					coremaps[i].owner = owner;
 				}
-				// kprintf("page id: %d ~ %d\n", (i-npages+1), i);
-				// kprintf("paddr: 0x%08x\n", rpa);
+				//kprintf("page id: %d ~ %d\n", (i-npages+1), i);
+				//kprintf("paddr: 0x%08x\n", rpa);
 				return rpa;
 			}
 		} else {
@@ -71,13 +85,15 @@ freeppages(paddr_t paddr) {
 		coremaps[i+index].state = FREE;
 		coremaps[i+index].size = 0;
 		coremaps[i+index].page_num = 0;
-		bzero((void*)PADDR_TO_KVADDR(paddr + (i * PAGE_SIZE)),PAGE_SIZE);
+		coremaps[i+index].owner = NO;
+		//kprintf("freed %dth coremap: 0x%08x\n", i+index,coremaps[i+index].pa);
+		bzero((void*)PADDR_TO_KVADDR(coremaps[i+index].pa),PAGE_SIZE);
 	}
 }
 
 // get next available physical page and return it
 paddr_t
-getppages(unsigned long npages)
+getppages(unsigned long npages, frame_owner owner)
 {
 	// Adapt code form dumbvm or implement something new 
 	#if OPT_A3
@@ -86,7 +102,10 @@ getppages(unsigned long npages)
 
 	spinlock_acquire(&stealmem_lock);
 	if(npages > 0) {
-		addr = find_free_frame(npages);
+		addr = find_free_frame(npages, owner);
+		if(addr >= paddr_max - 4096){
+			return 0;
+		}
 	} else {
 		addr = 0;
 	}

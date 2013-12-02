@@ -36,7 +36,7 @@ void pte_add(struct addrspace *a, vaddr_t va, int segment, int tableSize){
         int i, ref = -1;
         for (i = 0 ; i < tableSize ; i++){
                 if (ptTemp[i].pfn == 0){        // if we found empty slot
-                        ptTemp[i].pfn = getppages(1);   // load available physical addr from coremap(<---- need to be adjusted)
+                        ptTemp[i].pfn = getppages(1, USER);   // load available physical addr from coremap(<---- need to be adjusted)
                         ptTemp[i].valid = 1;    // ready to be traslated
                         ptTemp[i].dirty = 0;    // 0 since not modified ; just loaded into pt
                         ptTemp[i].ref = 1;      
@@ -46,7 +46,7 @@ void pte_add(struct addrspace *a, vaddr_t va, int segment, int tableSize){
                 }
         }
         if (i == tableSize && ref != -1){       // if page is full, use replacement algorithm
-                ptTemp[ref].pfn = getppages(1); // again, this needs to be fixed
+                ptTemp[ref].pfn = getppages(1, USER); // again, this needs to be fixed
                 ptTemp[ref].valid = 1;
                 ptTemp[ref].dirty = 0;
                 ptTemp[ref].ref = 0;

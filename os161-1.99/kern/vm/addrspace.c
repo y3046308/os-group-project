@@ -260,7 +260,7 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 
 	npages = sz / PAGE_SIZE;
 
-	kprintf("npages: %d\n", npages);
+	// kprintf("npages: %d\n", npages);
 	kprintf("R: %d\nW: %d\nE: %d\n", readable, writeable, executable);
 
 	if (as->as_vbase1 == 0) {
@@ -271,7 +271,7 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 		//kprintf("npages(1): %d\n", npages * sizeof(struct pte));
 		//as->pt1 = kmalloc(npages * sizeof(struct pte));
 		as->pt1 = (void *)alloc_kpages(1);
-		kprintf("0x%08x\n",(unsigned int)as->pt1);
+		// kprintf("0x%08x\n",(unsigned int)as->pt1);
 		for(unsigned int i = 0; i < npages; i++){ //initialize pt1
 			as->pt1[i] = pte_create(0,0,0);
 		}
@@ -366,6 +366,7 @@ as_complete_load(struct addrspace *as)
 //	as->as_complete_load1 = true;
 //	as->as_complete_load2 = true;
 	 (void) as;
+	 reset_coremap();
 	return 0;
 	#else
 
