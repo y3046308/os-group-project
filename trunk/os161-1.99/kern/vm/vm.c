@@ -27,6 +27,7 @@
 #include "pt.h"
 #include <kern/iovec.h>
 #include <uio.h>
+#include <swapfile.h>
 
 #define DUMBVM_STACKPAGES    12
 #define PAGE_FRAME 0xfffff000   /* mask for getting page number from addr */
@@ -139,6 +140,7 @@ vm_bootstrap(void)
     	freeaddr += ((page_num * sizeof(struct coremap)) & 0xfffff000);
     }
     init_coremap(freeaddr);
+    swap_initialize();
 	splx(spl);
 	#endif
 	/* May need to add code. */
@@ -341,6 +343,10 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 		if(entry.valid == 0){ 
 			//kprintf("a");
 			paddr = getppages(1, USER); //create a page
+			if (entry.sw != -1){
+				read_from_swap(entry.pfn, entry.sw);
+				PTEAddr->sw = -1;
+			}
 			if(paddr == 0) {
 				return ENOMEM;
 			}
@@ -390,11 +396,15 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         //check page accessablilty 
         if(entry.valid == 0){ 
             paddr = getppages(1, USER); //create a page
+            if (entry.sw != -1){
+                    read_from_swap(entry.pfn, entry.sw);
+		    PTEAddr->sw = -1;
+            }
             if(paddr == 0) {
             	//kprintf("out of memory. %d\n",counter);
 				return ENOMEM;
 			}
-            //kprintf("paddr: 0x%08x\nindex:%d\n", paddr,vpn);
+ 		        //kprintf("paddr: 0x%08x\nindex:%d\n", paddr,vpn);
 			if(flag & 2){ //write permitted
 				PTEAddr->pfn = paddr;
                 PTEAddr->valid = 1;
@@ -439,6 +449,10 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         //check page accessablilty 
         if(entry.valid == 0){ 
             paddr = getppages(1, USER); //create a page
+                        if (entry.sw != -1){
+                                read_from_swap(entry.pfn, entry.sw);
+                                PTEAddr->sw = -1;
+                        }
             if(paddr == 0) {
 				return ENOMEM;
 			}

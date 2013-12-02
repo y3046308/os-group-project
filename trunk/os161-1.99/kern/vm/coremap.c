@@ -11,6 +11,8 @@
 #if OPT_A3
 
 static paddr_t page_start = 0;
+int ref = -1;
+bool after_init = false;
 static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
 void init_coremap(paddr_t freeaddr){
@@ -20,12 +22,11 @@ void init_coremap(paddr_t freeaddr){
     	// kprintf(" %d", i);
         coremaps[i].pa = freeaddr + i * PAGE_SIZE;
         coremaps[i].state = FREE;    // state of page initially free
-        coremaps[i].size = 0;
         coremaps[i].page_num = 0;
         coremaps[i].owner = NO;
     }
     // kprintf("\n");
-
+    after_init = true;	
     kprintf("start addr: 0x%08x\n", page_start);
 }
 
@@ -34,7 +35,7 @@ void reset_coremap() {
 	for(int i = 0 ; i < coremap_size ; i++) {
 		if(coremaps[i].owner == USER) {
 			coremaps[i].state = FREE;
-			coremaps[i].size = 0;
+//			coremaps[i].size = 0;
 			coremaps[i].page_num = 0;
 			coremaps[i].owner = NO;
 			bzero((void*)PADDR_TO_KVADDR(coremaps[i].pa),PAGE_SIZE);
@@ -60,21 +61,36 @@ find_free_frame(int npages, frame_owner owner) {
 			if(current_size == npages) {	
 				for(int j = 0 ; j < npages ; j++) {
 					coremaps[i - j].state = USED;
-					coremaps[i - j].size = npages * PAGE_SIZE;
+	//				coremaps[i - j].size = npages * PAGE_SIZE;
 					coremaps[i].page_num = npages;
 					coremaps[i].owner = owner;
 				}
-				//kprintf("page id: %d ~ %d\n", (i-npages+1), i);
-				//kprintf("paddr: 0x%08x\n", rpa);
+				if (ref == -1) ref = i;
+				// kprintf("page id: %d ~ %d\n", (i-npages+1), i);
+				// kprintf("paddr: 0x%08x\n", rpa);
 				return rpa;
 			}
 		} else {
 			current_size = 0;
 		}
 	}
-
-	// not found:
-	return 0;
+	if (after_init){
+		// If not found, apply page replacement algorithm to make some free spaces
+		rpa = coremaps[ref].pa;		// coremaps[ref]->pa is about to be freed
+		int index = ref;
+		freeppages(rpa);
+		while (1){
+			if (index >= coremap_size){
+				index = 0;
+			}
+			if (coremaps[index].state == USED){
+				ref = index;
+				break;
+			}
+			index++;
+		}
+	}
+	return rpa;
 }
 
 
@@ -86,7 +102,7 @@ freeppages(paddr_t paddr) {
 	spinlock_acquire(&stealmem_lock);
 	for(int i = 0 ; i < psize ; i++) { // loop through pagesize
 		coremaps[i+index].state = FREE;
-		coremaps[i+index].size = 0;
+	//	coremaps[i+index].size = 0;
 		coremaps[i+index].page_num = 0;
 		coremaps[i+index].owner = NO;
 		//kprintf("freed %dth coremap: 0x%08x\n", i+index,coremaps[i+index].pa);
@@ -113,7 +129,7 @@ getppages(unsigned long npages, frame_owner owner)
 	} else {
 		addr = 0;
 	}
-	if(addr == 0) {
+	if(addr == 0 && !after_init) {		// do not enter here once coremap is initialized
 		addr = ram_stealmem(npages);
 	}
 	spinlock_release(&stealmem_lock);
