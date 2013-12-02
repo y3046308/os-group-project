@@ -28,7 +28,7 @@ struct pte{
     int sw;	// index to swapfile
 };
 
-struct pte pte_create(paddr_t pfn, int valid, int dirty);
+void pte_create(struct pte *p, paddr_t pfn, int valid, int dirty);
 //void pte_add(struct addrspace *a, vaddr_t va, int segment, int tableSize);
 int find_pte(struct addrspace *a, paddr_t pa, int segment);
 #endif

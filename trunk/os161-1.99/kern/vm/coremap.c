@@ -16,7 +16,7 @@ bool after_init = false;
 static struct spinlock stealmem_lock = SPINLOCK_INITIALIZER;
 
 void init_coremap(paddr_t freeaddr){
-	kprintf("initializing %d coremaps...\n", coremap_size);
+	//kprintf("initializing %d coremaps...\n", coremap_size);
 	page_start = freeaddr;
     for (int i = 0 ; i < coremap_size ; i++){
     	// kprintf(" %d", i);
@@ -28,7 +28,7 @@ void init_coremap(paddr_t freeaddr){
     // kprintf("\n");
     after_init = true;	
     pvictim = 0;
-    kprintf("start addr: 0x%08x\n", page_start);
+    //kprintf("start addr: 0x%08x\n", page_start);
 }
 
 void reset_coremap() {

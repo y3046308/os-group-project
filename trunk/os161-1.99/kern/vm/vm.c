@@ -125,8 +125,8 @@ vm_bootstrap(void)
 	vmstats_init();
 	paddr_t lo, hi;
     ram_getsize(&lo,&hi);
-    kprintf("top: %d\n",hi);
-    kprintf("bot: %d\n",lo);
+    //kprintf("top: %d\n",hi);
+    //kprintf("bot: %d\n",lo);
     freeaddr = lo;
     paddr_max = hi;
     int page_num = (hi - lo) / PAGE_SIZE;
@@ -213,7 +213,7 @@ free_kpages(vaddr_t addr)
 	
 	freeppages(entry.pfn);*/
 	paddr_t paddr = addr - 0x80000000;
-	kprintf("freeing paddr: 0x%08x\n",paddr);
+	//kprintf("freeing paddr: 0x%08x\n",paddr);
 	freeppages(paddr);
 
 
@@ -344,16 +344,18 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			//kprintf("a");
 			paddr = getppages(1, USER); //create a page
 			if (entry.sw != -1){
+				kprintf("sw!=-1\n");
 				read_from_swap(entry.pfn, entry.sw);
-	                        if (pvictim != 0){
-                        	    int pte_index = find_pte(as, pvictim, 1);
-                	            pvictim = 0;
-        	                    struct pte* temp_pte = &(as->pt1[pte_index]);
-	                            temp_pte->valid = 0;
-                            	    temp_pte->dirty = 0;
-                    	            temp_pte->ref = 0;
-            	                    temp_pte->sw = write_to_swap();
-	                        }
+                if (pvictim != 0){
+                	kprintf("pv!=0\n");
+            	    int pte_index = find_pte(as, pvictim, 1);
+    	            pvictim = 0;
+                    struct pte* temp_pte = &(as->pt1[pte_index]);
+                    temp_pte->valid = 0;
+            	    temp_pte->dirty = 0;
+    	            temp_pte->ref = 0;
+                    temp_pte->sw = write_to_swap();
+                }
 				PTEAddr->sw = -1;
 			}
 			if(paddr == 0) {
@@ -406,16 +408,18 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         if(entry.valid == 0){ 
             paddr = getppages(1, USER); //create a page
             if (entry.sw != -1){
-                    read_from_swap(entry.pfn, entry.sw);
+            	kprintf("sw!=-1\n");
+                read_from_swap(entry.pfn, entry.sw);
 	            if (pvictim != 0){
-			    int pte_index = find_pte(as, pvictim, 2);
-			    pvictim = 0;
-			    struct pte* temp_pte = &(as->pt2[pte_index]);
-			    temp_pte->valid = 0;
-			    temp_pte->dirty = 0;
-			    temp_pte->ref = 0;
-			    temp_pte->sw = write_to_swap();
-		    }
+	            	kprintf("pv!=0\n");
+				    int pte_index = find_pte(as, pvictim, 2);
+				    pvictim = 0;
+				    struct pte* temp_pte = &(as->pt2[pte_index]);
+				    temp_pte->valid = 0;
+				    temp_pte->dirty = 0;
+				    temp_pte->ref = 0;
+				    temp_pte->sw = write_to_swap();
+			    }
 		    PTEAddr->sw = -1;
             }
             if(paddr == 0) {
@@ -467,19 +471,21 @@ vm_fault(int faulttype, vaddr_t faultaddress)
         //check page accessablilty 
         if(entry.valid == 0){ 
             paddr = getppages(1, USER); //create a page
-                        if (entry.sw != -1){
-                                read_from_swap(entry.pfn, entry.sw);
-		                if (pvictim != 0){
-		 	               int pte_index = find_pte(as, pvictim, 3);
-		                       pvictim = 0;
-		                       struct pte* temp_pte = &(as->pt3[pte_index]);
-		                       temp_pte->valid = 0;
-		                       temp_pte->dirty = 0;
-		                       temp_pte->ref = 0;
-                		       temp_pte->sw = write_to_swap();
-		                 }
-                                PTEAddr->sw = -1;
-                        }
+			if (entry.sw != -1){
+				kprintf("sw!=-1\n");
+				read_from_swap(entry.pfn, entry.sw);
+				if (pvictim != 0){
+					kprintf("pv!=0\n");
+					int pte_index = find_pte(as, pvictim, 3);
+					pvictim = 0;
+					struct pte* temp_pte = &(as->pt3[pte_index]);
+					temp_pte->valid = 0;
+					temp_pte->dirty = 0;
+					temp_pte->ref = 0;
+					temp_pte->sw = write_to_swap();
+				}
+				PTEAddr->sw = -1;
+			}
             if(paddr == 0) {
 				return ENOMEM;
 			}
@@ -496,8 +502,8 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 
     }
 	else {
-		kprintf("0x%08x\n", faultaddress);
-		kprintf("???\n");
+		//kprintf("0x%08x\n", faultaddress);
+		//kprintf("???\n");
 		panic("NOOO");
 		return EFAULT;
 	}
