@@ -6,19 +6,13 @@
 
 #if OPT_A3
 
-struct pte 
-pte_create(paddr_t pfn, int valid, int dirty){
-        struct pte *p = kmalloc(sizeof(struct pte));
-/*      if (p == NULL){
-                return NULL;
-        } */
-        
+void
+pte_create(struct pte *p, paddr_t pfn, int valid, int dirty){
         p->pfn = pfn;
         p->valid = valid;
         p->dirty = dirty;
         p->ref = 0;    
 	p->sw = -1;
-        return *p;
 }
 
 int find_pte(struct addrspace *a, paddr_t pa, int segment){
