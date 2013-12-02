@@ -242,6 +242,8 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 	/* ...and now the length. */
 	sz = (sz + PAGE_SIZE - 1) & PAGE_FRAME;
 
+	kprintf("%d",sz);
+
 	npages = sz / PAGE_SIZE;
 
 	// kprintf("npages: %d\n", npages);
@@ -252,7 +254,7 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 		//kprintf("vaddr(1): 0x%08x\n", vaddr);
 		as->as_npages1 = npages;
 		as->as_flag1 = readable | writeable | executable;
-		//kprintf("npages(1): %d\n", npages * sizeof(struct pte));
+		kprintf("npages(1): %d\n", npages);
 		//as->pt1 = kmalloc(npages * sizeof(struct pte));
 		int pnum;
 		if((npages * sizeof(struct pte)) % PAGE_SIZE) {
@@ -274,7 +276,7 @@ as_define_region(struct addrspace *as, vaddr_t vaddr, size_t sz,
 		//kprintf("vaddr(2): 0x%08x\n", vaddr);
 		as->as_npages2 = npages;
 		as->as_flag2 = readable | writeable | executable;
-		//kprintf("npages(2): %d\n", npages * sizeof(struct pte));
+		kprintf("npages(2): %d\n", npages);
         //as->pt2 = kmalloc(npages * sizeof(struct pte));
         int pnum;
 		if((npages * sizeof(struct pte)) % PAGE_SIZE) {
