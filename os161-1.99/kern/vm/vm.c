@@ -251,7 +251,7 @@ void vm_shutdown() {
 	vmstats_print();
 }
 
-
+static unsigned int counter = 0;
 
 #endif
 
@@ -271,6 +271,7 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	struct pte* PTEAddr;
 	bool load = false;
 
+	kprintf("before align: 0x%08x\n", faultaddress);
 	faultaddress &= PAGE_FRAME;
 
 	// kprintf("faultaddr: 0x%08x\n", faultaddress);
@@ -344,6 +345,15 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			paddr = getppages(1, USER); //create a page
 			if (entry.sw != -1){
 				read_from_swap(entry.pfn, entry.sw);
+	                        if (pvictim != 0){
+                        	    int pte_index = find_pte(as, pvictim, 1);
+                	            pvictim = 0;
+        	                    struct pte* temp_pte = &(as->pt1[pte_index]);
+	                            temp_pte->valid = 0;
+                            	    temp_pte->dirty = 0;
+                    	            temp_pte->ref = 0;
+            	                    temp_pte->sw = write_to_swap();
+	                        }
 				PTEAddr->sw = -1;
 			}
 			if(paddr == 0) {
@@ -397,6 +407,15 @@ vm_fault(int faulttype, vaddr_t faultaddress)
             paddr = getppages(1, USER); //create a page
             if (entry.sw != -1){
                     read_from_swap(entry.pfn, entry.sw);
+	            if (pvictim != 0){
+			    int pte_index = find_pte(as, pvictim, 2);
+			    pvictim = 0;
+			    struct pte* temp_pte = &(as->pt2[pte_index]);
+			    temp_pte->valid = 0;
+			    temp_pte->dirty = 0;
+			    temp_pte->ref = 0;
+			    temp_pte->sw = write_to_swap();
+		    }
 		    PTEAddr->sw = -1;
             }
             if(paddr == 0) {
@@ -450,6 +469,15 @@ vm_fault(int faulttype, vaddr_t faultaddress)
             paddr = getppages(1, USER); //create a page
                         if (entry.sw != -1){
                                 read_from_swap(entry.pfn, entry.sw);
+		                if (pvictim != 0){
+		 	               int pte_index = find_pte(as, pvictim, 3);
+		                       pvictim = 0;
+		                       struct pte* temp_pte = &(as->pt3[pte_index]);
+		                       temp_pte->valid = 0;
+		                       temp_pte->dirty = 0;
+		                       temp_pte->ref = 0;
+                		       temp_pte->sw = write_to_swap();
+		                 }
                                 PTEAddr->sw = -1;
                         }
             if(paddr == 0) {
@@ -521,18 +549,19 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 				int index = as->filesz1 / PAGE_SIZE;
 				size_t r = as->filesz1 % PAGE_SIZE;
 				if(index > vpn){
-					vmstats_inc(7);
+					//kprintf("mid\n");
 					result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, PAGE_SIZE, as->is_exec1);
 				}
 				else if(index == vpn && r != 0){
-					vmstats_inc(7);
+					//kprintf("end\n");
 					result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec1);
 				}
 				else{
-					vmstats_inc(5);
+					// kprintf("LOLa");
 					bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 				}
 	        	PTEAddr->dirty = d;
+	        	//kprintf("result: %d\n", result);
 				if (result) {
 	            	return result;
 	        	}
@@ -545,16 +574,15 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 				int index = as->filesz2 / PAGE_SIZE;
 				size_t r = as->filesz2 % PAGE_SIZE;
 	            if(index > vpn){
-	            	vmstats_inc(7);
 	                result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, PAGE_SIZE, as->is_exec2);
 	            }
 	            else if(index == vpn && r != 0){
-	            	vmstats_inc(7);
 	                result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec2);
 	            }
 				else{
-					vmstats_inc(5);
+					// kprintf("LOLb");
 					bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
+					counter++;
 				}
 	            PTEAddr->dirty = d;
 				if (result) {
@@ -562,12 +590,12 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	            }
 			}
 			if(seg == 3) {
-				vmstats_inc(5);
+				// kprintf("LOLc");
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
+				//kprintf("asd\n");
 			}
 			tlb_write(ehi, elo, i);
 		} else {
-			vmstats_inc(4);
 			tlb_write(ehi, elo, i);
 		}
 		splx(spl);
@@ -603,15 +631,12 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 			//kprintf("off: %d, faultaddress: 0x%08x, vbase: 0x%08x\n", (int)off, faultaddress, vbase1);
 			//kprintf("physical address: 0x%08x\n", paddr);
 	        if(index > vpn){
-	        	vmstats_inc(7);
 	            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, PAGE_SIZE, as->is_exec1);
 	        }
 	        else if(index == vpn && r != 0){
-	        	vmstats_inc(7);
 	            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec1);
 	        }
 			else{
-				vmstats_inc(5);
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			}
 	    	PTEAddr->dirty = d;
@@ -628,15 +653,15 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	    	int index = as->filesz2 / PAGE_SIZE;
 			size_t r = as->filesz2 % PAGE_SIZE;
 	        if(index > vpn){
-	        	vmstats_inc(7);
 	            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, PAGE_SIZE, as->is_exec2);
 	        }
 	        else if(index == vpn && r != 0){
-	        	vmstats_inc(7);
 	            result = load_segment(as, as->vn, off, PADDR_TO_KVADDR(paddr), PAGE_SIZE, r, as->is_exec2);
 	        }
 			else{
-				vmstats_inc(5);
+				//kprintf("LOLe: ");
+				// kprintf("paddr: 0x%08x\n", paddr);
+				counter++;
 				bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 			}
 	      	PTEAddr->dirty = d;
@@ -645,12 +670,11 @@ vm_fault(int faulttype, vaddr_t faultaddress)
 	     	}
 	   	}
 		if(seg == 3) {
-			vmstats_inc(5);
+			//kprintf("LOLf");
 			bzero((void *)PADDR_TO_KVADDR(paddr), PAGE_SIZE);
 		}
 		tlb_write(ehi, elo, victim);
 	} else {
-		vmstats_inc(4);
 		tlb_write(ehi, elo, victim);
 	}
 	splx(spl);
