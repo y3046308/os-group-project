@@ -67,13 +67,11 @@ struct addrspace {
         size_t as_npages1;
         int as_flag1;
         bool as_complete_load1;
-        // struct vnode as_vn1;
         vaddr_t as_vbase2;
         paddr_t as_pbase2;
         size_t as_npages2;
         int as_flag2;
         bool as_complete_load2;
-        // struct vnode as_vn2;
         paddr_t as_stackpbase;
 		struct segment seg[3];	// each for code, data, and stack
 		
@@ -88,7 +86,7 @@ struct addrspace {
         int is_exec2;
 		
 
-		/* declare stack pages */
+		/* declare page tables */
 		struct pte *pt1, *pt2, *pt3; // 3 pagetables one for each segment
 #else
         vaddr_t as_vbase1;
