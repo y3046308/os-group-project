@@ -1,4 +1,3 @@
-
 #ifndef _COREMAP_H_
 #define _COREMAP_H_
 #include "opt-A3.h"
@@ -14,7 +13,7 @@ typedef enum _frame_owner{
 } frame_owner;
 
 struct coremap {
-	vaddr_t va; // victim
+	struct pte *pvictim;
 	paddr_t pa; // physical address
 	frame_state state;
 	frame_owner owner;
@@ -24,7 +23,7 @@ struct coremap {
 int coremap_size;
 paddr_t paddr_max, freeaddr;
 struct coremap *coremaps;
-bool replaced;
+paddr_t pvictim;
 
 void init_coremap(paddr_t freeaddr);
 void reset_coremap(void);

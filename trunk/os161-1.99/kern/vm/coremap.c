@@ -27,6 +27,7 @@ void init_coremap(paddr_t freeaddr){
     }
     // kprintf("\n");
     after_init = true;	
+    pvictim = 0;
     kprintf("start addr: 0x%08x\n", page_start);
 }
 
@@ -76,7 +77,8 @@ find_free_frame(int npages, frame_owner owner) {
 	}
 	if (after_init){
 		// If not found, apply page replacement algorithm to make some free spaces
-		rpa = coremaps[ref].pa;		// coremaps[ref]->pa is about to be freed
+		rpa = coremaps[ref].pa;		// coremaps[ref]->pa is about to be freed and stored in swapfile
+		pvictim = rpa;
 		int index = ref;
 		freeppages(rpa);
 		while (1){

@@ -21,6 +21,27 @@ pte_create(paddr_t pfn, int valid, int dirty){
         return *p;
 }
 
+int find_pte(struct addrspace *a, paddr_t pa, int segment){
+        struct pte *ptTemp = NULL;
+        if (segment == 1){      // if adding it to pt1
+                ptTemp = a->pt1;
+        }
+        else if (segment == 2){ // else if adding it to pt2
+                ptTemp = a->pt2;
+        }
+        else{                   // else adding it to pt3
+                ptTemp = a->pt3;
+        }
+	int i = 0;
+	while (ptTemp != NULL){
+		if (ptTemp[i].pfn == pa){
+			break;
+		}
+		i++;
+	}
+	return i;
+}
+/*
 // add page table entry into page table. If table is full, apply page replacement policy(FIFO)
 void pte_add(struct addrspace *a, vaddr_t va, int segment, int tableSize){
         struct pte *ptTemp;
@@ -55,6 +76,6 @@ void pte_add(struct addrspace *a, vaddr_t va, int segment, int tableSize){
         }
         (void)va;
 }
-
+*/
 #endif
 
